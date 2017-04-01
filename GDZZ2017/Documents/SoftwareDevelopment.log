@@ -1,0 +1,450 @@
+2017年第12届恩智浦杯全国大学生智能车竞赛
+光电追逐组 软件更新日志
+
+2016.12.13 Irony
+
+ver 0.10 基本框架完成
+
+1.添加的文件
+devices:
+Encoder.h Encoder.c
+Motor.h Motor.c
+SteerActuator.h SteerActuator.c
+VisualScope.h VisualScope.c
+
+user:
+Main.c
+root.h PinMap.h Param.h
+ImgProc.h ImgProc.c
+DataComm.h DataComm.c
+SpeedControl.h SpeedControl.c
+DirectionControl.h DirectionControl.c
+MainProc.h MainProc.c
+
+2.添加的宏参数
+IMG_ROW			50
+IMG_COL			225
+IMG_WHITE		0xfe
+IMG_BLACK		0x00
+IMG_FRAME_FIN		0xff
+IMG_ABDN_ROW		19
+IMG_ROW_INTV		5
+STEER_ACTUATOR_RIGHT	447	//place-holder
+STEER_ACTUATOR_MIDDLE	647
+STEER_ACTUATOR_LEFT	847	//place-holder
+SPEED_CONTROL_PID_KP	120	//place-holder
+SPEED_CONTROL_PID_KI	15	//place-holder
+SPEED_CONTROL_PID_KD	20	//place-holder
+SPEED_BUF_SIZE		5
+
+3.添加的数据类型
+user:
+root:
+typedef uint8_t byte;
+
+4.添加的变量和函数
+devices:
+
+Encoder:
+	extern void EncoderInit(void);
+	extern void EncoderGet(int16_t* left, int16_t* right);
+Motor:
+	MOTOR_STOP Motor_Out(0, 0) //宏
+	extern void MotorInit(void);
+	extern void MotorOut(int16_t left, int16_t right);
+SteerActuator:
+	extern void SteerInit(void);
+	extern void SteerReset(void);
+	extern void SteerOut(int16_t out);
+
+user:
+
+Main:
+	static void NVICInit(void);
+	static void MainInit(void);
+ImgProc:
+	extern byte imgBuf[IMG_ROW][IMG_COL];
+	static void ImgProcHREF(uint32_t); //CALLBACK
+	static void ImgProcVSYN(uint32_t); //CALLBACK
+	extern void CameraInit(void);
+DataComm:
+	extern void DataCommInit(void);
+	extern void ImgTrans(byte imgBuf[IMG_ROW][IMG_COL]);
+SpeedControl:
+	extern int16_t SpeedControlPID(int16_t target, int16_t current);
+	extern int16_t SpeedControlFilter(int16_t speed);
+DirectionControl:
+	extern int16_t DirectionControlPID(int16_t value); //未实现
+MainProc:
+	static void MainProc(void); //CALLBACK, 未实现
+	extern void TimerInit(void);
+
+5.备注
+1)由于要复习考试，并无时间完善注释，将在以后完成这项工作。如有意愿协助完善，请一定按照以下规则进行：
+	(1)无需文档注释(类似超核库的形式)，因为暂时没有意义，如想要学习这种注释方法，可以参考我后续上传的两个工程；
+	(2)//形式的注释后空一格或在其上一行对其行首，/**/的形式在*后空一格，前空一格其余基本和//相同，特殊情况经由讨论决定，即：
+		bar = Foo(); //description
+		//description
+		*shit = Fuck(&you);
+		/* description */
+		suck &= ~(cug << ASS_ASS_IN | CREED);
+	(3)对齐！！！
+2)添加代码时一定注意以下几点：
+	(1)一切大括号按照后空一格{，换行}，没有例外，即：
+		int8_t Foo(int8_t, uint8_t) {
+			//Do something
+		}
+	(2)不能容忍任何可以用局部变量或形式参数代替的全局变量的存在；
+	(3)不能容忍任何非c99定义整数类型(即必须使用类似uint8_t的形式，参见stdint.h)；
+	(4)不能容忍任何Warning；
+	(5)函数内应尽可能不出现任何常数和常量，相应的宏定义慎重考虑是汇总到参数表中还是本模块的头文件中；
+	(6)决不能容忍任何形式的非tab整数倍缩进，以及行末和行首多余的空格！！！
+3)请考虑清楚新增元素的定位，准确写到相应的模块里，宁可扩展也不要胡乱加进原模块，命名则须严格符合以下规则：
+	(1)函数名用大写首字母的驼峰命名法(没有下划线，下同)；
+	(2)变量名用小写首字母的驼峰命名法；
+	(3)宏定义用由下划线隔开的大写单词拼接；
+	(4)布尔变量决不能使用简单的类似flag的名称，一般可为isxxx, hasxxx等形式，特殊情况讨论斟酌；
+	(5)不要用汉语拼音！！！
+以上。
+
+2016.12.19 Irony
+
+ver 0.11 更好地支持了速度控制模块
+
+1.添加的数据类型和变量
+user:
+SpeedControl:
+typedef struct _PID {
+    int16_t currentValue; //当前速度
+    int16_t valueBuf[SPEED_BUF_SIZE]; //速度队列
+    uint8_t cur; //速度队列游标，和速度队列一起用于平滑滤波
+    double kp;
+    double ki;
+    double kd;
+    int16_t lastError;
+    int16_t prevError;
+    double output;
+}
+PID;
+
+extern PID leftPid, rightPid;
+
+2.添加和修改的函数
+user:
+SpeedControl:
+extern void SpeedControlInit(void);
+extern int16_t SpeedControlPID(int16_t target, PID pid);
+extern void SpeedControlFilter(int16_t speed, PID pid);
+
+PID须进行初始化(填入参数)，支持动态修改(为以后考虑)，调用PID控制和平滑滤波函数时填入相应的PID结构体
+
+2016.12.20 Irony
+
+ver 0.20 改动较大
+
+1.删除的文件
+devices:
+VisualScope.h VisualScope.c //集成到DataComm模块中了
+
+2.添加的文件
+user:
+Typedef.h
+Switch.h
+
+3.添加和移动的宏参数
+user:
+
+//此前默认所有宏参数都在Param中，但此次改动打破了这个规则，故以后均须声明
+Param:
+SPEED_CONTROL_LEFT_SPEED     50
+SPEED_CONTROL_RIGHT_SPEED  50
+
+//以后的数据类型定义都放在这
+TypeDef:
+SPEED_BUF_SIZE  5 //考虑到PID结构体定义的需要，移动至此处
+
+//以后调试开关都放在这
+Switch:
+SPEED_CONTROL_SWITCH //调试开关，下同
+xDIRECTION_CONTROL_SWITCH
+
+4.移动和修改的数据类型
+user:
+//以后的数据类型定义都放在这
+Typedef:
+typedef struct _PID {
+    int16_t currentValue;
+    int16_t valueBuf[SPEED_BUF_SIZE];
+    uint8_t cur;
+    int16_t targetValue; //将目标速度也集成进来了
+    double kp;
+    double ki;
+    double kd;
+    int16_t lastError;
+    int16_t prevError;
+    double output;
+}
+PID;
+
+typedef uint8_t byte;
+
+5.添加、移动和修改的函数
+user:
+
+DataComm:
+static uint16_t CrcCheck(uint8_t *Buf, uint8_t crcCnt); //来自VisualScope，对命名规则和实现细节做了细微改动，下同
+extern void StateTrans(float a, float b, float c, float d);
+
+ImgProc:
+extern uint16_t imgProcFlag; //ImgProcAnalyze函数返回的图像分析处理结果的二进制标志，按位保存
+extern uint16_t ImgProcAnalyze(byte imgBuf[IMG_ROW][IMG_COL]);
+extern void ImgProcInit(void); //修改了函数名
+
+MainProc:
+static void MainInit(void); //来自Main，下同
+static void NVICInit(void);
+static void TimerInit(void);
+extern void MainProc(void); //写了简单的实现
+
+Main:
+//文件名首字母改为大写，三个工具函数均移动到了MainProc
+
+SpeedControl:
+extern void SpeedControlInit(); //初始化了目标速度，即新定义的两个宏
+static int16_t SpeedControlPID(PID pid); //因目标也在PID结构体中了，故去除target参数；改为本地函数
+static void SpeedControlFilter(int16_t newValue, PID pid); //修改了参数名；改为本地函数
+extern void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed, uint16_t imgProcFlag); //考虑到模块的低耦合，故以三个参数的形式传入
+
+DirectionControl:
+extern PID dirPid;
+static int16_t DirectionControlPID(PID pid); //同理
+extern void DirectionControlProc(uint16_t imgProcFlag); //同理
+
+6.备注
+目前控制相关的架构设计都只是暂时的，未来充满了不确定性，为使其更加适应实际的控制，须尽快进入图像分析的环节，方便我改进架构。
+
+2016.12.22 Irony
+
+ver 0.21 无关紧要的改动
+
+1.修改的文件名
+user:
+Switch.h --> Config.h
+//模仿操作系统代码架构，语义更贴合
+
+2.修改的宏名
+user:
+Config:
+SPEED_CONTROL_MODULE
+xDIRECTION_CONTROL_MODULE
+//使用到该宏的地方也都修改了
+
+3.修改的变量名
+user:
+Typedef:
+typedef struct _PID {
+    int16_t currentValue;
+    int16_t valueBuf[SPEED_BUF_SIZE];
+    uint8_t cursor; //改为全称，以完全和current作区分
+    int16_t targetValue;
+    double kp;
+    double ki;
+    double kd;
+    int16_t lastError;
+    int16_t prevError;
+    double output;
+}
+PID;
+//所有出现过该变量的地方都修改了，在SpeedControl.c的SpeedControlFilter函数中
+
+4.修复的编译错误
+Devices:
+Motor:
+MOTOR_STOP MotorOut(0, 0) //之前的版本名字错误
+
+5.修改的函数
+Devices:
+Motor:
+extern void MotorInit(void); //结尾添加MOTOR_STOP
+
+6.备注
+下一项全新工作，不出意外的话，应该是CmdInterpret命令解释功能。
+
+2017.1.16 Irony
+
+ver 0.22 因为硬件没有跟上，所以依旧是无关紧要的改动
+
+1.添加的文件
+user:
+ModeSwitch.h ModeSwitch.c //用于工作模式切换
+
+2.添加的宏参数和数据结构
+user:
+
+Param:
+IMG_READ_DELAY 100 //标准化的忽略实际图像左右边界的程度。使用到的地方也修改了
+
+Typedef:
+NUMBER_OF_MODES 16
+typedef void (*mode_feature)(void);
+typedef mode_feature mode_feature_array[NUMBER_OF_MODES]; //模式切换行为数组，最大支持16种模式
+
+Config:
+MOTOR_ON
+ENCODER_ON
+IMG_TRANS_ON
+xSTATE_TRANS_ON
+xMODE_SWITCH_ON
+USE_LPTMR //电机和舵机频率有冲突，故提供lptmr接口为默认配置，作为ftm正交解码的替代
+
+3.添加的函数和变量
+user:
+
+ModeSwitch:
+static void Mode0(void);
+static void Mode1(void);
+static void Mode2(void);
+static void Mode3(void);
+static void Mode4(void);
+extern void ModeSelect(void);
+
+static mode_feature_array mode_ptr = { Mode0, Mode1, Mode2, Mode3, Mode4, NULL };
+
+//预定义了5个模式，对拨码开关进行二进制编码
+
+4.修改的函数
+devices:
+Encoder:
+extern void EncoderInit(void);
+extern void EncoderGet(int16_t* left, int16_t* right); //根据USE_LPTMR配置做不同实现
+
+user:
+
+MainProc:
+extern void MainInit(void); //给几乎每个模块的初始化都添加了相应的配置开关
+
+DataComm:
+extern void ImgTrans(byte imgBuf[IMG_ROW][IMG_COL]); //黑白颠倒
+
+Main:
+extern int main(void); //添加了两个传输配置开关
+
+5.备注
+MODE_SWITCH_READ ((PBin(MODE_SWITCH_PIN4) << 3u)\
+                  & (PBin(MODE_SWITCH_PIN3) << 2u)\
+                  & (PBin(MODE_SWITCH_PIN2) << 1u)\
+                  & (PBin(MODE_SWITCH_PIN1)))
+见3，此宏函数返回拨码开关的二进制编码
+
+2017.1.17 Irony
+
+ver 0.25 架构有些微改变
+
+1.添加和修改的宏参数和数据结构
+user:
+
+Config:
+xUSE_INC_PID //增量/位置式PID选择，现在默认是位置式的
+
+TypeDef:
+typedef struct _PID {
+    int16_t currentValue;
+    int16_t valueBuf[SPEED_BUF_SIZE];
+    uint8_t cursor;
+    int16_t targetValue;
+    double kp;
+    double ki;
+    double kd;
+    int16_t lastError;
+    #ifdef USE_INC_PID
+        int16_t prevError; //根据增量/位置式PID选择，有不同的PID结构体
+    #else
+        int16_t sumError;
+    #endif
+    double output;
+}
+PID;
+
+NUMBER_OF_MODES 16
+typedef void (*mode_type)(void); //改了名字，与新定义的函数指针类型命名格式保持一致
+typedef mode_type mode_type_array[NUMBER_OF_MODES];
+
+NUMBER_OF_IMG_PROC IMG_ROW_INTV //图像处理函数的数量与取样间隔数一致
+typedef void (*img_proc_type)(byte[IMG_ROW][IMG_COL], uint16_t*, int16_t*);
+typedef img_proc_type img_proc_type_array[NUMBER_OF_IMG_PROC];
+
+Param:
+SOMETHING1  0x0001 //图像分析的位消息模板，添加新的消息时更改名字即可
+SOMETHING2  0x0002
+SOMETHING3  0x0004
+SOMETHING4  0x0008
+SOMETHING5  0x0010
+SOMETHING6  0x0020
+SOMETHING7  0x0040
+SOMETHING8  0x0080
+//...
+
+2.添加、删除和修改的函数和变量
+user:
+
+ImgProc:
+static void ImgProc0(byte imgBuf[IMG_ROW][IMG_COL], uint16_t* imgProcFlag, int16_t* dirError);
+static void ImgProc1(byte imgBuf[IMG_ROW][IMG_COL], uint16_t* imgProcFlag, int16_t* dirError);
+static void ImgProc2(byte imgBuf[IMG_ROW][IMG_COL], uint16_t* imgProcFlag, int16_t* dirError);
+static void ImgProc3(byte imgBuf[IMG_ROW][IMG_COL], uint16_t* imgProcFlag, int16_t* dirError);
+static void ImgProc4(byte imgBuf[IMG_ROW][IMG_COL], uint16_t* imgProcFlag, int16_t* dirError);
+//上面提到的图像处理函数
+static void ImgProcHREF(uint32_t pinxArray); //图像分析函数的调用使用标准化的函数指针数组
+static void ImgProcVSYN(uint32_t pinxArray); //把DirectionControlProc移过来了
+//删除了ImgProcAnalyze函数
+
+static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2, ImgProc3, ImgProc4 };
+//图像分析函数指针数组
+
+MainProc:
+static void MainProc(void); //把DirectionControlProc移走了
+
+SpeedControl:
+static int16_t SpeedControlPID(PID pid); //现在有增量/位置式两种PID的实现，根据配置选择
+static void SpeedControlFilter(int16_t newValue, PID* pid); //这里修复一个bug，传PID指针
+
+DirectionControl:
+extern void DirectionControlProc(uint16_t imgProcFlag, int16_t dirError);
+//新参数为由图像分析得出的方向偏差
+
+ModeSwitch:
+static mode_type_array mode = { Mode0, Mode1, Mode2, Mode3, Mode4, NULL }; //改了名字
+
+3.备注
+这次的需求有点模糊，所以处理得也有点模糊
+
+2017.1.18 Irony
+
+ver 0.26 图像处理架构微调
+
+1.添加和修改的宏参数和数据结构
+user:
+
+Typedef:
+NUMBER_OF_IMG_PROC IMG_ROW_INTV
+IMG_PROC_VISUAL_FIELD 5
+
+typedef void (*img_proc_type)(void);
+//因为参数模板不好确定，干脆就暂且使用全局变量了，以此定义的函数也相应修改了
+typedef img_proc_type img_proc_type_array[NUMBER_OF_IMG_PROC];
+
+typedef struct _IMG_PROC_RESULT_SET {
+    int16_t border[IMG_PROC_VISUAL_FIELD][2]; //行的左边界和右边界
+    int16_t cursor;
+    int16_t slope; //斜率
+}
+IMG_PROC_RESULT_SET;
+//图像处理结果集
+
+2.添加和修改的函数和变量
+static void ImgProcSummary(void); //场中断中加入的图像处理总结
+static void ImgProcBorderPush(int16_t border[2]); //推入新的行左右边界
+static const int16_t* ImgProcBorderPop(int8_t relaPosition);
+//追溯前relaPosition行的左右边界，实现将relaPosition归一化到-4~0之间，确保调用一定是安全的
+
+static IMG_PROC_RESULT_SET resultSet; //结果集实例
