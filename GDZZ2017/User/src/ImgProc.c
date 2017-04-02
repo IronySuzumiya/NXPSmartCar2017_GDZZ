@@ -35,9 +35,10 @@ static void ImgProcVSYN(uint32_t pinxArray);
 static void ImgProc0(void);
 static void ImgProc1(void);
 static void ImgProc2(void);
+static void ImgProc3(void);
 static void ImgProcSummary(void);
 
-static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2 };
+static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2 ,ImgProc3 };
 
 #ifdef USE_BMP
 inline void SetImgBufAsBitMap(int16_t row, int16_t col) {
@@ -104,7 +105,7 @@ void ImgProc0() {
     #else
         for(i = IMG_COL - 1; i >= 0; i--) {
             imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
-            __ASM("nop");__ASM("nop");
+//            __ASM("nop");__ASM("nop");
         }
     #endif
 }
@@ -112,13 +113,15 @@ void ImgProc0() {
 void ImgProc1() {
     resultSet.foundLeftBorder[imgBufRow] = LeftBorderSearch(imgBufRow);
     resultSet.foundRightBorder[imgBufRow] = RightBorderSearch(imgBufRow);
+}
+
+void ImgProc2() {
     if(resultSet.foundLeftBorder[imgBufRow] && resultSet.foundRightBorder[imgBufRow]) {
         ++resultSet.foundBorderCnt;
     }
     MiddleLineUpdate(imgBufRow);
 }
-
-void ImgProc2() {
+void ImgProc3() {
     MiddleLineRangeUpdate(imgBufRow);
     imgBufRow++;
 }
@@ -127,12 +130,12 @@ void ImgProcSummary() {
     StartLineJudge(pre_sight - 10);
     StraightRoadJudge(resultSet.middleLine);
     MiniSJudge(resultSet.middleLine, resultSet.middleLineMinRow, resultSet.middleLineMaxRow);
-    if(resultSet.imgProcFlag & (MINI_S)) {
-        BUZZLE_ON;
-    } else {
-        BUZZLE_OFF;
-//        CurveJudge(pre_sight);
-    }
+//    if(resultSet.imgProcFlag & (MINI_S)) {
+//        BUZZLE_ON;
+//    } else {
+//        BUZZLE_OFF;
+////        CurveJudge(pre_sight);
+//    }
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine);
     }

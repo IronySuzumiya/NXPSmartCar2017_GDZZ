@@ -11,9 +11,9 @@
 #define  PIT_PRD  5000
 
 //Camera
-#define  IMG_ABDN_ROW    101
-#define  IMG_ROW_INTV    3
-#define  IMG_READ_DELAY  100 //170 for 8 nops
+#define  IMG_ABDN_ROW    47
+#define  IMG_ROW_INTV    4
+#define  IMG_READ_DELAY  135 //170 for 8 nops
 
 //Image Proc Bit Map Relative
 /* byte is 8 (2^3) bits */

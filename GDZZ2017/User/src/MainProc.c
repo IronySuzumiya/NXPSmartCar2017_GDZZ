@@ -53,16 +53,14 @@ void TimerInit() {
 }
 
 void MainProc() {
-    //It takes time to decide that pass params in this way, making each module more low-coupling
     EncoderGet(&leftSpeed, &rightSpeed);
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
     }
-    //Direction Control has been moved to ImgProcVSYN
 }
 
 static void SwitchAndParamLoad(void) {
-    #warning "All these var should load from the SD Card in the future!"
+    #warning "All these variables should be loaded from SD Card in the future!"
     motor_on = true;
     encoder_on = true;
     speed_control_on = true;

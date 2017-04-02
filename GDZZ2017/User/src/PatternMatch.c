@@ -27,7 +27,7 @@ void StraightRoadJudge(int16_t* middleLine) {
 }
 
 void MiniSJudge(int16_t* middleLine, int16_t minRow, int16_t maxRow) {
-    int16_t cnt = 0;
+//    int16_t cnt = 0;
     if(middleLine[maxRow] - middleLine[minRow] < mini_s_sensitivity 
         && middleLine[maxRow] - middleLine[minRow] > 18
         && middleLine[maxRow] < IMG_COL / 2 + 30
