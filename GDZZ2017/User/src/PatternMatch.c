@@ -28,23 +28,18 @@ void StraightRoadJudge(int16_t* middleLine) {
 
 void MiniSJudge(int16_t* middleLine, int16_t minRow, int16_t maxRow) {
     int16_t cnt = 0;
-    if(middleLine[maxRow] - middleLine[minRow] < mini_s_sensitivity
+    if(middleLine[maxRow] - middleLine[minRow] < mini_s_sensitivity 
+        && middleLine[maxRow] - middleLine[minRow] > 18
         && middleLine[maxRow] < IMG_COL / 2 + 30
-        && middleLine[minRow] > IMG_COL / 2 - 30) {
-        for(int16_t i = mini_s_visual_field; i < IMG_ROW; ++i) {
-            if(middleLine[i] >= middleLine[minRow] - 10 && middleLine[i] <= middleLine[maxRow] + 10) {
-                ++cnt;
-            }
-        }
-        if(cnt > (IMG_ROW - mini_s_visual_field) * 2 / 3) {
-            resultSet.imgProcFlag |= MINI_S;
-            pre_sight = 47;
-            //MiniSCompensate(resultSet.middleLine);
-        } else {
-            pre_sight = 25;
-        }
+        && middleLine[minRow] > IMG_COL / 2 - 30
+        && resultSet.foundBorderCnt > 45
+        && (!imgBuf[IMG_ROW - 1][IMG_COL / 2] || !imgBuf[IMG_ROW - 2][IMG_COL / 2])) {
+        
+        resultSet.imgProcFlag |= MINI_S;
+        pre_sight = 47;
+        //MiniSCompensate(resultSet.middleLine);
     } else {
-        pre_sight = 25;
+        pre_sight = 20;
     }
 }
 

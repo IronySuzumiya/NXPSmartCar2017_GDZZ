@@ -79,6 +79,7 @@ void ImgProcVSYN(uint32_t pinxArray) {
     ImgProcSummary();
     imgRealRow = 0;
     imgBufRow = 0;
+    resultSet.foundBorderCnt = 0;
     resultSet.imgProcFlag = 0;
     resultSet.middleLineMaxRow = 0;
     resultSet.middleLineMinRow = 0;
@@ -103,8 +104,7 @@ void ImgProc0() {
     #else
         for(i = IMG_COL - 1; i >= 0; i--) {
             imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
-            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
-            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+            __ASM("nop");__ASM("nop");
         }
     #endif
 }
@@ -112,6 +112,9 @@ void ImgProc0() {
 void ImgProc1() {
     resultSet.foundLeftBorder[imgBufRow] = LeftBorderSearch(imgBufRow);
     resultSet.foundRightBorder[imgBufRow] = RightBorderSearch(imgBufRow);
+    if(resultSet.foundLeftBorder[imgBufRow] && resultSet.foundRightBorder[imgBufRow]) {
+        ++resultSet.foundBorderCnt;
+    }
     MiddleLineUpdate(imgBufRow);
 }
 

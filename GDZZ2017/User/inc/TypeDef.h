@@ -49,6 +49,7 @@ typedef struct _img_proc_result_set_type {
     int16_t middleLineMaxRow;
     int16_t middleLineMinRow;
     uint16_t imgProcFlag;
+    int16_t foundBorderCnt;
 }
 img_proc_result_set_type;
 

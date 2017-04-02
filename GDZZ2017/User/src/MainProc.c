@@ -75,7 +75,7 @@ static void SwitchAndParamLoad(void) {
     use_ftm_qd = false;
     double_car = false;
     
-    speed_control_speed = 120;
+    speed_control_speed = 100;
     speed_control_sum_err_max = 1000;
     
     speed_control_acc_speed = 90;
@@ -94,7 +94,7 @@ static void SwitchAndParamLoad(void) {
     steer_actuator_middle = 448;
     steer_actuator_left = 520;
     
-    pre_sight = 25;
+    pre_sight = 20;
     
     img_border_scan_compensation = 15;
     wide_road_size = 80;

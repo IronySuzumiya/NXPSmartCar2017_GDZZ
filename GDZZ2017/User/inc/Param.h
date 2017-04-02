@@ -11,7 +11,7 @@
 #define  PIT_PRD  5000
 
 //Camera
-#define  IMG_ABDN_ROW    20
+#define  IMG_ABDN_ROW    101
 #define  IMG_ROW_INTV    3
 #define  IMG_READ_DELAY  100 //170 for 8 nops
 

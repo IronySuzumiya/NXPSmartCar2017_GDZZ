@@ -39,7 +39,7 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
         current_speed = speed_control_speed;
     }
     
-    if(imgProcFlag & (STRAIGHT_ROAD)) {
+    if(imgProcFlag & (STRAIGHT_ROAD | MINI_S)) {
         leftPid.targetValue = rightPid.targetValue = current_speed;//current_speed;
     } else {
         leftPid.targetValue = current_speed * speed_control_curves_speed_gain
