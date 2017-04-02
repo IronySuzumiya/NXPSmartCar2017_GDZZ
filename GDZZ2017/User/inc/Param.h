@@ -13,7 +13,7 @@
 //Camera
 #define  IMG_ABDN_ROW    20
 #define  IMG_ROW_INTV    3
-#define  IMG_READ_DELAY  100 //170 for 8 nop
+#define  IMG_READ_DELAY  100 //170 for 8 nops
 
 //Image Proc Bit Map Relative
 /* byte is 8 (2^3) bits */
@@ -39,7 +39,7 @@
 
 //Double Car Relative
 #define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1
-#define  ULTRA_SONIC_TIMER_PRD  50000 //non_sense
+#define  ULTRA_SONIC_TIMER_PRD  50000
 #define  TIMER_INIT_COUNT       2349993uL
 #define  AVG_DISTANCE_BETWEEN   100
 #define  DIFF_DISTANCE_MAX      20

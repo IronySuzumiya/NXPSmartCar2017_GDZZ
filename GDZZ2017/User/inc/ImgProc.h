@@ -4,11 +4,16 @@
 #include "root.h"
 
 void ImgProcInit(void);
+#ifdef USE_BMP
 void SetImgBufAsBitMap(int16_t row, int16_t col);
 void ClrImgBufAsBitMap(int16_t row, int16_t col);
 bool TstImgBufAsBitMap(int16_t row, int16_t col);
-
 extern byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
+#else
+#define TstImgBufAsBitMap(row, col) (imgBuf[row][col])
+extern byte imgBuf[IMG_ROW][IMG_COL];
+#endif
+
 extern int16_t dirError;
 extern bool direction_control_on;
 extern int16_t pre_sight;

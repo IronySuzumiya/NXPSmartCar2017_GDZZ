@@ -3,4 +3,6 @@
 
 #define xDEBUG_ON
 
+#define xUSE_BMP
+
 #endif

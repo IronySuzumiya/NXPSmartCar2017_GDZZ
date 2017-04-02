@@ -5,7 +5,11 @@
 #include "ImgUtility.h"
 #include "DataComm.h"
 
+#ifdef USE_BMP
 byte imgBuf[IMG_ROW][1 + IMG_COL / 8]; // Important extra 1 byte against overflow
+#else
+byte imgBuf[IMG_ROW][IMG_COL];
+#endif
 int16_t dirError;
 bool direction_control_on;
 int16_t pre_sight;
@@ -35,6 +39,7 @@ static void ImgProcSummary(void);
 
 static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2 };
 
+#ifdef USE_BMP
 inline void SetImgBufAsBitMap(int16_t row, int16_t col) {
     imgBuf[row][col >> SHIFT] |= (1 << (col & MASK));
 }
@@ -46,6 +51,7 @@ inline void ClrImgBufAsBitMap(int16_t row, int16_t col) {
 inline bool TstImgBufAsBitMap(int16_t row, int16_t col) {
     return imgBuf[row][col >> SHIFT] & (1 << (col & MASK));
 }
+#endif
 
 void ImgProcInit(void) {
     GPIO_QuickInit(CAMERA_HREF_PORT, CAMERA_HREF_PIN, kGPIO_Mode_IPU);
@@ -80,19 +86,27 @@ void ImgProcVSYN(uint32_t pinxArray) {
 
 void ImgProc0() {
     int16_t i;
-    static byte tmpBuf[IMG_COL]; //cache
-    for(i = 0; i <= IMG_READ_DELAY; i++); //ignore points near the border
-    for(i = IMG_COL - 1; i >= 0; i--) {
-        tmpBuf[i] = CAMERA_DATA_READ;
-        __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
-        __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
-    }
-    for(i = IMG_COL - 1; i >= 0; i--) {
-        if(tmpBuf[i])
-            SetImgBufAsBitMap(imgBufRow, i);
-        else
-            ClrImgBufAsBitMap(imgBufRow, i);
-    }
+    for(i = 0; i <= IMG_READ_DELAY; i++) { } //ignore points near the border
+    #ifdef USE_BMP
+        static byte tmpBuf[IMG_COL]; //cache
+        for(i = IMG_COL - 1; i >= 0; i--) {
+            tmpBuf[i] = CAMERA_DATA_READ;
+            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+        }
+        for(i = IMG_COL - 1; i >= 0; i--) {
+            if(tmpBuf[i])
+                SetImgBufAsBitMap(imgBufRow, i);
+            else
+                ClrImgBufAsBitMap(imgBufRow, i);
+        }
+    #else
+        for(i = IMG_COL - 1; i >= 0; i--) {
+            imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
+            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+        }
+    #endif
 }
 
 void ImgProc1() {
