@@ -52,7 +52,7 @@ void MiddleLineUpdate(int16_t row) {
 }
 
 void MiddleLineRangeUpdate(int16_t row) {
-    if(row < mini_s_visual_field) {
+    if(row > 4 && row < mini_s_visual_field) {
         if(resultSet.middleLine[row] < resultSet.middleLine[resultSet.middleLineMinRow]) {
             resultSet.middleLineMinRow = row;
         } else if(resultSet.middleLine[row] > resultSet.middleLine[resultSet.middleLineMaxRow]) {

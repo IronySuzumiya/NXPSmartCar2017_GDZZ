@@ -79,7 +79,6 @@ void ReturnParam() {
         "%s %lf\r\n"    "%s %lf\r\n"    "%s %lf\r\n"
         "%s %d\r\n"     "%s %d\r\n"     "%s %d\r\n"
         "%s %d\r\n"     "%s %d\r\n"     "%s %d\r\n"
-    
         "%s %d\r\n"     "%s %d\r\n"     "%s %d\r\n"
         "%s %d\r\n"     "%s %d\r\n"     "%s %d\r\n"
         "%s %d\r\n"     "%s %d\r\n"     "%s %f\r\n"

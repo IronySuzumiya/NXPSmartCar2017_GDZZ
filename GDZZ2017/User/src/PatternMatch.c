@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "uart.h"
 
-static void MiniSCompensate(int16_t* middleLine);
+//static void MiniSCompensate(int16_t* middleLine);
 
 void CrossRoadJudge(int16_t row) {
     if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > cross_road_size && row >= slope_sensitivity) {
@@ -29,8 +29,8 @@ void StraightRoadJudge(int16_t* middleLine) {
 void MiniSJudge(int16_t* middleLine, int16_t minRow, int16_t maxRow) {
     int16_t cnt = 0;
     if(middleLine[maxRow] - middleLine[minRow] < mini_s_sensitivity
-        && middleLine[maxRow] < IMG_COL / 2 + 50
-        && middleLine[minRow] > IMG_COL / 2 - 50) {
+        && middleLine[maxRow] < IMG_COL / 2 + 30
+        && middleLine[minRow] > IMG_COL / 2 - 30) {
         for(int16_t i = mini_s_visual_field; i < IMG_ROW; ++i) {
             if(middleLine[i] >= middleLine[minRow] - 10 && middleLine[i] <= middleLine[maxRow] + 10) {
                 ++cnt;
@@ -38,21 +38,27 @@ void MiniSJudge(int16_t* middleLine, int16_t minRow, int16_t maxRow) {
         }
         if(cnt > (IMG_ROW - mini_s_visual_field) * 2 / 3) {
             resultSet.imgProcFlag |= MINI_S;
-            MiniSCompensate(resultSet.middleLine);
+            pre_sight = 47;
+            //MiniSCompensate(resultSet.middleLine);
+        } else {
+            pre_sight = 25;
         }
+    } else {
+        pre_sight = 25;
     }
 }
 
-void MiniSCompensate(int16_t* middleLine) {
+//void MiniSCompensate(int16_t* middleLine) {
 //    int16_t avgMiddleLine = 0;
 //    for(int16_t i = 0; i < IMG_ROW; ++i) {
 //        avgMiddleLine += middleLine[i];
 //    }
 //    avgMiddleLine /= IMG_ROW;
-    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity + 2; ++i) {
-        middleLine[i] = IMG_COL / 2;
-    }
-}
+//    avgMiddleLine = (avgMiddleLine + middleLine[IMG_ROW - 1] + middleLine[IMG_ROW - 2]) / 3;
+//    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity + 2; ++i) {
+//        middleLine[i] = avgMiddleLine;
+//    }
+//}
 
 void StartLineJudge(int16_t row) {
     int16_t toggleCnt = 0;

@@ -13,7 +13,7 @@
 //Camera
 #define  IMG_ABDN_ROW    20
 #define  IMG_ROW_INTV    3
-#define  IMG_READ_DELAY  170
+#define  IMG_READ_DELAY  100 //170 for 8 nop
 
 //Image Proc Bit Map Relative
 /* byte is 8 (2^3) bits */

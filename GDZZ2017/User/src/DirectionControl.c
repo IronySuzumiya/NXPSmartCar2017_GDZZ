@@ -18,10 +18,10 @@ void DirectionControlProc(int16_t* middleLine) {
 
 int16_t DirectionErrorGet(int16_t* middleLine) {
     float avgMiddle = 0;
-    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity + 2; ++i) {
+    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity; ++i) {
         avgMiddle += middleLine[i];
     }
-    avgMiddle /= slope_sensitivity * 2 + 2;
+    avgMiddle /= slope_sensitivity * 2;
     return IMG_COL / 2 - avgMiddle;
 }
 

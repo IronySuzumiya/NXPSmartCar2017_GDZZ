@@ -71,10 +71,11 @@ static void SwitchAndParamLoad(void) {
     img_trans_on = true;
     state_trans_on = false;
     mode_switch_on = false;
-    use_inc_pid = true;
+    use_inc_pid = false;
     use_ftm_qd = false;
+    double_car = false;
     
-    speed_control_speed = 110;
+    speed_control_speed = 120;
     speed_control_sum_err_max = 1000;
     
     speed_control_acc_speed = 90;
@@ -82,12 +83,12 @@ static void SwitchAndParamLoad(void) {
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
-    leftPid.kp = 220;
-    leftPid.ki = 0.1;
-    leftPid.kd = 5;
-    rightPid.kp = 160;
-    rightPid.ki = 0.1;
-    rightPid.kd = 5;
+    leftPid.kp = 120;
+    leftPid.ki = 20;
+    leftPid.kd = 15;
+    rightPid.kp = 120;
+    rightPid.ki = 20;
+    rightPid.kd = 15;
     
     steer_actuator_right = 370;
     steer_actuator_middle = 448;
@@ -98,7 +99,7 @@ static void SwitchAndParamLoad(void) {
     img_border_scan_compensation = 15;
     wide_road_size = 80;
     curve_sensitivity = 5;
-    slope_sensitivity = 4;
+    slope_sensitivity = 3;
     inflexion_sensitivity = 2;
     cross_road_size = 200;
     straight_road_sensitivity = 10;

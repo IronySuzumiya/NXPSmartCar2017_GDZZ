@@ -11,5 +11,6 @@ void DoubleCarMessageRecv(uint16_t byte);
 extern float distance;
 extern uint32_t time;
 extern bool front_car;
+extern bool double_car;
 
 #endif

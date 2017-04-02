@@ -27,20 +27,24 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 }
 
 void SpeedTargetSet(uint16_t imgProcFlag) {
-//    if(distance > AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX) {
-//        current_speed = speed_control_acc_speed;
-//    } else if(distance < AVG_DISTANCE_BETWEEN - DIFF_DISTANCE_MAX) {
-//        current_speed = speed_control_dec_speed;
-//    } else {
-//        current_speed = speed_control_speed;
-//    }
-    
-    if(imgProcFlag & (STRAIGHT_ROAD | MINI_S)) {
-        leftPid.targetValue = rightPid.targetValue = speed_control_speed;//current_speed;
+    if(double_car) {
+        if(distance > AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX) {
+            current_speed = speed_control_acc_speed;
+        } else if(distance < AVG_DISTANCE_BETWEEN - DIFF_DISTANCE_MAX) {
+            current_speed = speed_control_dec_speed;
+        } else {
+            current_speed = speed_control_speed;
+        }
     } else {
-        leftPid.targetValue = speed_control_speed * speed_control_curves_speed_gain
+        current_speed = speed_control_speed;
+    }
+    
+    if(imgProcFlag & (STRAIGHT_ROAD)) {
+        leftPid.targetValue = rightPid.targetValue = current_speed;//current_speed;
+    } else {
+        leftPid.targetValue = current_speed * speed_control_curves_speed_gain
             * (speed_control_curves_differential_gain * (-directionAngle) + 1);
-        rightPid.targetValue = speed_control_speed * speed_control_curves_speed_gain
+        rightPid.targetValue = current_speed * speed_control_curves_speed_gain
             * (speed_control_curves_differential_gain * directionAngle + 1);
     }
 }

@@ -6,12 +6,13 @@
 float distance;
 uint32_t time;
 bool front_car;
+bool double_car;
 
-static ultra_sonic_time_queue_type timeQueue;
+//static ultra_sonic_time_queue_type timeQueue;
 
 static void UltraSonicRecvInt(uint32_t pinxArray);
-static void UltraSonicTimeQueuePush(uint32_t time);
-static float UltraSonicTimeQueueGetAvg(void);
+//static void UltraSonicTimeQueuePush(uint32_t time);
+//static float UltraSonicTimeQueueGetAvg(void);
 
 void DoubleCarRelativeInit() {
     GPIO_QuickInit(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_Mode_IPU);
@@ -27,12 +28,7 @@ void UltraSonicRecvInt(uint32_t pinxArray) {
         PIT_ResetCounter(ULTRA_SONIC_TIMER_CHL);
     } else {
         time = (TIMER_INIT_COUNT - PIT_GetCounterValue(ULTRA_SONIC_TIMER_CHL)) / (TIMER_INIT_COUNT / ULTRA_SONIC_TIMER_PRD);
-        #ifdef USE_AVG_DISTANCE
-        UltraSonicTimeQueuePush(time);
-        distance = CalculateDistanceWithTime(UltraSonicTimeQueueGetAvg());
-        #else
         distance = CalculateDistanceWithTime(time);
-        #endif
         PIT_ResetCounter(ULTRA_SONIC_TIMER_CHL);
     }
 }
@@ -49,19 +45,19 @@ void DoubleCarMessageRecv(uint16_t byte) {
     }
 }
 
-void UltraSonicTimeQueuePush(uint32_t time) {
-    timeQueue.valueBuf[timeQueue.cursor] = time;
-    timeQueue.cursor++;
-    if(timeQueue.cursor >= ULTRA_SONIC_TIME_QUEUE_LENGTH) {
-        timeQueue.cursor = 0;
-    }
-}
+//void UltraSonicTimeQueuePush(uint32_t time) {
+//    timeQueue.valueBuf[timeQueue.cursor] = time;
+//    timeQueue.cursor++;
+//    if(timeQueue.cursor >= ULTRA_SONIC_TIME_QUEUE_LENGTH) {
+//        timeQueue.cursor = 0;
+//    }
+//}
 
-float UltraSonicTimeQueueGetAvg(void) {
-    float avgTime = 0;
-    for(int16_t i = 0; i < ULTRA_SONIC_TIME_QUEUE_LENGTH; ++i) {
-        avgTime += timeQueue.valueBuf[i];
-    }
-    avgTime /= ULTRA_SONIC_TIME_QUEUE_LENGTH;
-    return avgTime;
-}
+//float UltraSonicTimeQueueGetAvg(void) {
+//    float avgTime = 0;
+//    for(int16_t i = 0; i < ULTRA_SONIC_TIME_QUEUE_LENGTH; ++i) {
+//        avgTime += timeQueue.valueBuf[i];
+//    }
+//    avgTime /= ULTRA_SONIC_TIME_QUEUE_LENGTH;
+//    return avgTime;
+//}

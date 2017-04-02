@@ -84,7 +84,8 @@ void ImgProc0() {
     for(i = 0; i <= IMG_READ_DELAY; i++); //ignore points near the border
     for(i = IMG_COL - 1; i >= 0; i--) {
         tmpBuf[i] = CAMERA_DATA_READ;
-        __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+        __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
+        __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
     }
     for(i = IMG_COL - 1; i >= 0; i--) {
         if(tmpBuf[i])
@@ -109,7 +110,7 @@ void ImgProcSummary() {
     StartLineJudge(pre_sight - 10);
     StraightRoadJudge(resultSet.middleLine);
     MiniSJudge(resultSet.middleLine, resultSet.middleLineMinRow, resultSet.middleLineMaxRow);
-    if(resultSet.imgProcFlag & (START_LINE | MINI_S)) {
+    if(resultSet.imgProcFlag & (MINI_S)) {
         BUZZLE_ON;
     } else {
         BUZZLE_OFF;
