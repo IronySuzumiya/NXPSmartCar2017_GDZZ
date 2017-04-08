@@ -3,9 +3,8 @@
 
 #include "root.h"
 
-bool LeftBorderSearch(int16_t row);
-bool RightBorderSearch(int16_t row);
+bool LeftBorderSearchFrom(int16_t row, int16_t startIndex);
+bool RightBorderSearchFrom(int16_t row, int16_t startIndex);
 void MiddleLineUpdate(int16_t row);
-void MiddleLineRangeUpdate(int16_t row);
 
 #endif

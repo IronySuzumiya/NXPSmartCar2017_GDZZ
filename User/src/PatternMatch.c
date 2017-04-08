@@ -1,61 +1,235 @@
 #include "PatternMatch.h"
+#include "ImgUtility.h"
 #include "ImgProc.h"
 #include "stdio.h"
 #include "uart.h"
 
-//static void MiniSCompensate(int16_t* middleLine);
+static bool IsRing(void);
+static bool IsCurve(void);
+static bool IsCrossRoad(void);
+static inline float Abs(float);
+static inline float Min(float, float);
+static inline float Max(float ,float);
 
-void CrossRoadJudge(int16_t row) {
-    if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > cross_road_size && row >= slope_sensitivity) {
-        resultSet.leftBorder[row] = row * resultSet.leftSlope[row - 1] + resultSet.leftZero[row - 1];
-        resultSet.rightBorder[row] = row * resultSet.rightSlope[row - 1] + resultSet.rightZero[row - 1];
-        resultSet.imgProcFlag |= CROSS_ROAD;
-        resultSet.middleLine[row] = (resultSet.leftBorder[row] + resultSet.rightBorder[row]) / 2;
-    }
+road_type_type GetRoadType() {
+    return IsRing() ? Ring :
+        IsCurve() ? Curve :
+        IsCrossRoad() ? CrossRoad :
+        Unknown;
 }
 
-void StraightRoadJudge(int16_t* middleLine) {
-    int16_t middleAreaCnt = 0;
-    for(int16_t i = 0; i < IMG_ROW; ++i) {
-        if(middleLine[i] > IMG_COL / 2 - straight_road_sensitivity && middleLine[i] < IMG_COL / 2 + straight_road_sensitivity) {
-            middleAreaCnt++;
+bool IsRing() {
+    int blackBlockRowsCnt = 0;
+    for(int row = IMG_ROW - 1; row >= 30; --row)
+    {
+        if(IsWhite(row, IMG_COL / 2))
+        {
+            continue;
+        }
+        bool blackBlockLeftBorderFound = false;
+        for(int col = IMG_COL / 2 - 1; row >= 0; --col)
+        {
+            if(IsWhite(row, col))
+            {
+                if (col < IMG_COL / 2 - 10)
+                {
+                    blackBlockLeftBorderFound = true;
+                    break;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        if(!blackBlockLeftBorderFound)
+        {
+            continue;
+        }
+        for (int col = IMG_COL / 2 + 1; col < IMG_COL; ++col)
+        {
+            if (IsWhite(row, col))
+            {
+                if (col > IMG_COL / 2 + 10)
+                {
+                    ++blackBlockRowsCnt;
+                    break;
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
-    if(middleAreaCnt > straight_road_middle_area_cnt_min) {
-        resultSet.imgProcFlag |= STRAIGHT_ROAD;
+    return blackBlockRowsCnt > 10;
+}
+
+bool IsCurve() {
+    int blackCnt = 0;
+    for (int row = IMG_ROW - 1; row >= 40; --row)
+    {
+        if (IsBlack(row, resultSet.middleLine[row]))
+        {
+            ++blackCnt;
+        }
+    }
+    return blackCnt > 5;
+}
+
+bool IsCrossRoad() {
+    return resultSet.leftBorderNotFoundCnt > 3 && resultSet.rightBorderNotFoundCnt > 3
+        && resultSet.leftBorderNotFoundCnt + resultSet.rightBorderNotFoundCnt > 15;
+}
+
+void RingCompensateGoLeft() {
+    int row;
+    for (row = IMG_ROW - 1;
+        row >= 30 && IsWhite(row, IMG_COL / 2); --row) { }
+    for (; row >= 10 && IsBlack(row, IMG_COL / 2); --row) { }
+    int col;
+    for (col = IMG_COL / 2; col >= 0 && IsBlack(row + 1, col); --col) { }
+    for(int i = row; i > 0; --i)
+    {
+        resultSet.rightBorder[i] = col + (row + 1 - i) * (resultSet.rightBorder[0] - col) / row;
+        MiddleLineUpdate(i);
+    }
+    int16_t borderSearchStart = col / 2;
+    for (int i = row; i < IMG_ROW; ++i)
+    {
+        LeftBorderSearchFrom(i, borderSearchStart);
+        RightBorderSearchFrom(i, borderSearchStart);
+        MiddleLineUpdate(i);
+        borderSearchStart = resultSet.middleLine[i];
     }
 }
 
-void MiniSJudge(int16_t* middleLine, int16_t minRow, int16_t maxRow) {
-//    int16_t cnt = 0;
-    if(middleLine[maxRow] - middleLine[minRow] < mini_s_sensitivity 
-        && middleLine[maxRow] - middleLine[minRow] > 18
-        && middleLine[maxRow] < IMG_COL / 2 + 30
-        && middleLine[minRow] > IMG_COL / 2 - 30
-        && resultSet.foundBorderCnt > 45
-        && (!imgBuf[IMG_ROW - 1][IMG_COL / 2] || !imgBuf[IMG_ROW - 2][IMG_COL / 2])) {
-        
-        resultSet.imgProcFlag |= MINI_S;
-        pre_sight = 47;
-        //MiniSCompensate(resultSet.middleLine);
-    } else {
-        pre_sight = 20;
+void RingCompensateGoRight() {
+    int row;
+    for (row = IMG_ROW - 1;
+        row >= 30 && IsWhite(row, IMG_COL / 2); --row) { }
+    for (; row >= 10 && IsBlack(row, IMG_COL / 2); --row) { }
+    int col;
+    for (col = IMG_COL / 2; col < IMG_COL && IsBlack(row + 1, col); ++col) { }
+    for (int i = row; i > 0; --i)
+    {
+        resultSet.leftBorder[i] = col - (row + 1 - i) * (col - resultSet.leftBorder[0]) / row;
+        MiddleLineUpdate(i);
+    }
+    int16_t borderSearchStart = col + (IMG_COL - col) / 2;
+    for (int i = row; i < IMG_ROW; ++i)
+    {
+        LeftBorderSearchFrom(i, borderSearchStart);
+        RightBorderSearchFrom(i, borderSearchStart);
+        MiddleLineUpdate(i);
+        borderSearchStart = resultSet.middleLine[i];
     }
 }
 
-//void MiniSCompensate(int16_t* middleLine) {
-//    int16_t avgMiddleLine = 0;
-//    for(int16_t i = 0; i < IMG_ROW; ++i) {
-//        avgMiddleLine += middleLine[i];
-//    }
-//    avgMiddleLine /= IMG_ROW;
-//    avgMiddleLine = (avgMiddleLine + middleLine[IMG_ROW - 1] + middleLine[IMG_ROW - 2]) / 3;
-//    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity + 2; ++i) {
-//        middleLine[i] = avgMiddleLine;
-//    }
-//}
+void CurveCompensate() {
+    int row;
+    for (row = IMG_ROW - 1; row > 8; --row)
+    {
+        if (IsWhite(row, resultSet.middleLine[row]))
+        {
+            break;
+        }
+    }
+    if (resultSet.leftBorderNotFoundCnt > 6 && resultSet.rightBorderNotFoundCnt < 2)
+    {
+        for (int row_ = IMG_ROW - 1; row_ > row; --row_)
+        {
+            resultSet.middleLine[row_] = 0;
+        }
+        for (int cnt = 0; cnt < 12; ++cnt)
+        {
+            resultSet.middleLine[row - cnt] = cnt * resultSet.middleLine[row - 12] / 12;
+        }
+    }
+    else if (resultSet.rightBorderNotFoundCnt > 6 && resultSet.leftBorderNotFoundCnt < 2)
+    {
+        for (int row_ = IMG_ROW - 1; row_ > row; --row_)
+        {
+            resultSet.middleLine[row_] = IMG_COL - 1;
+        }
+        for (int cnt = 0; cnt < 12; ++cnt)
+        {
+            resultSet.middleLine[row - cnt] = IMG_COL - 1 - cnt * (IMG_COL - 1 - resultSet.middleLine[row - 12]) / 12;
+        }
+    }
+}
 
-void StartLineJudge(int16_t row) {
+void CrossRoadCompensate() {
+    int16_t leftCompensateStart = IMG_ROW - 1;
+    int16_t rightCompensateStart = IMG_ROW - 1;
+    int16_t leftCompensateEnd = IMG_ROW - 1;
+    int16_t rightCompensateEnd = IMG_ROW - 1;
+
+    {
+        int row = 6;
+        while (row < IMG_ROW && resultSet.leftBorder[row] != 0
+            && Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) < 3) { ++row; }
+        leftCompensateStart = row;
+        row += 5;
+        while (row < IMG_ROW
+            && (resultSet.leftBorder[row] == 0 || Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) >= 3)) { ++row; }
+        row += 4;
+        leftCompensateEnd = Min(row, IMG_ROW - 1);
+    }
+
+    {
+        int row = 6;
+        while (row < IMG_ROW && resultSet.rightBorder[row] != IMG_COL - 1
+            && Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) < 3) { ++row; }
+        rightCompensateStart = row;
+        row += 5;
+        while (row < IMG_ROW
+            && (resultSet.rightBorder[row] == IMG_COL - 1 || Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) >= 3)) { ++row; }
+        row += 4;
+        rightCompensateEnd = Min(row, IMG_ROW - 1);
+    }
+
+    for (int row = leftCompensateStart; row < leftCompensateEnd; ++row)
+    {
+        resultSet.leftBorder[row] = row * resultSet.leftSlope[leftCompensateStart - 5] + resultSet.leftZero[leftCompensateStart - 5];
+    }
+
+    for (int row = rightCompensateStart; row < rightCompensateEnd; ++row)
+    {
+        resultSet.rightBorder[row] = row * resultSet.rightSlope[rightCompensateStart - 5] + resultSet.rightZero[rightCompensateStart - 5];
+    }
+
+    int16_t compensateEnd = Max(leftCompensateEnd, rightCompensateEnd);
+
+    int16_t borderSearchStart = (resultSet.leftBorder[compensateEnd - 1] + resultSet.rightBorder[compensateEnd - 1]) / 2;
+    for (int row = compensateEnd; row < IMG_ROW; ++row)
+    {
+        LeftBorderSearchFrom(row, borderSearchStart);
+        RightBorderSearchFrom(row, borderSearchStart);
+        if (Abs((resultSet.rightBorder[row] + resultSet.leftBorder[row]) - (resultSet.rightBorder[row - 1] + resultSet.leftBorder[row - 1])) < 10)
+        {
+            borderSearchStart = (resultSet.rightBorder[row] + resultSet.leftBorder[row]) / 2;
+        }
+    }
+    
+    for(int16_t row = Min(leftCompensateStart, rightCompensateStart); row < IMG_ROW; ++row) {
+        MiddleLineUpdate(row);
+    }
+}
+
+inline float Abs(float input) {
+    return input >= 0 ? input : -input;
+}
+
+inline float Min(float a, float b) {
+    return a > b ? b : a;
+}
+
+inline float Max(float a, float b) {
+    return a > b ? a : b;
+}
+
+bool StartLineJudge(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
     for(int16_t i = row; i >= row - startline_sensitivity; --i) {
@@ -65,8 +239,7 @@ void StartLineJudge(int16_t row) {
                     toggleCnt = 0;
                     ++patternRowCnt;
                     if(patternRowCnt > startline_sensitivity / 2 + 1) {
-                        resultSet.imgProcFlag |= START_LINE;
-                        return;
+                        return true;
                     } else {
                         break;
                     }
@@ -76,64 +249,14 @@ void StartLineJudge(int16_t row) {
             }
         }
     }
+    return false;
 }
 
-void CurveJudge(int16_t row) {
-    int16_t missBorderCnt = 0;
-    uint16_t turnDirection = 0;
-    int16_t begin, end;
-    while(resultSet.foundLeftBorder[row] && resultSet.foundRightBorder[row]) { ++row; }
-    begin = row;
-    for(; row < IMG_ROW; ++row) {
-        if(turnDirection != TURN_RIGHT && !resultSet.foundLeftBorder[row] && resultSet.foundRightBorder[row]) {
-            ++missBorderCnt;
-            turnDirection = TURN_LEFT;
-        } else if(turnDirection != TURN_LEFT && resultSet.foundLeftBorder[row] && !resultSet.foundRightBorder[row]) {
-            ++missBorderCnt;
-            turnDirection = TURN_RIGHT;
-        } else if(missBorderCnt > curve_sensitivity) {
-            end = row;
-            break;
-        } else {
-            missBorderCnt = 0;
+bool StraightLineJudge(void) {
+    for(int16_t row = 4; row < IMG_ROW - 1; ++row) {
+        if(Abs(resultSet.middleSlope[row] - resultSet.middleSlope[row + 1]) > 2) {
+            return false;
         }
     }
-    if(!end) {
-        return;
-    }
-    int16_t diff;
-    int16_t border;
-//    static int16_t cnt = 0;
-//    static char buf[150];
-    if(turnDirection == TURN_LEFT) {
-        border = 0;
-        resultSet.imgProcFlag |= TURN_LEFT;
-    } else {
-        border = IMG_COL - 1;
-        resultSet.imgProcFlag |= TURN_RIGHT;
-    }
-    diff = (border - resultSet.middleLine[begin - 1]) / (end - begin);
-//    if(cnt > 50) {
-//        sprintf(buf, "beginat=%d, endat=%d, beginpos=%d\r\n", begin - 1, end, resultSet.middleLine[begin - 1]);
-//        UART_printf(DATACOMM_IMG_TRANS_CHL, buf);
-//    }
-    for(int16_t i = begin; i < end; ++i) {
-        resultSet.middleLine[i] = resultSet.middleLine[begin - 1] + (i - (begin - 1)) * diff;
-//        if(cnt > 50) {
-//            sprintf(buf, "pos%d=%d\r\n", i, resultSet.middleLine[i]);
-//            UART_printf(DATACOMM_IMG_TRANS_CHL, buf);
-//        }
-    }
-    for(int16_t i = end; i < IMG_ROW; ++i) {
-        resultSet.middleLine[i] = border;
-//        if(cnt > 50) {
-//            sprintf(buf, "pos%d=%d\r\n", i, resultSet.middleLine[i]);
-//            UART_printf(DATACOMM_IMG_TRANS_CHL, buf);
-//        }
-    }
-//    if(cnt > 50) {
-//        UART_printf(DATACOMM_IMG_TRANS_CHL, "\r\n");
-//        cnt = 0;
-//    }
-//    ++cnt;
+    return true;
 }

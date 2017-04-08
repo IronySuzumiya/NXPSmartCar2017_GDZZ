@@ -44,14 +44,19 @@ typedef struct _img_proc_result_set_type {
     float rightZero[IMG_ROW];
     float middleSlope[IMG_ROW];
     float middleZero[IMG_ROW];
-    int16_t leftTrend[IMG_ROW];
-    int16_t rightTrend[IMG_ROW];
-    int16_t middleLineMaxRow;
-    int16_t middleLineMinRow;
     uint16_t imgProcFlag;
-    int16_t foundBorderCnt;
+    int16_t leftBorderNotFoundCnt;
+    int16_t rightBorderNotFoundCnt;
 }
 img_proc_result_set_type;
+
+typedef enum _road_type_type {
+    Unknown,
+    Ring,
+    Curve,
+    CrossRoad
+}
+road_type_type;
 
 #define ULTRA_SONIC_TIME_QUEUE_LENGTH 10
 

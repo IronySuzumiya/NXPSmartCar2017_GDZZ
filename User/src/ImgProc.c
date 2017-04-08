@@ -29,6 +29,7 @@ int16_t mini_s_visual_field;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
+static int16_t searchForBordersStartIndex = IMG_COL / 2;
 
 static void ImgProcHREF(uint32_t pinxArray);
 static void ImgProcVSYN(uint32_t pinxArray);
@@ -80,10 +81,10 @@ void ImgProcVSYN(uint32_t pinxArray) {
     ImgProcSummary();
     imgRealRow = 0;
     imgBufRow = 0;
-    resultSet.foundBorderCnt = 0;
+    resultSet.leftBorderNotFoundCnt = 0;
+    resultSet.rightBorderNotFoundCnt = 0;
     resultSet.imgProcFlag = 0;
-    resultSet.middleLineMaxRow = 0;
-    resultSet.middleLineMinRow = 0;
+    searchForBordersStartIndex = IMG_COL / 2;
 }
 
 void ImgProc0() {
@@ -111,31 +112,43 @@ void ImgProc0() {
 }
 
 void ImgProc1() {
-    resultSet.foundLeftBorder[imgBufRow] = LeftBorderSearch(imgBufRow);
-    resultSet.foundRightBorder[imgBufRow] = RightBorderSearch(imgBufRow);
+    resultSet.foundLeftBorder[imgBufRow] = LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    resultSet.foundRightBorder[imgBufRow] = RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
 }
 
 void ImgProc2() {
-    if(resultSet.foundLeftBorder[imgBufRow] && resultSet.foundRightBorder[imgBufRow]) {
-        ++resultSet.foundBorderCnt;
-    }
     MiddleLineUpdate(imgBufRow);
+    searchForBordersStartIndex = resultSet.middleLine[imgBufRow];
 }
 void ImgProc3() {
-    MiddleLineRangeUpdate(imgBufRow);
+    CurveSlopeUpdate(imgBufRow);
     imgBufRow++;
 }
 
 void ImgProcSummary() {
-    StartLineJudge(pre_sight - 10);
-    StraightRoadJudge(resultSet.middleLine);
-    MiniSJudge(resultSet.middleLine, resultSet.middleLineMinRow, resultSet.middleLineMaxRow);
-//    if(resultSet.imgProcFlag & (MINI_S)) {
-//        BUZZLE_ON;
-//    } else {
-//        BUZZLE_OFF;
-////        CurveJudge(pre_sight);
-//    }
+    if(StartLineJudge(pre_sight - 10)) {
+        resultSet.imgProcFlag |= START_LINE;
+    } else if(StraightLineJudge()) {
+        resultSet.imgProcFlag |= STRAIGHT_ROAD;
+    } else {
+        switch(GetRoadType()) {
+            case Ring:
+                resultSet.imgProcFlag |= RING;
+                // You can make a choice
+                RingCompensateGoLeft();
+                break;
+            case Curve:
+                resultSet.imgProcFlag |= CURVE;
+                CurveCompensate();
+                break;
+            case CrossRoad:
+                resultSet.imgProcFlag |= CROSS_ROAD;
+                CrossRoadCompensate();
+                break;
+            default:
+                break;
+        }
+    }
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine);
     }
