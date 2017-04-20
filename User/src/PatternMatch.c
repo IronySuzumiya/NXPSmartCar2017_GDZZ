@@ -20,46 +20,22 @@ road_type_type GetRoadType() {
 
 bool IsRing() {
     int blackBlockRowsCnt = 0;
-    for(int row = IMG_ROW - 1; row >= 30; --row)
+    int col;
+    for (int row = IMG_ROW - 1; row >= 30; --row)
     {
         if(IsWhite(row, IMG_COL / 2))
         {
             continue;
         }
-        bool blackBlockLeftBorderFound = false;
-        for(int col = IMG_COL / 2 - 1; row >= 0; --col)
-        {
-            if(IsWhite(row, col))
-            {
-                if (col < IMG_COL / 2 - 10)
-                {
-                    blackBlockLeftBorderFound = true;
-                    break;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        if(!blackBlockLeftBorderFound)
+        for(col = IMG_COL / 2 - 1; IsBlack(row, col) && col >= IMG_COL / 2 - 10; --col) { }
+        if(col >= IMG_COL / 2 - 10)
         {
             continue;
         }
-        for (int col = IMG_COL / 2 + 1; col < IMG_COL; ++col)
+        for (col = IMG_COL / 2 + 1; IsBlack(row, col) && col <= IMG_COL / 2 + 10; ++col) { }
+        if(col > IMG_COL / 2 + 10)
         {
-            if (IsWhite(row, col))
-            {
-                if (col > IMG_COL / 2 + 10)
-                {
-                    ++blackBlockRowsCnt;
-                    break;
-                }
-                else
-                {
-                    break;
-                }
-            }
+            ++blackBlockRowsCnt;
         }
     }
     return blackBlockRowsCnt > 10;
@@ -160,48 +136,75 @@ void CurveCompensate() {
 }
 
 void CrossRoadCompensate() {
-    int16_t leftCompensateStart = IMG_ROW - 1;
-    int16_t rightCompensateStart = IMG_ROW - 1;
-    int16_t leftCompensateEnd = IMG_ROW - 1;
-    int16_t rightCompensateEnd = IMG_ROW - 1;
+    int leftCompensateStart = IMG_ROW;
+    int rightCompensateStart = IMG_ROW;
+    int leftCompensateEnd = IMG_ROW;
+    int rightCompensateEnd = IMG_ROW;
 
     {
         int row = 6;
         while (row < IMG_ROW && resultSet.leftBorder[row] != 0
-            && Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) < 3) { ++row; }
+            && Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) < 3 && resultSet.leftSlope[row] * resultSet.leftSlope[row - 1] >= 0) { ++row; }
         leftCompensateStart = row;
-        row += 5;
-        while (row < IMG_ROW
-            && (resultSet.leftBorder[row] == 0 || Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) >= 3)) { ++row; }
-        row += 4;
-        leftCompensateEnd = Min(row, IMG_ROW - 1);
     }
 
     {
         int row = 6;
         while (row < IMG_ROW && resultSet.rightBorder[row] != IMG_COL - 1
-            && Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) < 3) { ++row; }
+            && Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) < 3 && resultSet.leftSlope[row] * resultSet.leftSlope[row - 1] >= 0) { ++row; }
         rightCompensateStart = row;
-        row += 5;
-        while (row < IMG_ROW
-            && (resultSet.rightBorder[row] == IMG_COL - 1 || Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) >= 3)) { ++row; }
-        row += 4;
-        rightCompensateEnd = Min(row, IMG_ROW - 1);
     }
 
     for (int row = leftCompensateStart; row < leftCompensateEnd; ++row)
     {
         resultSet.leftBorder[row] = row * resultSet.leftSlope[leftCompensateStart - 5] + resultSet.leftZero[leftCompensateStart - 5];
+        if(IsBlack(row, resultSet.leftBorder[row]))
+        {
+            leftCompensateEnd = row;
+            break;
+        }
     }
 
     for (int row = rightCompensateStart; row < rightCompensateEnd; ++row)
     {
         resultSet.rightBorder[row] = row * resultSet.rightSlope[rightCompensateStart - 5] + resultSet.rightZero[rightCompensateStart - 5];
+        if (IsBlack(row, resultSet.rightBorder[row]))
+        {
+            rightCompensateEnd = row;
+            break;
+        }
     }
 
-    int16_t compensateEnd = Max(leftCompensateEnd, rightCompensateEnd);
+    int borderSearchStart;
 
-    int16_t borderSearchStart = (resultSet.leftBorder[compensateEnd - 1] + resultSet.rightBorder[compensateEnd - 1]) / 2;
+    if (leftCompensateEnd < rightCompensateEnd)
+    {
+        borderSearchStart = (resultSet.leftBorder[leftCompensateEnd - 1] + resultSet.rightBorder[leftCompensateEnd - 1]) / 2;
+        for (int row = leftCompensateEnd; row < rightCompensateEnd; ++row)
+        {
+            LeftBorderSearchFrom(row, borderSearchStart);
+            //if (Math.Abs((resultSet.rightBorder[row] + resultSet.leftBorder[row]) - (resultSet.rightBorder[row - 1] + resultSet.leftBorder[row - 1])) < 10)
+            //{
+                borderSearchStart = (resultSet.rightBorder[row] + resultSet.leftBorder[row]) / 2;
+            //}
+        }
+    }
+    else if (leftCompensateEnd > rightCompensateEnd)
+    {
+        borderSearchStart = (resultSet.leftBorder[rightCompensateEnd - 1] + resultSet.rightBorder[rightCompensateEnd - 1]) / 2;
+        for (int row = rightCompensateEnd; row < leftCompensateEnd; ++row)
+        {
+            RightBorderSearchFrom(row, borderSearchStart);
+            //if (Math.Abs((resultSet.rightBorder[row] + resultSet.leftBorder[row]) - (resultSet.rightBorder[row - 1] + resultSet.leftBorder[row - 1])) < 10)
+            //{
+                borderSearchStart = (resultSet.rightBorder[row] + resultSet.leftBorder[row]) / 2;
+            //}
+        }
+    }
+    
+    int compensateEnd = Max(leftCompensateEnd, rightCompensateEnd);
+
+    borderSearchStart = (resultSet.leftBorder[compensateEnd - 1] + resultSet.rightBorder[compensateEnd - 1]) / 2;
     for (int row = compensateEnd; row < IMG_ROW; ++row)
     {
         LeftBorderSearchFrom(row, borderSearchStart);
@@ -212,9 +215,7 @@ void CrossRoadCompensate() {
         }
     }
     
-    for(int16_t row = Min(leftCompensateStart, rightCompensateStart); row < IMG_ROW; ++row) {
-        MiddleLineUpdate(row);
-    }
+    UpdateMiddleLine();
 }
 
 inline float Abs(float input) {
