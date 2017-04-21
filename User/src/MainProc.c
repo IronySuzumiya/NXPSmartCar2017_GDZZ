@@ -30,7 +30,9 @@ void MainInit() {
     
     BuzzleInit();
     
-//    DoubleCarRelativeInit();
+    #ifdef DOUBLE_CAR
+        DoubleCarRelativeInit();
+    #endif
     
     TimerInit();
 }

@@ -29,19 +29,46 @@ void ImgTransOnlyBorderAndMiddleLine(int8_t* leftBorder, int8_t* middleLine, int
 }
 
 void ImgTrans(img_proc_result_set_type* resultSetPtr) {
-    ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
-    ImgTransAtPreSight(resultSetPtr);
-    ImgTransInRange(resultSetPtr, pre_sight, 0);
-    
-//    for(int16_t i = IMG_ROW - 1; i >= 0; i--) {
-//		for(int16_t j = 0; j < IMG_COL; j++) {
-//            if(TstImgBufAsBitMap(i, j)) {
-//                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_BLACK);
-//            } else {
-//                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_WHITE);
-//            }
-//		}
-//	}
+    #ifndef USE_NEW_FORMAT
+        ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
+        ImgTransAtPreSight(resultSetPtr);
+        ImgTransInRange(resultSetPtr, pre_sight, 0);
+    #else
+        // frame header
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+        #ifdef USE_BMP
+            for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
+                for(int16_t j = 0; j < 1 + IMG_COL / 8; ++j) {
+                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, imgBuf[i][j]);
+                }
+            }
+        #else
+            byte tmp;
+            int16_t j;
+            for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
+                if (imgBuf[i][j])
+                    tmp |= 0x01;
+                else
+                    tmp &= ~0x01;
+                for(j = 1; j < IMG_COL; ++j) {
+                    if (imgBuf[i][j])
+                        tmp |= 0x01 << (j % 8);
+                    else
+                        tmp &= ~(0x01 << (j % 8));
+                    if(!(j % 8))
+                        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
+                }
+                #if IMG_COL % 8
+                    // higher-bits here would be ignored, so don't worry
+                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
+                #endif
+            }
+        #endif
+    #endif
     
 	UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
 }

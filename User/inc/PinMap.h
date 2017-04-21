@@ -72,4 +72,9 @@
 #define  BUZZLE_ON    (PDout(BUZZLE_PIN) = 1)
 #define  BUZZLE_OFF   (PDout(BUZZLE_PIN) = 0)
 
+//Infrared
+#define IR_PORT  HW_GPIOD
+#define IR_PIN   0
+#define IR_READ  PDin(IR_PIN)
+
 #endif

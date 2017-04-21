@@ -497,6 +497,11 @@
               <FileType>1</FileType>
               <FilePath>.\Libraries\devices\src\SteerActuator.c</FilePath>
             </File>
+            <File>
+              <FileName>Infrared.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\devices\src\Infrared.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
