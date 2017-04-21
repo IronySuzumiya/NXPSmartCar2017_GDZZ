@@ -26,28 +26,21 @@ int16_t DirectionErrorGet(int16_t* middleLine) {
 }
 
 int16_t DirectionControlPID(int16_t error) {
-//    static char buf[50];
-//    static int cnt = 0;
-    
     static int16_t lastError = 0;
     float kp = direction_control_kpj + (error * error) * direction_control_kpc;
-    
+    if(kp > 0.24)
+    {
+        kp = 0.24;
+    }
 	directionAngle = kp * error + direction_control_kd * (error - lastError);
     
-//    if(cnt > 50) {
-//        sprintf(buf, "error=%d, d=%f\r\n", error, directionAngle);
-//        UART_printf(DATACOMM_IMG_TRANS_CHL, buf);
-//        cnt = 0;
-//    }
-//    ++cnt;
-    
-	if(directionAngle > steer_actuator_left - steer_actuator_middle) {
-		directionAngle = steer_actuator_left - steer_actuator_middle;
-    } else if(directionAngle < steer_actuator_right - steer_actuator_middle) {
-		directionAngle = steer_actuator_right - steer_actuator_middle;
+	if(directionAngle > 14.4) {
+		directionAngle = 14.4;
+    } else if(directionAngle < -14.4) {
+		directionAngle = -14.4;
     }
     
     lastError = error;
     
-    return directionAngle + steer_actuator_middle;
+    return directionAngle * 255.556 + steer_actuator_middle;
 }

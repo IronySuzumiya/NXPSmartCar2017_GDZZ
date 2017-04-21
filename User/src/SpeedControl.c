@@ -42,10 +42,19 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
     if(imgProcFlag & STRAIGHT_ROAD) {
         leftPid.targetValue = rightPid.targetValue = current_speed;//current_speed;
     } else {
-        leftPid.targetValue = current_speed * speed_control_curves_speed_gain
-            * (speed_control_curves_differential_gain * (-directionAngle) + 1);
-        rightPid.targetValue = current_speed * speed_control_curves_speed_gain
-            * (speed_control_curves_differential_gain * directionAngle + 1);
+        int16_t tmpSpeed;
+        if(directionAngle > 0)
+        {
+             tmpSpeed = speed_control_speed - 2.5 * directionAngle;
+             leftPid.targetValue = tmpSpeed;
+             rightPid.targetValue = tmpSpeed * (0.0342 * directionAngle + 1);
+        }
+        else
+        {
+             tmpSpeed = speed_control_speed + 2.5 * directionAngle;
+             rightPid.targetValue = tmpSpeed;
+             leftPid.targetValue = tmpSpeed * (0.0342 * (-directionAngle) + 1);
+        }
     }
 }
 

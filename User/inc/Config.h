@@ -7,6 +7,4 @@
 
 #define USE_NEW_FORMAT
 
-#define xDOUBLE_CAR
-
 #endif

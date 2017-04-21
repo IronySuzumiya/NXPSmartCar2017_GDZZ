@@ -30,9 +30,8 @@ void MainInit() {
     
     BuzzleInit();
     
-    #ifdef DOUBLE_CAR
+    if(double_car)
         DoubleCarRelativeInit();
-    #endif
     
     TimerInit();
 }
@@ -90,9 +89,9 @@ static void SwitchAndParamLoad(void) {
     rightPid.ki = 20;
     rightPid.kd = 15;
     
-    steer_actuator_right = 370;
-    steer_actuator_middle = 448;
-    steer_actuator_left = 520;
+    steer_actuator_right = 400;
+    steer_actuator_middle = 479;
+    steer_actuator_left = 550;
     
     pre_sight = 20;
     
@@ -108,9 +107,9 @@ static void SwitchAndParamLoad(void) {
     startline_black_tape_num = 7;
     mini_s_visual_field = 35;
     mini_s_sensitivity = 50;
-    direction_control_kd = 2.0;
-    direction_control_kpj = 1.5;
-    direction_control_kpc = 0.0009;
+    direction_control_kd = 0.2;
+    direction_control_kpj = 0.02;
+    direction_control_kpc = 0.000133;
     
     speed_control_curves_speed_gain = 0.78;
     speed_control_curves_differential_gain = 0.0020;//0.0022;
