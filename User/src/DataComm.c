@@ -33,6 +33,7 @@ void ImgTrans(img_proc_result_set_type* resultSetPtr) {
         ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
         ImgTransAtPreSight(resultSetPtr);
         ImgTransInRange(resultSetPtr, pre_sight, 0);
+        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
     #else
         // frame header
         UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
@@ -69,8 +70,6 @@ void ImgTrans(img_proc_result_set_type* resultSetPtr) {
             }
         #endif
     #endif
-    
-	UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
 }
 
 void ImgTransInRange(img_proc_result_set_type* resultSetPtr, int16_t startIndex, int16_t endIndex) {
