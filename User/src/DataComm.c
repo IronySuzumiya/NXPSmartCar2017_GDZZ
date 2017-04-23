@@ -51,15 +51,23 @@ void ImgTrans(img_proc_result_set_type* resultSetPtr) {
             byte tmp;
             int16_t j;
             for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
-                if (imgBuf[i][j])
+                if(resultSet.middleLine[i] == j) {
                     tmp |= 0x01;
-                else
-                    tmp &= ~0x01;
-                for(j = 1; j < IMG_COL; ++j) {
-                    if (imgBuf[i][j])
-                        tmp |= 0x01 << (j % 8);
+                } else {
+                    if (TstImgBufAsBitMap(i, j))
+                        tmp |= 0x01;
                     else
-                        tmp &= ~(0x01 << (j % 8));
+                        tmp &= ~0x01;
+                }
+                for(j = 1; j < IMG_COL; ++j) {
+                    if(resultSet.middleLine[i] == j) {
+                        tmp |= 0x01 << (j % 8);
+                    } else {
+                        if (TstImgBufAsBitMap(i, j))
+                            tmp |= 0x01 << (j % 8);
+                        else
+                            tmp &= ~(0x01 << (j % 8));
+                    }
                     if(!(j % 8))
                         UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
                 }

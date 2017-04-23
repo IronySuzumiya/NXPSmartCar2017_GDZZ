@@ -42,5 +42,5 @@ int16_t DirectionControlPID(int16_t error) {
     
     lastError = error;
     
-    return directionAngle * 255.556 + steer_actuator_middle;
+    return directionAngle * 5.556 + steer_actuator_middle;
 }

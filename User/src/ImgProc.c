@@ -126,33 +126,41 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-//    if(StartLineJudge(pre_sight - 10)) {
-//        resultSet.imgProcFlag |= START_LINE;
-//    } else if(StraightLineJudge()) {
-//        resultSet.imgProcFlag |= STRAIGHT_ROAD;
-//    } else {
-//        switch(GetRoadType()) {
+    if(StartLineJudge(pre_sight - 10)) {
+        resultSet.imgProcFlag |= START_LINE;
+    } else if(StraightLineJudge()) {
+        resultSet.imgProcFlag |= STRAIGHT_ROAD;
+        BUZZLE_ON;
+    } else {
+        BUZZLE_OFF;
+        switch(GetRoadType()) {
 //            case Ring:
 //                resultSet.imgProcFlag |= RING;
+//                BUZZLE_OFF;
 //                // You can make a choice
 //                RingCompensateGoLeft();
 //                break;
-//            case Curve:
-//                resultSet.imgProcFlag |= CURVE;
-//                CurveCompensate();
-//                break;
+            case LeftCurve:
+                resultSet.imgProcFlag |= CURVE;
+                LeftCurveCompensate();
+                break;
+            case RightCurve:
+                resultSet.imgProcFlag |= CURVE;
+                RightCurveCompensate();
+                break;
 //            case CrossRoad:
 //                resultSet.imgProcFlag |= CROSS_ROAD;
+//                BUZZLE_OFF;
 //                CrossRoadCompensate();
 //                break;
-//            default:
-//                break;
-//        }
-//    }
-//    if(direction_control_on) {
-//        DirectionControlProc(resultSet.middleLine);
-//    }
-//    if(speed_control_on) {
-//        SpeedTargetSet(resultSet.imgProcFlag);
-//    }
+            default:
+                break;
+        }
+    }
+    if(direction_control_on) {
+        DirectionControlProc(resultSet.middleLine);
+    }
+    if(speed_control_on) {
+        SpeedTargetSet(resultSet.imgProcFlag);
+    }
 }

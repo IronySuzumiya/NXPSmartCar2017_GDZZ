@@ -17,13 +17,13 @@ double speed_control_curves_differential_gain;
 
 static int16_t current_speed;
 
-static int16_t SpeedControlPID(PID pid);
+static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
 
 void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
     SpeedControlFilter(leftSpeed, &leftPid);
     SpeedControlFilter(rightSpeed, &rightPid);
-    MotorOut(SpeedControlPID(leftPid), SpeedControlPID(rightPid));
+    MotorOut(SpeedControlPID(&leftPid), SpeedControlPID(&rightPid));
 }
 
 void SpeedTargetSet(uint16_t imgProcFlag) {
@@ -40,52 +40,52 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
     }
     
     if(imgProcFlag & STRAIGHT_ROAD) {
-        leftPid.targetValue = rightPid.targetValue = current_speed;//current_speed;
+        leftPid.targetValue = rightPid.targetValue = current_speed + 12;
     } else {
         int16_t tmpSpeed;
         if(directionAngle > 0)
         {
-             tmpSpeed = speed_control_speed - 2.5 * directionAngle;
+             tmpSpeed = current_speed - 2.5 * directionAngle;
              leftPid.targetValue = tmpSpeed;
              rightPid.targetValue = tmpSpeed * (0.0342 * directionAngle + 1);
         }
         else
         {
-             tmpSpeed = speed_control_speed + 2.5 * directionAngle;
+             tmpSpeed = current_speed + 2.5 * directionAngle;
              rightPid.targetValue = tmpSpeed;
              leftPid.targetValue = tmpSpeed * (0.0342 * (-directionAngle) + 1);
         }
     }
 }
 
-int16_t SpeedControlPID(PID pid) {
+int16_t SpeedControlPID(PID *pid) {
 	int16_t error;
     double pValue, iValue, dValue;
     
-	error = pid.targetValue - pid.currentValue;
+	error = pid->targetValue - pid->currentValue;
     
     if(use_inc_pid) {
-        pValue = pid.kp * (error - pid.lastError);
-        iValue = pid.ki * error;
-        dValue = pid.kd * (error - 2 * pid.lastError + pid.prevError);
-        pid.prevError = pid.lastError;
-        pid.output += pValue + iValue + dValue;
+        pValue = pid->kp * (error - pid->lastError);
+        iValue = pid->ki * error;
+        dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
+        pid->prevError = pid->lastError;
+        pid->output += pValue + iValue + dValue;
     } else {
-        pid.sumError += error;
-        if(pid.sumError > speed_control_sum_err_max) {
-            pid.sumError = speed_control_sum_err_max;
-        } else if(pid.sumError < -speed_control_sum_err_max) {
-            pid.sumError = -speed_control_sum_err_max;
+        pid->sumError += error;
+        if(pid->sumError > speed_control_sum_err_max) {
+            pid->sumError = speed_control_sum_err_max;
+        } else if(pid->sumError < -speed_control_sum_err_max) {
+            pid->sumError = -speed_control_sum_err_max;
         }
-        pValue = pid.kp * error;
-        iValue = pid.ki * pid.sumError;
-        dValue = pid.kd * (error - pid.lastError);
-        pid.output = pValue + iValue + dValue;
+        pValue = pid->kp * error;
+        iValue = pid->ki * pid->sumError;
+        dValue = pid->kd * (error - pid->lastError);
+        pid->output = pValue + iValue + dValue;
     }
     
-	pid.lastError = error;
+	pid->lastError = error;
     
-	return (int16_t)pid.output;
+	return (int16_t)pid->output;
 }
 
 void SpeedControlFilter(int16_t newValue, PID* pid) {

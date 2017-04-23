@@ -6,7 +6,8 @@
 road_type_type GetRoadType(void);
 void RingCompensateGoLeft(void);
 void RingCompensateGoRight(void);
-void CurveCompensate(void);
+void LeftCurveCompensate(void);
+void RightCurveCompensate(void);
 void CrossRoadCompensate(void);
 bool StartLineJudge(int16_t row);
 bool StraightLineJudge(void);
