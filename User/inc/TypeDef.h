@@ -55,6 +55,7 @@ img_proc_result_set_type;
 typedef enum _road_type_type {
     Unknown,
     Ring,
+    RingEnd,
     LeftCurve,
     RightCurve,
     CrossRoad

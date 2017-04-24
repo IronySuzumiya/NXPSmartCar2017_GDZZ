@@ -3,8 +3,6 @@
 
 bool motor_on;
 
-#define MOTOR_STOP MotorOut(0, 0)
-
 void MotorInit()
 {
 	FTM_PWM_QuickInit(MOTOR_LEFT_FOR_MAP, kPWM_EdgeAligned, 10000);

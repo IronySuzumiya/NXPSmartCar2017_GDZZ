@@ -31,6 +31,11 @@ static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
 static int16_t searchForBordersStartIndex = IMG_COL / 2;
 
+#ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+static bool inRing;
+static int16_t inRingCnt;
+#endif
+
 static void ImgProcHREF(uint32_t pinxArray);
 static void ImgProcVSYN(uint32_t pinxArray);
 static void ImgProc0(void);
@@ -126,6 +131,12 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
+    #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+    if(inRingCnt > 26) {
+        inRing = false;
+        inRingCnt = 0;
+    }
+    #endif
     if(StartLineJudge(pre_sight - 10)) {
         resultSet.imgProcFlag |= START_LINE;
     } else {
@@ -136,8 +147,13 @@ void ImgProcSummary() {
             case Ring:
                 resultSet.imgProcFlag |= RING;
 //                BUZZLE_ON;
-                // You can make a choice
+                #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+                inRing = true;
+                #endif
                 RingCompensateGoLeft();
+                break;
+            case RingEnd:
+                RingEndCompensateFromLeft();
                 break;
             case LeftCurve:
 //                BUZZLE_OFF;
@@ -160,7 +176,15 @@ void ImgProcSummary() {
         }
     }
     if(direction_control_on) {
-        DirectionControlProc(resultSet.middleLine);
+        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+        if(inRing) {
+            DirectionControlProc(resultSet.middleLine, IMG_COL / 2 + 15);
+        } else {
+        #endif
+            DirectionControlProc(resultSet.middleLine, IMG_COL / 2);
+        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+        }
+        #endif
     }
     if(speed_control_on) {
         SpeedTargetSet(resultSet.imgProcFlag);

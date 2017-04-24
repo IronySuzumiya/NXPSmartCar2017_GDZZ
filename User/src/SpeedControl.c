@@ -27,6 +27,9 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 }
 
 void SpeedTargetSet(uint16_t imgProcFlag) {
+//    static int16_t slowDownCnt = 0;
+//    static bool slowDown = false;
+    
     if(double_car) {
         if(distance > AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX) {
             current_speed = speed_control_acc_speed;
@@ -39,21 +42,30 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
         current_speed = speed_control_speed;
     }
     
-    if(imgProcFlag & STRAIGHT_ROAD) {
+    /*if(slowDown) {
+        ++slowDownCnt;
+        leftPid.targetValue = rightPid.targetValue = 60;
+        if(slowDownCnt > 50) {
+            slowDown = false;
+            slowDownCnt = 0;
+        }
+    } else */if(imgProcFlag & STRAIGHT_ROAD) {
         leftPid.targetValue = rightPid.targetValue = current_speed + 12;
+//    } else if(imgProcFlag & RING) {
+//        slowDown = true;
     } else {
         int16_t tmpSpeed;
         if(directionAngle > 0)
         {
-             tmpSpeed = current_speed - 2.5 * directionAngle;
+             tmpSpeed = current_speed - 2.45 * directionAngle;
              leftPid.targetValue = tmpSpeed;
-             rightPid.targetValue = tmpSpeed * (0.0342 * directionAngle + 1);
+             rightPid.targetValue = tmpSpeed * (0.035 * directionAngle + 1);//0.342
         }
         else
         {
              tmpSpeed = current_speed + 2.5 * directionAngle;
              rightPid.targetValue = tmpSpeed;
-             leftPid.targetValue = tmpSpeed * (0.0342 * (-directionAngle) + 1);
+             leftPid.targetValue = tmpSpeed * (0.035 * (-directionAngle) + 1);
         }
     }
 }

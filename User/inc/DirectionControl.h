@@ -3,7 +3,7 @@
 
 #include "root.h"
 
-void DirectionControlProc(int16_t* middleLine);
+void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle);
 
 extern double directionAngle;
 extern double direction_control_kd;

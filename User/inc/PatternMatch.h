@@ -6,6 +6,7 @@
 road_type_type GetRoadType(void);
 void RingCompensateGoLeft(void);
 void RingCompensateGoRight(void);
+void RingEndCompensateFromLeft(void);
 void LeftCurveCompensate(void);
 void RightCurveCompensate(void);
 void CrossRoadCompensate(void);
