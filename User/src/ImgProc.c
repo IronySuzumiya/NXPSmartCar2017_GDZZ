@@ -14,24 +14,12 @@ int16_t dirError;
 bool direction_control_on;
 int16_t pre_sight;
 img_proc_result_set_type resultSet;
-int16_t img_border_scan_compensation;
-int16_t wide_road_size;
-int16_t curve_sensitivity;
-int16_t slope_sensitivity;
-int16_t inflexion_sensitivity;
-int16_t cross_road_size;
-int16_t straight_road_sensitivity;
-int16_t straight_road_middle_area_cnt_min;
-int16_t startline_sensitivity;
-int16_t startline_black_tape_num;
-int16_t mini_s_sensitivity;
-int16_t mini_s_visual_field;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
 static int16_t searchForBordersStartIndex = IMG_COL / 2;
 
-#ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+#ifdef CHANGING_MIDDLE_LINE
 static bool inRing;
 static int16_t inRingCnt;
 #endif
@@ -131,7 +119,7 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-    #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+    #ifdef CHANGING_MIDDLE_LINE
     if(inRingCnt > 26) {
         inRing = false;
         inRingCnt = 0;
@@ -147,22 +135,23 @@ void ImgProcSummary() {
             case Ring:
                 resultSet.imgProcFlag |= RING;
 //                BUZZLE_ON;
-                #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+                #ifdef CHANGING_MIDDLE_LINE
                 inRing = true;
                 #endif
                 RingCompensateGoLeft();
                 break;
             case RingEnd:
+                resultSet.imgProcFlag |= RING_END;
                 RingEndCompensateFromLeft();
                 break;
             case LeftCurve:
 //                BUZZLE_OFF;
-                resultSet.imgProcFlag |= CURVE;
+                resultSet.imgProcFlag |= LEFT_CURVE;
                 LeftCurveCompensate();
                 break;
             case RightCurve:
 //                BUZZLE_OFF;
-                resultSet.imgProcFlag |= CURVE;
+                resultSet.imgProcFlag |= RIGHT_CURVE;
                 RightCurveCompensate();
                 break;
             case CrossRoad:
@@ -176,13 +165,13 @@ void ImgProcSummary() {
         }
     }
     if(direction_control_on) {
-        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+        #ifdef CHANGING_MIDDLE_LINE
         if(inRing) {
             DirectionControlProc(resultSet.middleLine, IMG_COL / 2 + 15);
         } else {
         #endif
             DirectionControlProc(resultSet.middleLine, IMG_COL / 2);
-        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
+        #ifdef CHANGING_MIDDLE_LINE
         }
         #endif
     }

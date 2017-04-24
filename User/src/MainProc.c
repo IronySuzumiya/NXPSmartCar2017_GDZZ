@@ -60,8 +60,7 @@ void MainProc() {
     }
 }
 
-static void SwitchAndParamLoad(void) {
-    #warning "All these variables should be loaded from SD Card in the future!"
+void SwitchAndParamLoad(void) {
     motor_on = true;
     encoder_on = true;
     speed_control_on = true;
@@ -95,18 +94,6 @@ static void SwitchAndParamLoad(void) {
     
     pre_sight = 28;
     
-    img_border_scan_compensation = 15;
-    wide_road_size = 80;
-    curve_sensitivity = 5;
-    slope_sensitivity = 3;
-    inflexion_sensitivity = 2;
-    cross_road_size = 200;
-    straight_road_sensitivity = 10;
-    straight_road_middle_area_cnt_min = 38;
-    startline_sensitivity = 6;
-    startline_black_tape_num = 7;
-    mini_s_visual_field = 35;
-    mini_s_sensitivity = 50;
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
     direction_control_kpc = 0.000133;

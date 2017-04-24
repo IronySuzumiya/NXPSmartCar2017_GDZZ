@@ -3,7 +3,6 @@
 #include "uart.h"
 
 int main() {
-//    char buf[50];
     MainInit();
     while(1) {
         if(state_trans_on) {
@@ -13,7 +12,5 @@ int main() {
             ImgTrans(&resultSet);
             DelayMs(50);
         }
-//        sprintf(buf, "aaaaaa\r\n");
-//        UART_printf(DATACOMM_IMG_TRANS_CHL, buf);
     }
 }

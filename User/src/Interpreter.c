@@ -3,6 +3,8 @@
 #include "stdlib.h"
 #include "uart.h"
 
+#if 0
+
 static char messageBuf[COMMAND_BUF_SIZE];
 static char* messageBytePtr = messageBuf;
 static bool isMasterModifyingSlave;
@@ -329,3 +331,5 @@ void ParamModificationParse(const char* message) {
         ResponseError();
     }
 }
+
+#endif

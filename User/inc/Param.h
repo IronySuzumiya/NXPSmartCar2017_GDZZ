@@ -29,11 +29,13 @@
 #define  IMG_EOF    0xff
 
 //Image Proc Flag
-#define  STRAIGHT_ROAD  0x0001
-#define  START_LINE     0x0002
+#define  START_LINE     0x0001
+#define  STRAIGHT_ROAD  0x0002
 #define  RING           0x0004
-#define  CURVE          0x0008
-#define  CROSS_ROAD     0x0010
+#define  RING_END       0x0008
+#define  LEFT_CURVE     0x0010
+#define  RIGHT_CURVE    0x0020
+#define  CROSS_ROAD     0x0040
 
 //Double Car Relative
 #define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1

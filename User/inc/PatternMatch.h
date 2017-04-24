@@ -3,7 +3,7 @@
 
 #include "root.h"
 
-road_type_type GetRoadType(void);
+int16_t GetRoadType(void);
 void RingCompensateGoLeft(void);
 void RingCompensateGoRight(void);
 void RingEndCompensateFromLeft(void);

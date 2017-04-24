@@ -568,6 +568,11 @@
               <FilePath>.\User\src\DoubleCarRelative.c</FilePath>
             </File>
             <File>
+              <FileName>Utility.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Utility.c</FilePath>
+            </File>
+            <File>
               <FileName>PinMap.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\User\inc\PinMap.h</FilePath>

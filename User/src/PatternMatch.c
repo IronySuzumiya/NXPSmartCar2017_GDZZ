@@ -2,23 +2,21 @@
 #include "ImgUtility.h"
 #include "ImgProc.h"
 #include "Motor.h"
+#include "Utility.h"
 #include "stdio.h"
 #include "uart.h"
 #include "gpio.h"
 
 static bool IsRing(void);
 static bool IsRingEnd(void);
-static road_type_type IsCurve(void);
+static int16_t IsCurve(void);
 static bool IsCrossRoad(void);
-static inline float Abs(float);
-static inline float Min(float, float);
-static inline float Max(float ,float);
 
 static bool definitelyInRing;
 static bool inRing;
 static int16_t black_pt_row;
 
-road_type_type GetRoadType() {
+int16_t GetRoadType() {
     static int16_t _cnt = 0;
     if(inRing && !definitelyInRing) {
         ++_cnt;
@@ -32,7 +30,7 @@ road_type_type GetRoadType() {
         definitelyInRing = false;
         return RingEnd;
     }
-    road_type_type curve = IsCurve();
+    int16_t curve = IsCurve();
     if(curve == Unknown) {
         int16_t cnt = 0;
         int16_t row;
@@ -125,7 +123,7 @@ bool IsRingEnd() {
     return false;
 }
 
-road_type_type IsCurve() {
+int16_t IsCurve() {
     int16_t row;
     bool leftCurve = false;
     bool rightCurve = false;
@@ -210,7 +208,6 @@ void RingCompensateGoRight() {
 }
 
 void RingEndCompensateFromLeft() {
-    MOTOR_STOP;
     motor_on = false;
 }
 
@@ -316,31 +313,19 @@ void CrossRoadCompensate() {
         }
     }
     
-    UpdateMiddleLine();
-}
-
-inline float Abs(float input) {
-    return input >= 0 ? input : -input;
-}
-
-inline float Min(float a, float b) {
-    return a > b ? b : a;
-}
-
-inline float Max(float a, float b) {
-    return a > b ? a : b;
+    MiddleLineUpdateAll();
 }
 
 bool StartLineJudge(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
-    for(int16_t i = row; i >= row - startline_sensitivity; --i) {
+    for(int16_t i = row; i >= row - 6; --i) {
         for(int16_t j = IMG_COL / 2; j >= 0; --j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(toggleCnt > startline_black_tape_num * 2) {
+                if(toggleCnt > 7 * 2) {
                     toggleCnt = 0;
                     ++patternRowCnt;
-                    if(patternRowCnt > startline_sensitivity / 2 + 1) {
+                    if(patternRowCnt > 4) {
                         return true;
                     } else {
                         break;
@@ -357,11 +342,11 @@ bool StartLineJudge(int16_t row) {
 bool StraightLineJudge(void) {
     int16_t middleAreaCnt = 0;
     for(int16_t i = 0; i < IMG_ROW; ++i) {
-        if(resultSet.middleLine[i] > (IMG_COL / 2 - straight_road_sensitivity) && resultSet.middleLine[i] < (IMG_COL / 2 + straight_road_sensitivity)) {
+        if(resultSet.middleLine[i] > (IMG_COL / 2 - 10) && resultSet.middleLine[i] < (IMG_COL / 2 + 10)) {
             middleAreaCnt++;
         }
     }
-    if(middleAreaCnt > straight_road_middle_area_cnt_min) {
+    if(middleAreaCnt > 38) {
         return true;
     } else {
         return false;

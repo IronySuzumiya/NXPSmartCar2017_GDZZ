@@ -23,5 +23,7 @@ void SteerActuatorOut(int16_t out) {
             out = steer_actuator_left;
         }
         FTM_PWM_ChangeDuty(STEER_ACTUATOR_PORT, STEER_ACTUATOR_CHL, out);
+    } else {
+        FTM_PWM_ChangeDuty(STEER_ACTUATOR_PORT, STEER_ACTUATOR_CHL, steer_actuator_middle);
     }
 }
