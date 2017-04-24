@@ -13,53 +13,72 @@ static inline float Min(float, float);
 static inline float Max(float ,float);
 
 road_type_type GetRoadType() {
-//    static bool atPreCrossRoadOrRing = false;
-//    if(!atPreCrossRoadOrRing) {
-//        int16_t i;
-//        for(i = 15; i < IMG_ROW; ++i) {
-//            if((resultSet.rightBorder[i] - resultSet.leftBorder[i])
-//                - (resultSet.rightBorder[i - 5] - resultSet.leftBorder[i - 5]) > 6) {
-//                atPreCrossRoadOrRing = true;
-//            }
-//        }
-//    }
-//    if(atPreCrossRoadOrRing) {
-//        road_type_type road_type = IsRing() ? Ring : IsCrossRoad() ? CrossRoad : Unknown;
-//        if(road_type == Unknown) {
-//            atPreCrossRoadOrRing = false;
-//        }
-//        return road_type;
-//    } else {
     road_type_type curve = IsCurve();
     if(curve == Unknown) {
-        return IsRing() ? Ring : IsCrossRoad() ? CrossRoad : Unknown;
+        int16_t cnt = 0;
+        int16_t row;
+        for(row = 5; row < IMG_ROW; ++row) {
+            if((resultSet.rightBorder[row] - resultSet.leftBorder[row])
+                - (resultSet.rightBorder[row - 5] - resultSet.leftBorder[row - 5]) > 3
+                && resultSet.rightBorder[row] - resultSet.leftBorder[row] > 100) {
+                ++cnt;
+            }
+            if(cnt > 3) {
+                break;
+            }
+        }
+        if(row == IMG_ROW) {
+            BUZZLE_OFF;
+            return Unknown;
+        }
+        BUZZLE_ON;
+        bool leftCnt = false, rightCnt = false;
+        for(; row >= 4; --row) {
+            if((resultSet.leftTrend[row] & 0x8000) ^ (resultSet.leftTrend[row - 2] & 0x8000)) {
+                leftCnt = true;
+            }
+            if((resultSet.rightTrend[row] & 0x8000) ^ (resultSet.rightTrend[row - 2] & 0x8000)) {
+                rightCnt = true;
+            }
+            if(leftCnt && rightCnt) {
+                return IsRing() ? Ring : IsCrossRoad() ? CrossRoad : Unknown;
+            }
+        }
+        return Unknown;
     } else {
+        BUZZLE_OFF;
         return curve;
     }
-//    }
 }
 
 bool IsRing() {
-    int blackBlockRowsCnt = 0;
-    int col;
-    for (int row = IMG_ROW - 1; row >= 30; --row)
+    int16_t blackBlockRowsCnt = 0;
+    int16_t col;
+    int16_t whiteCol;
+    int16_t width;
+    for (int16_t row = IMG_ROW - 1; row >= 30; --row)
     {
         if(IsWhite(row, IMG_COL / 2))
         {
             continue;
         }
-        for(col = IMG_COL / 2 - 1; IsBlack(row, col) && col >= IMG_COL / 2 - 10; --col) { }
-        if(col >= IMG_COL / 2 - 10)
+        for(col = IMG_COL / 2 - 1; IsBlack(row, col) && col >= 0; --col) { }
+        if(col == -1)
         {
             continue;
         }
-        for (col = IMG_COL / 2 + 1; IsBlack(row, col) && col <= IMG_COL / 2 + 10; ++col) { }
-        if(col > IMG_COL / 2 + 10)
+        for(whiteCol = col; IsWhite(row, whiteCol) && whiteCol >= 0; --whiteCol) { }
+        width = col - whiteCol;
+        for (col = IMG_COL / 2 + 1; IsBlack(row, col) && col < IMG_COL; ++col) { }
+        if(col < IMG_COL)
         {
-            ++blackBlockRowsCnt;
+            for(whiteCol = col; IsWhite(row, whiteCol) && whiteCol < IMG_COL; ++whiteCol) { }
+            if(Abs((whiteCol - col) - width) < 5) {
+                ++blackBlockRowsCnt;
+            }
         }
     }
-    return blackBlockRowsCnt > 10;
+    return blackBlockRowsCnt > 6;
 }
 
 int16_t black_pt_row;
@@ -70,7 +89,7 @@ road_type_type IsCurve() {
     bool rightCurve = false;
     int16_t cnt = 0;
     for (row = 5; row < IMG_ROW && IsWhite(row, resultSet.middleLine[row]); ++row) { }
-    if(row < IMG_ROW) {
+    if(row < IMG_ROW && ((resultSet.middleLine[row] < IMG_COL / 2 - 22) || (resultSet.middleLine[row] > IMG_COL / 2 + 22))) {
         black_pt_row = row;
         for(; row >= 0; --row) {
             if(!leftCurve && !rightCurve) {
@@ -80,14 +99,14 @@ road_type_type IsCurve() {
                     rightCurve = true;
                 }
             } else if(leftCurve) {
-                if(!resultSet.foundLeftBorder[row]) {
+                if(!resultSet.foundLeftBorder[row] && resultSet.foundRightBorder[row]) {
                     ++cnt;
                 }
                 if(cnt > 5) {
                     return LeftCurve;
                 }
             } else if(rightCurve) {
-                if(!resultSet.foundRightBorder[row]) {
+                if(!resultSet.foundRightBorder[row] && resultSet.foundLeftBorder[row]) {
                     ++cnt;
                 }
                 if(cnt > 5) {

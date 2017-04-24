@@ -128,32 +128,34 @@ void ImgProc3() {
 void ImgProcSummary() {
     if(StartLineJudge(pre_sight - 10)) {
         resultSet.imgProcFlag |= START_LINE;
-    } else if(StraightLineJudge()) {
-        resultSet.imgProcFlag |= STRAIGHT_ROAD;
-        BUZZLE_ON;
     } else {
-        BUZZLE_OFF;
+        if(StraightLineJudge()) {
+            resultSet.imgProcFlag |= STRAIGHT_ROAD;
+        }
         switch(GetRoadType()) {
-//            case Ring:
-//                resultSet.imgProcFlag |= RING;
-//                BUZZLE_OFF;
-//                // You can make a choice
-//                RingCompensateGoLeft();
-//                break;
+            case Ring:
+                resultSet.imgProcFlag |= RING;
+//                BUZZLE_ON;
+                // You can make a choice
+                RingCompensateGoLeft();
+                break;
             case LeftCurve:
+//                BUZZLE_OFF;
                 resultSet.imgProcFlag |= CURVE;
                 LeftCurveCompensate();
                 break;
             case RightCurve:
+//                BUZZLE_OFF;
                 resultSet.imgProcFlag |= CURVE;
                 RightCurveCompensate();
                 break;
-//            case CrossRoad:
-//                resultSet.imgProcFlag |= CROSS_ROAD;
+            case CrossRoad:
 //                BUZZLE_OFF;
-//                CrossRoadCompensate();
-//                break;
+                resultSet.imgProcFlag |= CROSS_ROAD;
+                CrossRoadCompensate();
+                break;
             default:
+//                BUZZLE_OFF;
                 break;
         }
     }
