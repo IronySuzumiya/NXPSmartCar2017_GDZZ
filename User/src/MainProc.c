@@ -24,11 +24,11 @@ void MainInit() {
     
     DataCommInit();
     
-    ImgProcInit();
+    BuzzleInit();
     
     NVICInit();
     
-    BuzzleInit();
+    ImgProcInit();
     
     if(double_car)
         DoubleCarRelativeInit();
@@ -60,20 +60,21 @@ void MainProc() {
     }
 }
 
-void SwitchAndParamLoad(void) {
+static void SwitchAndParamLoad(void) {
+    #warning "All these variables should be loaded from SD Card in the future!"
     motor_on = true;
     encoder_on = true;
     speed_control_on = true;
     direction_control_on = true;
     steer_actuator_on = true;
-    img_trans_on = true;
-    state_trans_on = false;
+    img_trans_on = false;
+    state_trans_on = true;
     mode_switch_on = false;
     use_inc_pid = false;
     use_ftm_qd = false;
     double_car = false;
     
-    speed_control_speed = 108;
+    speed_control_speed = 111;
     speed_control_sum_err_max = 1000;
     
     speed_control_acc_speed = 90;
@@ -94,6 +95,18 @@ void SwitchAndParamLoad(void) {
     
     pre_sight = 28;
     
+    img_border_scan_compensation = 15;
+    wide_road_size = 80;
+    curve_sensitivity = 5;
+    slope_sensitivity = 3;
+    inflexion_sensitivity = 2;
+    cross_road_size = 200;
+    straight_road_sensitivity = 10;
+    straight_road_middle_area_cnt_min = 38;
+    startline_sensitivity = 6;
+    startline_black_tape_num = 7;
+    mini_s_visual_field = 35;
+    mini_s_sensitivity = 50;
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
     direction_control_kpc = 0.000133;

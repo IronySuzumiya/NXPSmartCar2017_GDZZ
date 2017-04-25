@@ -2,35 +2,31 @@
 #include "ImgUtility.h"
 #include "ImgProc.h"
 #include "Motor.h"
-#include "Utility.h"
 #include "stdio.h"
 #include "uart.h"
 #include "gpio.h"
 
 static bool IsRing(void);
 static bool IsRingEnd(void);
-static int16_t IsCurve(void);
+static road_type_type IsCurve(void);
 static bool IsCrossRoad(void);
+static inline float Abs(float);
+static inline float Min(float, float);
+static inline float Max(float, float);
 
-static bool definitelyInRing;
-static bool inRing;
+int32_t ringDistance;
+bool inRing;
 static int16_t black_pt_row;
 
-int16_t GetRoadType() {
-    static int16_t _cnt = 0;
-    if(inRing && !definitelyInRing) {
-        ++_cnt;
-        if(_cnt > 30) {
-            _cnt = 0;
-            definitelyInRing = true;
+road_type_type GetRoadType() {
+    if(inRing) {
+        if(ringDistance > 25000 && IsRingEnd()) {
+            ringDistance = 0;
+            inRing = false;
+            return RingEnd;
         }
     }
-    if(definitelyInRing && IsRingEnd()) {
-        inRing = false;
-        definitelyInRing = false;
-        return RingEnd;
-    }
-    int16_t curve = IsCurve();
+    road_type_type curve = IsCurve();
     if(curve == Unknown) {
         int16_t cnt = 0;
         int16_t row;
@@ -105,17 +101,22 @@ bool IsRing() {
 }
 
 bool IsRingEnd() {
-    if(resultSet.rightBorderNotFoundCnt > 10) {
+    if(resultSet.rightBorderNotFoundCnt > 15) {
+        int16_t cnt = 0;
         int16_t row;
-        int16_t cnt;
-        for(row = IMG_ROW - 1; row >= 0 && resultSet.foundRightBorder[row]; --row) { }
-        for(; row >= 0 && !((resultSet.leftTrend[row] & 0x8000) ^ (resultSet.leftTrend[row - 2] & 0x8000)); --row) {
-            if((resultSet.rightBorder[row + 5] - resultSet.leftBorder[row + 5])
-                - (resultSet.rightBorder[row] - resultSet.leftBorder[row]) > 6
-                && resultSet.rightBorder[row + 5] - resultSet.leftBorder[row + 5] > 150) {
+        for(row = 20; row < 40; ++row) {
+            if((resultSet.leftTrend[row] & 0x8000) ^ (resultSet.leftTrend[row - 5] & 0x8000)) {
+                break;
+            }
+        }
+        if(row >= 40) {
+            return false;
+        }
+        for(row = IMG_ROW - 1; row >= 35; --row) {
+            if(IsWhite(row, resultSet.middleLine[row])) {
                 ++cnt;
             }
-            if(cnt > 3) {
+            if(cnt > 12) {
                 return true;
             }
         }
@@ -123,7 +124,7 @@ bool IsRingEnd() {
     return false;
 }
 
-int16_t IsCurve() {
+road_type_type IsCurve() {
     int16_t row;
     bool leftCurve = false;
     bool rightCurve = false;
@@ -208,7 +209,8 @@ void RingCompensateGoRight() {
 }
 
 void RingEndCompensateFromLeft() {
-    motor_on = false;
+//    MOTOR_STOP;
+//    motor_on = false;
 }
 
 void LeftCurveCompensate() {
@@ -313,19 +315,31 @@ void CrossRoadCompensate() {
         }
     }
     
-    MiddleLineUpdateAll();
+    UpdateMiddleLine();
+}
+
+inline float Abs(float input) {
+    return input >= 0 ? input : -input;
+}
+
+inline float Min(float a, float b) {
+    return a > b ? b : a;
+}
+
+inline float Max(float a, float b) {
+    return a > b ? a : b;
 }
 
 bool StartLineJudge(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
-    for(int16_t i = row; i >= row - 6; --i) {
+    for(int16_t i = row; i >= row - startline_sensitivity; --i) {
         for(int16_t j = IMG_COL / 2; j >= 0; --j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(toggleCnt > 7 * 2) {
+                if(toggleCnt > startline_black_tape_num * 2) {
                     toggleCnt = 0;
                     ++patternRowCnt;
-                    if(patternRowCnt > 4) {
+                    if(patternRowCnt > startline_sensitivity / 2 + 1) {
                         return true;
                     } else {
                         break;
@@ -342,11 +356,11 @@ bool StartLineJudge(int16_t row) {
 bool StraightLineJudge(void) {
     int16_t middleAreaCnt = 0;
     for(int16_t i = 0; i < IMG_ROW; ++i) {
-        if(resultSet.middleLine[i] > (IMG_COL / 2 - 10) && resultSet.middleLine[i] < (IMG_COL / 2 + 10)) {
+        if(resultSet.middleLine[i] > (IMG_COL / 2 - straight_road_sensitivity) && resultSet.middleLine[i] < (IMG_COL / 2 + straight_road_sensitivity)) {
             middleAreaCnt++;
         }
     }
-    if(middleAreaCnt > 38) {
+    if(middleAreaCnt > straight_road_middle_area_cnt_min) {
         return true;
     } else {
         return false;

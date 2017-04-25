@@ -1,7 +1,6 @@
 #include "DirectionControl.h"
 #include "SteerActuator.h"
 #include "ImgProc.h"
-#include "Utility.h"
 #include "uart.h"
 
 double directionAngle;
@@ -19,20 +18,27 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+    for(int16_t i = pre_sight - slope_sensitivity; i < pre_sight + slope_sensitivity; ++i) {
         avgMiddle += middleLine[i];
     }
-    avgMiddle /= 6;
+    avgMiddle /= slope_sensitivity * 2;
     return expectMiddle - avgMiddle;
 }
 
 int16_t DirectionControlPID(int16_t error) {
     static int16_t lastError = 0;
-    float kp = Max(0.24, direction_control_kpj + (error * error) * direction_control_kpc);
-    
+    float kp = direction_control_kpj + (error * error) * direction_control_kpc;
+    if(kp > 0.24)
+    {
+        kp = 0.24;
+    }
 	directionAngle = kp * error + direction_control_kd * (error - lastError);
     
-    Limit(directionAngle, -14.4, 14.4);
+	if(directionAngle > 14.4) {
+		directionAngle = 14.4;
+    } else if(directionAngle < -14.4) {
+		directionAngle = -14.4;
+    }
     
     lastError = error;
     

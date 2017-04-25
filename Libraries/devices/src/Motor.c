@@ -1,5 +1,4 @@
 #include "Motor.h"
-#include "Utility.h"
 #include "ftm.h"
 
 bool motor_on;

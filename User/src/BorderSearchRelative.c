@@ -30,7 +30,7 @@ void MiddleLineUpdate(int16_t row) {
     resultSet.middleLine[row] = (resultSet.leftBorder[row] + resultSet.rightBorder[row]) / 2;
 }
 
-void MiddleLineUpdateAll() {
+void UpdateMiddleLine() {
     for(int row = 0; row < IMG_ROW; ++row) {
         MiddleLineUpdate(row);
     }

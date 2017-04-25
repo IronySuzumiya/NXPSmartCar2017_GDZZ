@@ -7,8 +7,6 @@
 
 #define USE_NEW_FORMAT
 
-#define xCHANGING_MIDDLE_LINE
-
-#define IMG_HIGHLIGHTING
+#define xGET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
 
 #endif

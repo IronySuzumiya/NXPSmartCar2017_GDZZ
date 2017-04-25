@@ -30,13 +30,9 @@ void ImgTransOnlyBorderAndMiddleLine(int8_t* leftBorder, int8_t* middleLine, int
 
 void ImgTrans(img_proc_result_set_type* resultSetPtr) {
     #ifndef USE_NEW_FORMAT
-        #ifdef IMG_HIGHLIGHTING
-            ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
-            ImgTransAtPreSight(resultSetPtr);
-            ImgTransInRange(resultSetPtr, pre_sight, 0);
-        #else
-            ImgTransInRange(resultSetPtr, IMG_ROW, 0);
-        #endif
+        ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
+        ImgTransAtPreSight(resultSetPtr);
+        ImgTransInRange(resultSetPtr, pre_sight, 0);
         UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
     #else
         // frame header
@@ -58,24 +54,20 @@ void ImgTrans(img_proc_result_set_type* resultSetPtr) {
                 if(resultSet.middleLine[i] == j) {
                     tmp |= 0x01;
                 } else {
-                    if (IsBlack(i, j))
+                    if (TstImgBufAsBitMap(i, j))
                         tmp |= 0x01;
                     else
                         tmp &= ~0x01;
                 }
                 for(j = 1; j < IMG_COL; ++j) {
-                    #ifdef IMG_HIGHLIGHTING
                     if(resultSet.middleLine[i] == j) {
                         tmp |= 0x01 << (j % 8);
                     } else {
-                    #endif
-                        if (IsBlack(i, j))
+                        if (TstImgBufAsBitMap(i, j))
                             tmp |= 0x01 << (j % 8);
                         else
                             tmp &= ~(0x01 << (j % 8));
-                    #ifdef IMG_HIGHLIGHTING
                     }
-                    #endif
                     if(!(j % 8))
                         UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
                 }
@@ -91,18 +83,14 @@ void ImgTrans(img_proc_result_set_type* resultSetPtr) {
 void ImgTransInRange(img_proc_result_set_type* resultSetPtr, int16_t startIndex, int16_t endIndex) {
 	for(int16_t i = startIndex - 1; i >= endIndex; i--) {
 		for(int16_t j = 0; j < IMG_COL; j++) {
-            #ifdef IMG_HIGHLIGHTING
             if(j == resultSetPtr->middleLine[i] || j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]) { //highlight
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x7f);
             } else {
-            #endif
-                if(IsBlack(i, j))
+                if(TstImgBufAsBitMap(i, j))
                     UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_BLACK);
                 else
                     UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_WHITE);
-            #ifdef IMG_HIGHLIGHTING
             }
-            #endif
 		}
 	}
 }
@@ -115,7 +103,7 @@ void ImgTransAtPreSight(img_proc_result_set_type* resultSetPtr) {
         }
         else
         {
-            if(IsBlack(pre_sight, j))
+            if(TstImgBufAsBitMap(pre_sight, j))
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x20);
             else
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xe0);

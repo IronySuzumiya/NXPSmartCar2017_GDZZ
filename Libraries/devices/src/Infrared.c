@@ -6,13 +6,15 @@ static uint8_t InfraredDecode(uint8_t * code);
 static void InfraredRecvInt(uint32_t pinArray);
 static void InfraredExecute(uint8_t* code);
 
-void InfraredInit() {
+void InfraredInit()
+{
     GPIO_QuickInit(IR_PORT, IR_PIN, kGPIO_Mode_IPU);
     GPIO_CallbackInstall(IR_PORT, InfraredRecvInt);
     GPIO_ITDMAConfig(IR_PORT, IR_PIN, kGPIO_IT_FallingEdge, true);
 }
 
-uint8_t InfraredDecode(uint8_t * code) {
+uint8_t InfraredDecode(uint8_t * code)
+{
 	uint8_t i,j;
 	uint32_t time_out = 0;
 	while((IR_READ == 0) && (time_out < 30*10))
@@ -47,7 +49,8 @@ uint8_t InfraredDecode(uint8_t * code) {
 	return 0;
 }
 
-void InfraredRecvInt(uint32_t pinArray) {
+void InfraredRecvInt(uint32_t pinArray)
+{
     GPIO_ITDMAConfig(IR_PORT, IR_PIN, kGPIO_IT_FallingEdge, false);
     uint8_t code[4];
     if(!InfraredDecode(code))
@@ -60,7 +63,8 @@ void InfraredRecvInt(uint32_t pinArray) {
     GPIO_ITDMAConfig(IR_PORT, IR_PIN, kGPIO_IT_FallingEdge, true);
 }
 
-void InfraredExecute(uint8_t* code) {
+void InfraredExecute(uint8_t* code)
+{
 	switch(*code)
 	{
 		case 0x0: motor_on = false; break; // stop
