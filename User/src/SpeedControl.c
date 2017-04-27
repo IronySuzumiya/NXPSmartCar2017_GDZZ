@@ -57,13 +57,13 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
         int16_t tmpSpeed;
         if(directionAngle > 0)
         {
-             tmpSpeed = current_speed - 2.45 * directionAngle;
+             tmpSpeed = current_speed - 2.6 * directionAngle;
              leftPid.targetValue = tmpSpeed;
              rightPid.targetValue = tmpSpeed * (0.035 * directionAngle + 1);//0.342
         }
         else
         {
-             tmpSpeed = current_speed + 2.5 * directionAngle;
+             tmpSpeed = current_speed + 2.6 * directionAngle;
              rightPid.targetValue = tmpSpeed;
              leftPid.targetValue = tmpSpeed * (0.035 * (-directionAngle) + 1);
         }

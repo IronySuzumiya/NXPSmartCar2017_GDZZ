@@ -131,12 +131,19 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
+//    static int16_t firstSeveralInt = 0;
+    
     #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
     if(inRingCnt > 26) {
         inRing = false;
         inRingCnt = 0;
     }
     #endif
+    
+//    if(firstSeveralInt > 10 && OutOfRoad()) {
+//        MOTOR_STOP;
+//        motor_on = false;
+//    }
     if(StartLineJudge(pre_sight - 10)) {
         resultSet.imgProcFlag |= START_LINE;
     } else {
@@ -146,32 +153,33 @@ void ImgProcSummary() {
         switch(GetRoadType()) {
             case Ring:
                 resultSet.imgProcFlag |= RING;
-//                BUZZLE_ON;
+                BUZZLE_ON;
                 #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
                 inRing = true;
                 #endif
                 RingCompensateGoLeft();
                 break;
             case RingEnd:
+                BUZZLE_ON;
                 RingEndCompensateFromLeft();
                 break;
             case LeftCurve:
-//                BUZZLE_OFF;
+                BUZZLE_OFF;
                 resultSet.imgProcFlag |= CURVE;
                 LeftCurveCompensate();
                 break;
             case RightCurve:
-//                BUZZLE_OFF;
+                BUZZLE_OFF;
                 resultSet.imgProcFlag |= CURVE;
                 RightCurveCompensate();
                 break;
             case CrossRoad:
-//                BUZZLE_OFF;
+                BUZZLE_OFF;
                 resultSet.imgProcFlag |= CROSS_ROAD;
                 CrossRoadCompensate();
                 break;
             default:
-//                BUZZLE_OFF;
+                BUZZLE_OFF;
                 break;
         }
     }
@@ -189,4 +197,8 @@ void ImgProcSummary() {
     if(speed_control_on) {
         SpeedTargetSet(resultSet.imgProcFlag);
     }
+    
+//    if(firstSeveralInt <= 10) {
+//        ++firstSeveralInt;
+//    }
 }

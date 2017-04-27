@@ -6,6 +6,9 @@
 #include "uart.h"
 #include "gpio.h"
 
+int32_t ringDistance;
+bool inRing;
+
 static bool IsRing(void);
 static bool IsRingEnd(void);
 static road_type_type IsCurve(void);
@@ -14,15 +17,31 @@ static inline float Abs(float);
 static inline float Min(float, float);
 static inline float Max(float, float);
 
-int32_t ringDistance;
-bool inRing;
 static int16_t black_pt_row;
+static int16_t last_not_found_border_row;
+
+bool OutOfRoad() {
+    int16_t cnttotl = 0;
+    int16_t cnt = 0;
+    for(int16_t row = 0; row < 6; ++row) {
+        for(int16_t col = IMG_COL / 2 - 30; col < IMG_COL + 30; ++col) {
+            if(IsWhite(row, col)) {
+                ++cnt;
+            }
+        }
+        if(cnt < 8) {
+            ++cnttotl;
+        }
+        cnt = 0;
+    }
+    return cnttotl > 4;
+}
 
 road_type_type GetRoadType() {
     if(inRing) {
         if(ringDistance > 25000 && IsRingEnd()) {
-            ringDistance = 0;
-            inRing = false;
+//            ringDistance = 0;
+//            inRing = false;
             return RingEnd;
         }
     }
@@ -41,7 +60,6 @@ road_type_type GetRoadType() {
             }
         }
         if(row == IMG_ROW) {
-            BUZZLE_OFF;
             return Unknown;
         }
         bool leftCnt = false, rightCnt = false;
@@ -54,14 +72,11 @@ road_type_type GetRoadType() {
                 rightCnt = true;
             }
             if(leftCnt && rightCnt) {
-                BUZZLE_ON;
                 return IsRing() ? Ring : IsCrossRoad() ? CrossRoad : Unknown;
             }
         }
-        BUZZLE_OFF;
         return Unknown;
     } else {
-        BUZZLE_OFF;
         return curve;
     }
 }
@@ -101,24 +116,35 @@ bool IsRing() {
 }
 
 bool IsRingEnd() {
-    if(resultSet.rightBorderNotFoundCnt > 15) {
-        int16_t cnt = 0;
-        int16_t row;
-        for(row = 20; row < 40; ++row) {
-            if((resultSet.leftTrend[row] & 0x8000) ^ (resultSet.leftTrend[row - 5] & 0x8000)) {
-                break;
-            }
+//    {
+//        int16_t row;
+//        int16_t cnt = 0;
+//        for(row = 0; row < IMG_ROW && resultSet.foundRightBorder[row]; ++row) { }
+//        for(; row < IMG_ROW && !resultSet.foundRightBorder[row]; ++row) { ++cnt; }
+//        last_not_found_border_row = row;
+//        if(cnt < 9) {
+//            return false;
+//        }
+//    }
+    if(resultSet.rightBorderNotFoundCnt < 15) {
+        return false;
+    }
+    int16_t cnt = 0;
+    int16_t row;
+    for(row = 20; row < 40; ++row) {
+        if((resultSet.leftTrend[row] & 0x8000) ^ (resultSet.leftTrend[row - 5] & 0x8000)) {
+            break;
         }
-        if(row >= 40) {
-            return false;
+    }
+    if(row >= 40) {
+        return false;
+    }
+    for(row = IMG_ROW - 1; row >= 35; --row) {
+        if(IsWhite(row, resultSet.middleLine[row])) {
+            ++cnt;
         }
-        for(row = IMG_ROW - 1; row >= 35; --row) {
-            if(IsWhite(row, resultSet.middleLine[row])) {
-                ++cnt;
-            }
-            if(cnt > 12) {
-                return true;
-            }
+        if(cnt > 12) {
+            return true;
         }
     }
     return false;
@@ -209,8 +235,23 @@ void RingCompensateGoRight() {
 }
 
 void RingEndCompensateFromLeft() {
-//    MOTOR_STOP;
-//    motor_on = false;
+    MOTOR_STOP;
+    motor_on = false;
+//    int16_t row;
+//    int16_t col;
+//    for(row = last_not_found_border_row; row < IMG_ROW; ++row) {
+//        if(resultSet.rightBorder[row] > IMG_COL - 40) {
+//            col = resultSet.rightBorder[row];
+//            break;
+//        }
+//    }
+//    if(row < IMG_ROW) {
+//        --row;
+//        for(; row >= 0; --row) {
+//            resultSet.rightBorder[row] = col;
+//        }
+//        MiddleLineUpdateAll();
+//    }
 }
 
 void LeftCurveCompensate() {
@@ -315,7 +356,7 @@ void CrossRoadCompensate() {
         }
     }
     
-    UpdateMiddleLine();
+    MiddleLineUpdateAll();
 }
 
 inline float Abs(float input) {

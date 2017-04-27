@@ -3,6 +3,8 @@
 
 #include "root.h"
 
+bool OutOfRoad(void);
+
 road_type_type GetRoadType(void);
 void RingCompensateGoLeft(void);
 void RingCompensateGoRight(void);

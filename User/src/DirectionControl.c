@@ -28,9 +28,9 @@ int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
 int16_t DirectionControlPID(int16_t error) {
     static int16_t lastError = 0;
     float kp = direction_control_kpj + (error * error) * direction_control_kpc;
-    if(kp > 0.24)
+    if(kp > 0.28)
     {
-        kp = 0.24;
+        kp = 0.28;
     }
 	directionAngle = kp * error + direction_control_kd * (error - lastError);
     
