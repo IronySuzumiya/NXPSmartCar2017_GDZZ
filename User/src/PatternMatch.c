@@ -8,6 +8,7 @@
 
 int32_t ringDistance;
 bool inRing;
+bool ringEndDelay;
 
 static bool IsRing(void);
 static bool IsRingEnd(void);
@@ -20,28 +21,37 @@ static inline float Max(float, float);
 static int16_t black_pt_row;
 static int16_t last_not_found_border_row;
 
-bool OutOfRoad() {
-    int16_t cnttotl = 0;
+bool OutOfRoadJudge(int16_t row) {
     int16_t cnt = 0;
-    for(int16_t row = 0; row < 6; ++row) {
-        for(int16_t col = IMG_COL / 2 - 30; col < IMG_COL + 30; ++col) {
-            if(IsWhite(row, col)) {
-                ++cnt;
-            }
+    for(int16_t col = 60; col < IMG_COL - 60; ++col) {
+        if(IsBlack(row, col)) {
+            ++cnt;
         }
-        if(cnt < 8) {
-            ++cnttotl;
-        }
-        cnt = 0;
     }
-    return cnttotl > 4;
+    return cnt >= 85;
+}
+
+void OutOfRoadJudgeExecute() {
+    MOTOR_STOP;
+    motor_on = false;
 }
 
 road_type_type GetRoadType() {
-    if(inRing) {
-        if(ringDistance > 25000 && IsRingEnd()) {
-//            ringDistance = 0;
-//            inRing = false;
+    if(ringEndDelay) {
+        if(ringDistance < 10000) {
+            return RingEnd;
+        } else {
+            ringDistance = 0;
+            ringEndDelay = false;
+        }
+    } else if(inRing) {
+        if(ringDistance > 200000L) {
+            ringDistance = 0;
+            inRing = false;
+        } else if(ringDistance > 25000 && IsRingEnd()) {
+            ringDistance = 0;
+            ringEndDelay = true;
+            inRing = false;
             return RingEnd;
         }
     }
@@ -116,18 +126,18 @@ bool IsRing() {
 }
 
 bool IsRingEnd() {
-//    {
-//        int16_t row;
-//        int16_t cnt = 0;
-//        for(row = 0; row < IMG_ROW && resultSet.foundRightBorder[row]; ++row) { }
-//        for(; row < IMG_ROW && !resultSet.foundRightBorder[row]; ++row) { ++cnt; }
-//        last_not_found_border_row = row;
-//        if(cnt < 9) {
-//            return false;
-//        }
-//    }
     if(resultSet.rightBorderNotFoundCnt < 15) {
         return false;
+    }
+    {
+        int16_t row;
+        int16_t cnt = 0;
+        for(row = 0; row < IMG_ROW && resultSet.foundRightBorder[row]; ++row) { }
+        for(; row < IMG_ROW && !resultSet.foundRightBorder[row]; ++row) { ++cnt; }
+        last_not_found_border_row = row;
+        if(cnt < 9) {
+            return false;
+        }
     }
     int16_t cnt = 0;
     int16_t row;
@@ -235,23 +245,21 @@ void RingCompensateGoRight() {
 }
 
 void RingEndCompensateFromLeft() {
-    MOTOR_STOP;
-    motor_on = false;
-//    int16_t row;
-//    int16_t col;
-//    for(row = last_not_found_border_row; row < IMG_ROW; ++row) {
-//        if(resultSet.rightBorder[row] > IMG_COL - 40) {
-//            col = resultSet.rightBorder[row];
-//            break;
-//        }
-//    }
-//    if(row < IMG_ROW) {
-//        --row;
-//        for(; row >= 0; --row) {
-//            resultSet.rightBorder[row] = col;
-//        }
-//        MiddleLineUpdateAll();
-//    }
+    int16_t row;
+    int16_t col;
+    for(row = last_not_found_border_row; row < IMG_ROW; ++row) {
+        if(resultSet.rightBorder[row] < IMG_COL - 40) {
+            col = resultSet.rightBorder[row];
+            break;
+        }
+    }
+    if(row < IMG_ROW) {
+        --row;
+        for(; row >= 0; --row) {
+            resultSet.rightBorder[row] = col;
+        }
+        MiddleLineUpdateAll();
+    }
 }
 
 void LeftCurveCompensate() {

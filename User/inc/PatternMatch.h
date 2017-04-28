@@ -3,7 +3,8 @@
 
 #include "root.h"
 
-bool OutOfRoad(void);
+bool OutOfRoadJudge(int16_t row);
+void OutOfRoadJudgeExecute(void);
 
 road_type_type GetRoadType(void);
 void RingCompensateGoLeft(void);
@@ -17,5 +18,6 @@ bool StraightLineJudge(void);
 
 extern int32_t ringDistance;
 extern bool inRing;
+extern bool ringEndDelay;
 
 #endif

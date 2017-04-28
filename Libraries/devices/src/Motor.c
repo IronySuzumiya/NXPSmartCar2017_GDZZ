@@ -10,7 +10,10 @@ void MotorInit()
 	FTM_PWM_QuickInit(MOTOR_RIGHT_FOR_MAP, kPWM_EdgeAligned, 10000);
 	FTM_PWM_QuickInit(MOTOR_RIGHT_BAK_MAP, kPWM_EdgeAligned, 10000);
     
-    MOTOR_STOP;
+    FTM_PWM_ChangeDuty(MOTOR_LEFT_PORT, MOTOR_LEFT_FOR_CHL, 0);
+    FTM_PWM_ChangeDuty(MOTOR_LEFT_PORT, MOTOR_LEFT_BAK_CHL, 0);
+    FTM_PWM_ChangeDuty(MOTOR_RIGHT_PORT, MOTOR_RIGHT_FOR_CHL, 0);
+    FTM_PWM_ChangeDuty(MOTOR_RIGHT_PORT, MOTOR_RIGHT_BAK_CHL, 0);
 }
 
 void MotorOut(int16_t left, int16_t right)

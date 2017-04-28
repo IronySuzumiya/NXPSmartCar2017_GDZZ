@@ -1,5 +1,4 @@
 #include "Encoder.h"
-#include "ImgUtility.h"
 #include "ftm.h"
 #include "gpio.h"
 #include "lptmr.h"
@@ -35,9 +34,6 @@ void EncoderGet(int16_t* left, int16_t* right) {
                 *right = -LPTMR_PC_ReadCounter();
             }
             LPTMR_ClearCounter();
-        }
-        if(inRing) {
-            ringDistance += (*left + *right) / 2 * 5;
         }
     } else {
         FTM_QD_ClearCount(ENCODER_LEFT_PORT_FTM_QD);

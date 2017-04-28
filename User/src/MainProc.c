@@ -1,4 +1,5 @@
 #include "MainProc.h"
+#include "ImgUtility.h"
 #include "pit.h"
 #include "stdlib.h"
 #include "gpio.h"
@@ -55,6 +56,9 @@ void TimerInit() {
 
 void MainProc() {
     EncoderGet(&leftSpeed, &rightSpeed);
+    if(inRing || ringEndDelay) {
+        ringDistance += (leftSpeed + rightSpeed) / 2 * 5;
+    }
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
     }

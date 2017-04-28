@@ -122,6 +122,17 @@ void ImgProc1() {
 }
 
 void ImgProc2() {
+    static int16_t cnt = 0;
+    if(imgBufRow < 10) {
+        if(OutOfRoadJudge(imgBufRow)) {
+            ++cnt;
+        }
+    } else if(imgBufRow == 10) {
+        if(cnt >= 4) {
+            OutOfRoadJudgeExecute();
+        }
+        cnt = 0;
+    }
     MiddleLineUpdate(imgBufRow);
     searchForBordersStartIndex = resultSet.middleLine[imgBufRow];
 }
@@ -131,8 +142,6 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-//    static int16_t firstSeveralInt = 0;
-    
     #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
     if(inRingCnt > 26) {
         inRing = false;
@@ -140,10 +149,6 @@ void ImgProcSummary() {
     }
     #endif
     
-//    if(firstSeveralInt > 10 && OutOfRoad()) {
-//        MOTOR_STOP;
-//        motor_on = false;
-//    }
     if(StartLineJudge(pre_sight - 10)) {
         resultSet.imgProcFlag |= START_LINE;
     } else {
@@ -153,7 +158,7 @@ void ImgProcSummary() {
         switch(GetRoadType()) {
             case Ring:
                 resultSet.imgProcFlag |= RING;
-                BUZZLE_ON;
+                BUZZLE_OFF;
                 #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
                 inRing = true;
                 #endif
@@ -197,8 +202,4 @@ void ImgProcSummary() {
     if(speed_control_on) {
         SpeedTargetSet(resultSet.imgProcFlag);
     }
-    
-//    if(firstSeveralInt <= 10) {
-//        ++firstSeveralInt;
-//    }
 }
