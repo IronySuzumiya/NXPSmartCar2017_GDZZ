@@ -151,6 +151,8 @@ void ImgProcSummary() {
     
     if(StartLineJudge(pre_sight - 10)) {
         resultSet.imgProcFlag |= START_LINE;
+        MOTOR_STOP;
+        motor_on = false;
     } else {
         if(StraightLineJudge()) {
             resultSet.imgProcFlag |= STRAIGHT_ROAD;
@@ -165,7 +167,7 @@ void ImgProcSummary() {
                 RingCompensateGoLeft();
                 break;
             case RingEnd:
-                BUZZLE_ON;
+                BUZZLE_OFF;
                 RingEndCompensateFromLeft();
                 break;
             case LeftCurve:
@@ -183,21 +185,32 @@ void ImgProcSummary() {
                 resultSet.imgProcFlag |= CROSS_ROAD;
                 CrossRoadCompensate();
                 break;
+            case LeftBarrier:
+                BUZZLE_ON;
+                if(direction_control_on) {
+                    DirectionControlProc(resultSet.middleLine, IMG_COL / 2 - 22);
+                }
+                if(speed_control_on) {
+                    SpeedTargetSet(resultSet.imgProcFlag);
+                }
+                return;
+            case RightBarrier:
+                BUZZLE_ON;
+                if(direction_control_on) {
+                    DirectionControlProc(resultSet.middleLine, IMG_COL / 2 + 22);
+                }
+                if(speed_control_on) {
+                    SpeedTargetSet(resultSet.imgProcFlag);
+                }
+                return;
+            
             default:
                 BUZZLE_OFF;
                 break;
         }
     }
     if(direction_control_on) {
-        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
-        if(inRing) {
-            DirectionControlProc(resultSet.middleLine, IMG_COL / 2 + 12);
-        } else {
-        #endif
-            DirectionControlProc(resultSet.middleLine, IMG_COL / 2);
-        #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
-        }
-        #endif
+        DirectionControlProc(resultSet.middleLine, IMG_COL / 2);
     }
     if(speed_control_on) {
         SpeedTargetSet(resultSet.imgProcFlag);

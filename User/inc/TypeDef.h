@@ -52,15 +52,16 @@ typedef struct _img_proc_result_set_type {
 }
 img_proc_result_set_type;
 
-typedef enum _road_type_type {
+enum _road_type {
     Unknown,
     Ring,
     RingEnd,
     LeftCurve,
     RightCurve,
-    CrossRoad
-}
-road_type_type;
+    CrossRoad,
+    LeftBarrier,
+    RightBarrier
+};
 
 #define ULTRA_SONIC_TIME_QUEUE_LENGTH 10
 

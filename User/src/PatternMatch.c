@@ -10,10 +10,15 @@ int32_t ringDistance;
 bool inRing;
 bool ringEndDelay;
 
+int16_t barrierType;
+int32_t barrierDistance;
+bool aroundBarrier;
+
 static bool IsRing(void);
 static bool IsRingEnd(void);
-static road_type_type IsCurve(void);
+static int16_t IsCurve(void);
 static bool IsCrossRoad(void);
+static int16_t IsBarrier(void);
 static inline float Abs(float);
 static inline float Min(float, float);
 static inline float Max(float, float);
@@ -36,7 +41,7 @@ void OutOfRoadJudgeExecute() {
     motor_on = false;
 }
 
-road_type_type GetRoadType() {
+int16_t GetRoadType() {
     if(ringEndDelay) {
         if(ringDistance < 10000) {
             return RingEnd;
@@ -54,8 +59,16 @@ road_type_type GetRoadType() {
             inRing = false;
             return RingEnd;
         }
+    } else if(aroundBarrier) {
+        if(barrierDistance > 5000) {
+            barrierDistance = 0;
+            aroundBarrier = false;
+        } else {
+            return barrierType;
+        }
     }
-    road_type_type curve = IsCurve();
+    
+    int16_t curve = IsCurve();
     if(curve == Unknown) {
         int16_t cnt = 0;
         int16_t row;
@@ -70,7 +83,7 @@ road_type_type GetRoadType() {
             }
         }
         if(row == IMG_ROW) {
-            return Unknown;
+            return !inRing && !ringEndDelay ? IsBarrier() : Unknown;
         }
         bool leftCnt = false, rightCnt = false;
         int16_t _row = row;
@@ -82,10 +95,10 @@ road_type_type GetRoadType() {
                 rightCnt = true;
             }
             if(leftCnt && rightCnt) {
-                return IsRing() ? Ring : IsCrossRoad() ? CrossRoad : Unknown;
+                return IsRing() ? Ring : IsCrossRoad() ? CrossRoad : !inRing && !ringEndDelay ? IsBarrier() : Unknown;
             }
         }
-        return Unknown;
+        return !inRing && !ringEndDelay ? IsBarrier() : Unknown;
     } else {
         return curve;
     }
@@ -160,7 +173,7 @@ bool IsRingEnd() {
     return false;
 }
 
-road_type_type IsCurve() {
+int16_t IsCurve() {
     int16_t row;
     bool leftCurve = false;
     bool rightCurve = false;
@@ -198,6 +211,35 @@ road_type_type IsCurve() {
 bool IsCrossRoad() {
     return resultSet.leftBorderNotFoundCnt > 2 && resultSet.rightBorderNotFoundCnt > 2
         && resultSet.leftBorderNotFoundCnt + resultSet.rightBorderNotFoundCnt > 10;
+}
+
+int16_t IsBarrier() {
+    int16_t inRow;
+    int16_t outRow;
+    int16_t row;
+    int16_t _barrierType;
+    for(row = 10; row < 45 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
+    if(resultSet.middleLine[row - 2] <= IMG_COL / 2 - 20 || resultSet.middleLine[row - 2] >= IMG_COL / 2 + 20) {
+        return Unknown;
+    }
+    
+    _barrierType = resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 ? LeftBarrier : RightBarrier;
+    
+    inRow = row;
+    row += 2;
+    for(; row < IMG_ROW && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 10; ++row) { }
+    if((resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
+        || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] < 0 && _barrierType == RightBarrier)) {
+        return Unknown;
+    }
+    outRow = row;
+    if(outRow - inRow > 5 && row < IMG_ROW && resultSet.middleLine[row] > IMG_COL / 2 - 20
+        && resultSet.middleLine[row] < IMG_COL / 2 + 20) {
+        aroundBarrier = true;
+        return barrierType = _barrierType;
+    } else {
+        return Unknown;
+    }
 }
 
 void RingCompensateGoLeft() {
@@ -365,6 +407,12 @@ void CrossRoadCompensate() {
     }
     
     MiddleLineUpdateAll();
+}
+
+void BarrierCompensate() {
+    for(int16_t row = pre_sight - slope_sensitivity; row < pre_sight + slope_sensitivity; ++row) {
+        resultSet.middleLine[row] = IMG_COL - 1;
+    }
 }
 
 inline float Abs(float input) {

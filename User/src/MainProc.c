@@ -59,6 +59,9 @@ void MainProc() {
     if(inRing || ringEndDelay) {
         ringDistance += (leftSpeed + rightSpeed) / 2 * 5;
     }
+    if(aroundBarrier) {
+        barrierDistance += (leftSpeed + rightSpeed) / 2 * 5;
+    }
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
     }
