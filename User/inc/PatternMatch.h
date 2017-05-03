@@ -3,13 +3,14 @@
 
 #include "root.h"
 
-bool OutOfRoadJudge(int16_t row);
-void OutOfRoadJudgeExecute(void);
+#define MAYBE_BARRIER (!inRing && !ringEndDelay ? WhichBarrier() : Unknown)
 
 int16_t GetRoadType(void);
+bool OutOfRoadJudge(void);
 void RingCompensateGoLeft(void);
 void RingCompensateGoRight(void);
 void RingEndCompensateFromLeft(void);
+void RingEndCompensateFromRight(void);
 void LeftCurveCompensate(void);
 void RightCurveCompensate(void);
 void CrossRoadCompensate(void);

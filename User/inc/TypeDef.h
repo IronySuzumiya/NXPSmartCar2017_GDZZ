@@ -32,7 +32,7 @@ typedef mode_type mode_type_array[NUMBER_OF_MODES];
 typedef void (*img_proc_type)(void);
 typedef img_proc_type img_proc_type_array[NUMBER_OF_IMG_PROC];
 
-typedef struct _img_proc_result_set_type {
+typedef struct _img_proc_struct {
     int16_t leftBorder[IMG_ROW];
     int16_t rightBorder[IMG_ROW];
     int16_t middleLine[IMG_ROW];
@@ -50,7 +50,7 @@ typedef struct _img_proc_result_set_type {
     int16_t leftBorderNotFoundCnt;
     int16_t rightBorderNotFoundCnt;
 }
-img_proc_result_set_type;
+img_proc_struct;
 
 enum _road_type {
     Unknown,
@@ -62,13 +62,5 @@ enum _road_type {
     LeftBarrier,
     RightBarrier
 };
-
-#define ULTRA_SONIC_TIME_QUEUE_LENGTH 10
-
-typedef struct _ultra_sonic_time_queue_type {
-    uint32_t valueBuf[ULTRA_SONIC_TIME_QUEUE_LENGTH];
-    uint8_t cursor;
-}
-ultra_sonic_time_queue_type;
 
 #endif

@@ -4,19 +4,12 @@
 
 bool img_trans_on, state_trans_on, mode_switch_on;
 
-static void ImgTransInRange(img_proc_result_set_type* resultSetPtr, int16_t startIndex, int16_t endIndex);
-static void ImgTransAtPreSight(img_proc_result_set_type* resultSetPtr);
+static void ImgTransInRange(img_proc_struct* resultSetPtr, int16_t startIndex, int16_t endIndex);
+static void ImgTransAtPreSight(img_proc_struct* resultSetPtr);
 static uint16_t CrcCheck(uint8_t *buf, uint8_t crcCnt);
 
 void DataCommInit() {
     UART_QuickInit(DATACOMM_IMG_TRANS_MAP, DATACOMM_IMG_TRANS_BAUD);
-    UART_CallbackRxInstall(DATACOMM_DOUBLE_CAR_CHL, DoubleCarMessageRecv);
-    UART_ITDMAConfig(DATACOMM_DOUBLE_CAR_CHL, kUART_IT_Rx, ENABLE);
-    //17-2-18 by Irony
-    #ifdef DEBUG_ON
-        UART_CallbackRxInstall(DATACOMM_IMG_TRANS_CHL, MessageParse);
-        UART_ITDMAConfig(DATACOMM_IMG_TRANS_CHL, kUART_IT_Rx, ENABLE);
-    #endif
 }
 
 void ImgTransOnlyBorderAndMiddleLine(int8_t* leftBorder, int8_t* middleLine, int8_t* rightBorder) {
@@ -27,86 +20,79 @@ void ImgTransOnlyBorderAndMiddleLine(int8_t* leftBorder, int8_t* middleLine, int
     }
     UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
 }
-
-void ImgTrans(img_proc_result_set_type* resultSetPtr) {
-//    #ifndef USE_NEW_FORMAT
-        ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
-        ImgTransAtPreSight(resultSetPtr);
-        ImgTransInRange(resultSetPtr, pre_sight, 0);
-        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
-//    #else
-//        // frame header
-//        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
-//        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
-//        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
-//        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
-//        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
-//        #ifdef USE_BMP
-//            for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
-//                for(int16_t j = 0; j < 1 + IMG_COL / 8; ++j) {
-//                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, imgBuf[i][j]);
-//                }
-//            }
-//        #else
-//            byte tmp;
-//            int16_t j;
-//            for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
-//                if(resultSet.middleLine[i] == j || resultSet.leftBorder[i] == j || resultSet.rightBorder[i] == j) {
-//                    tmp |= 0x01;
-//                } else {
-//                    if (TstImgBufAsBitMap(i, j))
-//                        tmp |= 0x01;
-//                    else
-//                        tmp &= ~0x01;
-//                }
-//                for(j = 1; j < IMG_COL; ++j) {
-//                    if(resultSet.middleLine[i] == j || resultSet.leftBorder[i] == j || resultSet.rightBorder[i] == j) {
-//                        tmp |= 0x01 << (j % 8);
-//                    } else {
-//                        if (TstImgBufAsBitMap(i, j))
-//                            tmp |= 0x01 << (j % 8);
-//                        else
-//                            tmp &= ~(0x01 << (j % 8));
-//                    }
-//                    if(!(j % 8))
-//                        UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
-//                }
-//                #if IMG_COL % 8
-//                    // higher-bits here would be ignored, so don't worry
-//                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
-//                #endif
-//            }
-//        #endif
-//    #endif
+#ifndef USE_NEW_FORMAT
+void ImgTrans(img_proc_struct* resultSetPtr) {
+    ImgTransInRange(resultSetPtr, IMG_ROW, pre_sight + 1);
+    ImgTransAtPreSight(resultSetPtr);
+    ImgTransInRange(resultSetPtr, pre_sight, 0);
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_EOF);
 }
+#else
+void ImgTrans(img_proc_struct* resultSetPtr) {
+    // frame header
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xee);
+    #ifdef USE_BMP
+        for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
+            for(int16_t j = 0; j < 1 + IMG_COL / 8; ++j) {
+                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, imgBuf[i][j]);
+            }
+        }
+    #else
+        byte tmp;
+        int16_t j;
+        for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
+            if(resultSet.middleLine[i] == j || resultSet.leftBorder[i] == j || resultSet.rightBorder[i] == j) {
+                tmp |= 0x01;
+            } else {
+                if (TstImgBufAsBitMap(i, j))
+                    tmp |= 0x01;
+                else
+                    tmp &= ~0x01;
+            }
+            for(j = 1; j < IMG_COL; ++j) {
+                if(resultSet.middleLine[i] == j || resultSet.leftBorder[i] == j || resultSet.rightBorder[i] == j) {
+                    tmp |= 0x01 << (j % 8);
+                } else {
+                    if (TstImgBufAsBitMap(i, j))
+                        tmp |= 0x01 << (j % 8);
+                    else
+                        tmp &= ~(0x01 << (j % 8));
+                }
+                if(!(j % 8))
+                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
+            }
+            #if IMG_COL % 8
+                // higher-bits here would be ignored, so don't worry
+                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, tmp);
+            #endif
+        }
+    #endif
+}
+#endif
 
-void ImgTransInRange(img_proc_result_set_type* resultSetPtr, int16_t startIndex, int16_t endIndex) {
+void ImgTransInRange(img_proc_struct* resultSetPtr, int16_t startIndex, int16_t endIndex) {
 	for(int16_t i = startIndex - 1; i >= endIndex; i--) {
 		for(int16_t j = 0; j < IMG_COL; j++) {
-            if(j == resultSetPtr->middleLine[i] || j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]) { //highlight
+            if(j == resultSetPtr->middleLine[i] || j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]) {
+                //highlight
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x7f);
             } else {
-                if(TstImgBufAsBitMap(i, j))
-                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_BLACK);
-                else
-                    UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_WHITE);
+                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IsBlack(i, j) ? IMG_BLACK : IMG_WHITE);
             }
 		}
 	}
 }
 
-void ImgTransAtPreSight(img_proc_result_set_type* resultSetPtr) {
+void ImgTransAtPreSight(img_proc_struct* resultSetPtr) {
     for(int16_t j = 0; j < IMG_COL; j++) {
-        if(j == resultSetPtr->middleLine[pre_sight])
-        {
+        if(j == resultSetPtr->middleLine[pre_sight]) {
             UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IMG_BLACK);
-        }
-        else
-        {
-            if(TstImgBufAsBitMap(pre_sight, j))
-                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x20);
-            else
-                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0xe0);
+        } else {
+            UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IsBlack(pre_sight, j) ? 0x20 : 0xe0);
         }
     }
 }

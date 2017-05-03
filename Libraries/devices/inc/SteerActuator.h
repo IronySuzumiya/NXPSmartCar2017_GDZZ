@@ -1,8 +1,6 @@
 #ifndef _STEER_ACTUATOR_H
 #define _STEER_ACTUATOR_H
 
-#define STEER_ACTUATOR
-
 #include "root.h"
 
 void SteerActuatorInit(void);

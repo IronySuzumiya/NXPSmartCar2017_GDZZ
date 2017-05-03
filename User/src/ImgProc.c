@@ -10,31 +10,15 @@ byte imgBuf[IMG_ROW][1 + IMG_COL / 8]; // Important extra 1 byte against overflo
 #else
 byte imgBuf[IMG_ROW][IMG_COL];
 #endif
+
 int16_t dirError;
 bool direction_control_on;
 int16_t pre_sight;
-img_proc_result_set_type resultSet;
-int16_t img_border_scan_compensation;
-int16_t wide_road_size;
-int16_t curve_sensitivity;
-int16_t slope_sensitivity;
-int16_t inflexion_sensitivity;
-int16_t cross_road_size;
-int16_t straight_road_sensitivity;
-int16_t straight_road_middle_area_cnt_min;
-int16_t startline_sensitivity;
-int16_t startline_black_tape_num;
-int16_t mini_s_sensitivity;
-int16_t mini_s_visual_field;
+img_proc_struct resultSet;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
 static int16_t searchForBordersStartIndex = IMG_COL / 2;
-
-#ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
-static bool inRing;
-static int16_t inRingCnt;
-#endif
 
 static void ImgProcHREF(uint32_t pinxArray);
 static void ImgProcVSYN(uint32_t pinxArray);
@@ -111,7 +95,6 @@ void ImgProc0() {
     #else
         for(i = IMG_COL - 1; i >= 0; i--) {
             imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
-//            __ASM("nop");__ASM("nop");
         }
     #endif
 }
@@ -122,35 +105,17 @@ void ImgProc1() {
 }
 
 void ImgProc2() {
-    static int16_t cnt = 0;
-    if(imgBufRow < 10) {
-        if(OutOfRoadJudge(imgBufRow)) {
-            ++cnt;
-        }
-    } else if(imgBufRow == 10) {
-        if(cnt >= 4) {
-            OutOfRoadJudgeExecute();
-        }
-        cnt = 0;
-    }
     MiddleLineUpdate(imgBufRow);
     searchForBordersStartIndex = resultSet.middleLine[imgBufRow];
 }
+
 void ImgProc3() {
     CurveSlopeUpdate(imgBufRow);
     imgBufRow++;
 }
 
 void ImgProcSummary() {
-    #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
-    if(inRingCnt > 26) {
-        inRing = false;
-        inRingCnt = 0;
-    }
-    #endif
-    
-    if(StartLineJudge(pre_sight - 10)) {
-        resultSet.imgProcFlag |= START_LINE;
+    if(OutOfRoadJudge() || StartLineJudge(pre_sight - 10)) {
         MOTOR_STOP;
         motor_on = false;
     } else {
@@ -159,11 +124,7 @@ void ImgProcSummary() {
         }
         switch(GetRoadType()) {
             case Ring:
-                resultSet.imgProcFlag |= RING;
                 BUZZLE_OFF;
-                #ifdef GET_OUT_OF_RING_VIA_CHANGE_MIDDLE_LINE
-                inRing = true;
-                #endif
                 RingCompensateGoLeft();
                 break;
             case RingEnd:
@@ -172,12 +133,10 @@ void ImgProcSummary() {
                 break;
             case LeftCurve:
                 BUZZLE_OFF;
-                resultSet.imgProcFlag |= CURVE;
                 LeftCurveCompensate();
                 break;
             case RightCurve:
                 BUZZLE_OFF;
-                resultSet.imgProcFlag |= CURVE;
                 RightCurveCompensate();
                 break;
             case CrossRoad:
@@ -203,10 +162,8 @@ void ImgProcSummary() {
                     SpeedTargetSet(resultSet.imgProcFlag);
                 }
                 return;
-            
             default:
                 BUZZLE_OFF;
-                break;
         }
     }
     if(direction_control_on) {

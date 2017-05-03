@@ -9,6 +9,5 @@ extern double directionAngle;
 extern double direction_control_kd;
 extern double direction_control_kpj;
 extern double direction_control_kpc;
-extern double direction_control_angle_max;
 
 #endif

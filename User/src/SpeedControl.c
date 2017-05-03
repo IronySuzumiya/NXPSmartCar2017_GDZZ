@@ -12,10 +12,6 @@ bool speed_control_on;
 int16_t speed_control_speed;
 int16_t speed_control_acc_speed;
 int16_t speed_control_dec_speed;
-double speed_control_curves_speed_gain;
-double speed_control_curves_differential_gain;
-
-static int16_t current_speed;
 
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
@@ -27,10 +23,8 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 }
 
 void SpeedTargetSet(uint16_t imgProcFlag) {
-//    static int16_t slowDownCnt = 0;
-//    static bool slowDown = false;
-    
-    if(double_car) {
+    #ifdef DOUBLE_CAR
+        static int16_t current_speed;
         if(distance > AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX) {
             current_speed = speed_control_acc_speed;
         } else if(distance < AVG_DISTANCE_BETWEEN - DIFF_DISTANCE_MAX) {
@@ -38,31 +32,20 @@ void SpeedTargetSet(uint16_t imgProcFlag) {
         } else {
             current_speed = speed_control_speed;
         }
-    } else {
-        current_speed = speed_control_speed;
-    }
+    #else
+        #define current_speed  speed_control_speed
+    #endif
     
-    /*if(slowDown) {
-        ++slowDownCnt;
-        leftPid.targetValue = rightPid.targetValue = 60;
-        if(slowDownCnt > 50) {
-            slowDown = false;
-            slowDownCnt = 0;
-        }
-    } else */if(imgProcFlag & STRAIGHT_ROAD) {
+    if(imgProcFlag & (STRAIGHT_ROAD | CROSS_ROAD)) {
         leftPid.targetValue = rightPid.targetValue = current_speed + 12;
-//    } else if(imgProcFlag & RING) {
-//        slowDown = true;
     } else {
         int16_t tmpSpeed;
-        if(directionAngle > 0)
-        {
+        if(directionAngle > 0) {
              tmpSpeed = current_speed - 2.6 * directionAngle;
              leftPid.targetValue = tmpSpeed;
              rightPid.targetValue = tmpSpeed * (0.035 * directionAngle + 1);//0.342
         }
-        else
-        {
+        else {
              tmpSpeed = current_speed + 2.6 * directionAngle;
              rightPid.targetValue = tmpSpeed;
              leftPid.targetValue = tmpSpeed * (0.035 * (-directionAngle) + 1);
@@ -76,13 +59,13 @@ int16_t SpeedControlPID(PID *pid) {
     
 	error = pid->targetValue - pid->currentValue;
     
-    if(use_inc_pid) {
+    #ifdef INC_PID
         pValue = pid->kp * (error - pid->lastError);
         iValue = pid->ki * error;
         dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
         pid->prevError = pid->lastError;
         pid->output += pValue + iValue + dValue;
-    } else {
+    #else
         pid->sumError += error;
         if(pid->sumError > speed_control_sum_err_max) {
             pid->sumError = speed_control_sum_err_max;
@@ -93,7 +76,7 @@ int16_t SpeedControlPID(PID *pid) {
         iValue = pid->ki * pid->sumError;
         dValue = pid->kd * (error - pid->lastError);
         pid->output = pValue + iValue + dValue;
-    }
+    #endif
     
 	pid->lastError = error;
     
