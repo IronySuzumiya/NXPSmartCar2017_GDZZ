@@ -5,6 +5,26 @@
 
 #define MAYBE_BARRIER (!inRing && !ringEndDelay ? WhichBarrier() : Unknown)
 
+extern inline float Abs(float input) {
+    return input >= 0 ? input : -input;
+}
+
+extern inline float Min(float a, float b) {
+    return a > b ? b : a;
+}
+
+extern inline float Max(float a, float b) {
+    return a > b ? a : b;
+}
+
+extern inline bool OpstSign(int16_t a, int16_t b) {
+    return (a & 0x8000) ^ (b & 0x8000);
+}
+
+extern inline bool InRange(int16_t value, int16_t lbound, int16_t hbound) {
+    return value > lbound && value < hbound;
+}
+
 int16_t GetRoadType(void);
 bool OutOfRoadJudge(void);
 void RingCompensateGoLeft(void);

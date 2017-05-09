@@ -19,12 +19,7 @@ static bool IsRingEnd(void);
 static int16_t WhichCurve(void);
 static bool IsCrossRoad(void);
 static int16_t WhichBarrier(void);
-
-static inline float Abs(float);
-static inline float Min(float, float);
-static inline float Max(float, float);
-static inline bool OpstSign(int16_t, int16_t);
-static inline bool InRange(int16_t value, int16_t lbound, int16_t hbound);
+static int16_t CrossRoadCompensateOneSide(int16_t borders[IMG_ROW], int16_t slopes[IMG_ROW], int16_t zeros[IMG_ROW]);
 
 static int16_t black_pt_row;
 static int16_t last_not_found_border_row;
@@ -50,9 +45,6 @@ bool OutOfRoadJudge() {
 }
 
 int16_t GetRoadType() {
-    // de-warning
-    Min(0, 0);
-    
     if(ringEndDelay) {
         if(ringDistance < 10000) {
             return RingEnd;
@@ -127,7 +119,7 @@ bool IsRing() {
             continue;
         }
         for(col = IMG_COL / 2 - 1; IsBlack(row, col) && col >= 0; --col) { }
-        if(col == -1 || col >= IMG_COL / 2 - 5)
+        if(!InRange(col, 0, IMG_COL / 2 - 5))
         {
             continue;
         }
@@ -361,48 +353,8 @@ void RightCurveCompensate() {
 }
 
 void CrossRoadCompensate() {
-    int leftCompensateStart = IMG_ROW;
-    int rightCompensateStart = IMG_ROW;
-    int leftCompensateEnd = IMG_ROW;
-    int rightCompensateEnd = IMG_ROW;
-    
-    {
-        int row = 6;
-        while (row < IMG_ROW && resultSet.leftBorder[row] != 0
-            && Abs(resultSet.leftSlope[row] - resultSet.leftSlope[row - 1]) < 3
-            && !OpstSign(resultSet.leftSlope[row], resultSet.leftSlope[row - 1])) { ++row; }
-        leftCompensateStart = row;
-    }
-    
-    {
-        int row = 6;
-        while (row < IMG_ROW && resultSet.rightBorder[row] != IMG_COL - 1
-            && Abs(resultSet.rightSlope[row] - resultSet.rightSlope[row - 1]) < 3
-            && !OpstSign(resultSet.leftSlope[row], resultSet.leftSlope[row - 1])) { ++row; }
-        rightCompensateStart = row;
-    }
-    
-    for (int row = leftCompensateStart; row < leftCompensateEnd; ++row)
-    {
-        resultSet.leftBorder[row] = row * resultSet.leftSlope[leftCompensateStart - 5]
-            + resultSet.leftZero[leftCompensateStart - 5];
-        if(IsBlack(row, resultSet.leftBorder[row]))
-        {
-            leftCompensateEnd = row;
-            break;
-        }
-    }
-    
-    for (int row = rightCompensateStart; row < rightCompensateEnd; ++row)
-    {
-        resultSet.rightBorder[row] = row * resultSet.rightSlope[rightCompensateStart - 5]
-            + resultSet.rightZero[rightCompensateStart - 5];
-        if (IsBlack(row, resultSet.rightBorder[row]))
-        {
-            rightCompensateEnd = row;
-            break;
-        }
-    }
+    int leftCompensateEnd = CrossRoadCompensateOneSide(resultSet.leftBorder, resultSet.leftSlope, resultSet.leftZero);
+    int rightCompensateEnd = CrossRoadCompensateOneSide(resultSet.rightBorder, resultSet.rightSlope, resultSet.rightZero);
     
     int borderSearchStart;
     
@@ -442,6 +394,25 @@ void CrossRoadCompensate() {
     MiddleLineUpdateAll();
 }
 
+int16_t CrossRoadCompensateOneSide(int16_t borders[IMG_ROW], int16_t slopes[IMG_ROW], int16_t zeros[IMG_ROW]) {
+    int compensateEnd = IMG_ROW;
+    int row = 6;
+    while (row < IMG_ROW && borders[row] != 0
+        && Abs(slopes[row] - slopes[row - 2]) < 3
+        && !OpstSign(slopes[row], slopes[row - 2])) { ++row; }
+    int16_t compensateStart = row - 5;
+    for (row = compensateStart + 1; row < compensateEnd; ++row)
+    {
+        borders[row] = row * slopes[compensateStart] + zeros[compensateStart];
+        if(IsBlack(row, borders[row]))
+        {
+            compensateEnd = row;
+            break;
+        }
+    }
+    return compensateEnd;
+}
+
 bool StartLineJudge(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
@@ -473,24 +444,4 @@ bool StraightLineJudge(void) {
         }
     }
     return middleAreaCnt > 38;
-}
-
-inline float Abs(float input) {
-    return input >= 0 ? input : -input;
-}
-
-inline float Min(float a, float b) {
-    return a > b ? b : a;
-}
-
-inline float Max(float a, float b) {
-    return a > b ? a : b;
-}
-
-inline bool OpstSign(int16_t a, int16_t b) {
-    return (a & 0x8000) ^ (b & 0x8000);
-}
-
-inline bool InRange(int16_t value, int16_t lbound, int16_t hbound) {
-    return value > lbound && value < hbound;
 }
