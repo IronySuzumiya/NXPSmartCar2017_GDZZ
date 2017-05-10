@@ -3,11 +3,14 @@
 
 #include "root.h"
 
-#define CalculateDistanceWithTime(time) ((time) * 0.034)
+extern inline float CalculateDistanceWithTime(uint32_t time) {
+    return time * 0.034;
+}
 
 void DoubleCarRelativeInit(void);
-void DoubleCarMessageRecv(uint16_t byte);
+void MessageEnqueue(uint8_t message);
 
+extern int16_t ultraSonicMissingCnt;
 extern float distance;
 extern uint32_t time;
 extern bool front_car;

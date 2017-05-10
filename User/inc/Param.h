@@ -34,10 +34,19 @@
 
 //Double Car Relative
 #define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1
-#define  ULTRA_SONIC_TIMER_PRD  50000
+#define  ULTRA_SONIC_TIME_OUT   50000
 #define  TIMER_INIT_COUNT       2349993uL
 #define  AVG_DISTANCE_BETWEEN   100
 #define  DIFF_DISTANCE_MAX      20
-#define  OVER_TAKING            0x0001
+#define  DATACOMM_TIME_OUT_TIMER_CHL    HW_PIT_CH2
+#define  DATACOMM_TIME_OUT              5000
+#define  DATACOMM_SEND_MSG_TIMER_CHL    HW_PIT_CH3
+#define  DATACOMM_SEND_MSG_PERIOD       5000
+//Message
+#define  MESSAGE_QUEUE_SIZE     10
+#define  ACK                    0x01
+#define  YOU_ARE_FRONT          0x02
+#define  OVER_TAKING            0x03
+#define  MISSING                0x04
 
 #endif
