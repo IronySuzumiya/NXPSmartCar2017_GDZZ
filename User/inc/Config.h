@@ -11,4 +11,6 @@
 
 #define xDOUBLE_CAR
 
+#define xPERIODICALLY_CHECK_MSG_QUEUE
+
 #endif

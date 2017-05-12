@@ -21,7 +21,9 @@ static void UltraSonicRecvInt(uint32_t pinxArray);
 static void UltraSonicTimeOutInt(void);
 static void DoubleCarMessageRecv(uint16_t byte);
 static void DataCommTimeOutInt(void);
+#ifdef PERIODICALLY_CHECK_MSG_QUEUE
 static void DataCommSendMessageInt(void);
+#endif
 
 static inline bool Odd(uint8_t num) {
     uint8_t cnt = 0;
@@ -36,9 +38,20 @@ static inline bool Check(uint8_t num) {
     return Odd(num) ? num & 0x80 : !(num & 0x80);
 }
 
+static inline void SendAck() {
+    UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, ACK | 0x80);
+}
+
+static inline void SendLastMessage() {
+    UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, lastMessage);
+}
+
 static inline void SendMessage(uint8_t message) {
     message |= Odd(message) ? 0x00 : 0x80;
     UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, message);
+    waitingForAck = true;
+    lastMessage = message;
+    PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
 }
 
 void DoubleCarRelativeInit() {
@@ -59,22 +72,27 @@ void DoubleCarRelativeInit() {
     PIT_CallbackInstall(DATACOMM_TIME_OUT_TIMER_CHL, DataCommTimeOutInt);
     PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
     
+    #ifdef PERIODICALLY_CHECK_MSG_QUEUE
     /* for every period, if not waiting for an ack, check if any message in the queue and send it */
     PIT_QuickInit(DATACOMM_SEND_MSG_TIMER_CHL, DATACOMM_SEND_MSG_PERIOD);
     PIT_CallbackInstall(DATACOMM_SEND_MSG_TIMER_CHL, DataCommSendMessageInt);
     PIT_ITDMAConfig(DATACOMM_SEND_MSG_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+    #endif
 }
 
 void MessageEnqueue(uint8_t message) {
-    if(!waitingForAck) {
-        SendMessage(lastMessage = message);
-        waitingForAck = true;
-        PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
-    }
     *messageQueueEnd++ = message;
     if(messageQueueEnd - messageQueue == MESSAGE_QUEUE_SIZE) {
         messageQueueEnd = messageQueue;
     }
+    #ifndef PERIODICALLY_CHECK_MSG_QUEUE
+    if(!waitingForAck) {
+        SendMessage(*messageQueueHead++);
+        if(messageQueueHead - messageQueue == MESSAGE_QUEUE_SIZE) {
+            messageQueueHead = messageQueue;
+        }
+    }
+    #endif
 }
 
 void UltraSonicRecvIntTst(uint32_t pinxArray) {
@@ -136,22 +154,30 @@ void DoubleCarMessageRecv(uint16_t message) {
         case ACK:
             PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
             waitingForAck = false;
+            #ifndef PERIODICALLY_CHECK_MSG_QUEUE
+                if(messageQueueHead != messageQueueEnd) {
+                    SendMessage(*messageQueueHead++);
+                    if(messageQueueHead - messageQueue == MESSAGE_QUEUE_SIZE) {
+                        messageQueueHead = messageQueue;
+                    }
+                }
+            #endif
             return;
     }
-    SendMessage(ACK);
+    SendAck();
 }
 
 void DataCommTimeOutInt() {
-    SendMessage(lastMessage);
+    SendLastMessage();
 }
 
+#ifdef PERIODICALLY_CHECK_MSG_QUEUE
 static void DataCommSendMessageInt() {
     if(!waitingForAck && messageQueueHead != messageQueueEnd) {
-        SendMessage(lastMessage = *messageQueueHead++);
-        waitingForAck = true;
-        PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+        SendMessage(*messageQueueHead++);
         if(messageQueueHead - messageQueue == MESSAGE_QUEUE_SIZE) {
             messageQueueHead = messageQueue;
         }
     }
 }
+#endif
