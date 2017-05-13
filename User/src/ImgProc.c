@@ -124,28 +124,23 @@ void ImgProcSummary() {
         }
         switch(GetRoadType()) {
             case Ring:
-                BUZZLE_OFF;
                 RingCompensateGoLeft();
                 break;
             case RingEnd:
-                BUZZLE_OFF;
                 RingEndCompensateFromLeft();
                 break;
             case LeftCurve:
-                BUZZLE_OFF;
                 LeftCurveCompensate();
                 break;
             case RightCurve:
-                BUZZLE_OFF;
                 RightCurveCompensate();
                 break;
             case CrossRoad:
-                BUZZLE_OFF;
+                BUZZLE_ON;
                 resultSet.imgProcFlag |= CROSS_ROAD;
                 CrossRoadCompensate();
                 break;
             case LeftBarrier:
-                BUZZLE_ON;
                 if(direction_control_on) {
                     DirectionControlProc(resultSet.middleLine, IMG_COL / 2 - 22);
                 }
@@ -154,7 +149,6 @@ void ImgProcSummary() {
                 }
                 return;
             case RightBarrier:
-                BUZZLE_ON;
                 if(direction_control_on) {
                     DirectionControlProc(resultSet.middleLine, IMG_COL / 2 + 22);
                 }
@@ -162,8 +156,7 @@ void ImgProcSummary() {
                     SpeedTargetSet(resultSet.imgProcFlag);
                 }
                 return;
-            default:
-                BUZZLE_OFF;
+            default: break;
         }
     }
     if(direction_control_on) {

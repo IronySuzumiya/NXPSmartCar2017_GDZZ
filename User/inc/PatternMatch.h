@@ -5,20 +5,20 @@
 
 #define MAYBE_BARRIER (!inRing && !ringEndDelay ? WhichBarrier() : Unknown)
 
-extern inline float Abs(float input) {
+extern inline int16_t Abs(int16_t input) {
     return input >= 0 ? input : -input;
 }
 
-extern inline float Min(float a, float b) {
+extern inline int16_t Min(int16_t a, int16_t b) {
     return a > b ? b : a;
 }
 
-extern inline float Max(float a, float b) {
+extern inline int16_t Max(int16_t a, int16_t b) {
     return a > b ? a : b;
 }
 
 extern inline bool OpstSign(int16_t a, int16_t b) {
-    return (a & 0x8000) ^ (b & 0x8000);
+    return a * b < 0;
 }
 
 extern inline bool InRange(int16_t value, int16_t lbound, int16_t hbound) {

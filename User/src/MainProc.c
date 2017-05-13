@@ -56,6 +56,12 @@ void TimerInit() {
 }
 
 void MainProc() {
+    static int cnt = 0;
+    if(cnt > 100) {
+        cnt = 0;
+        BUZZLE_OFF;
+    }
+    ++cnt;
     EncoderGet(&leftSpeed, &rightSpeed);
     if(inRing || ringEndDelay) {
         ringDistance += (leftSpeed + rightSpeed) / 2 * 5;
@@ -78,7 +84,7 @@ static void SwitchAndParamLoad(void) {
     state_trans_on = false;
     mode_switch_on = false;
     
-    speed_control_speed = 111;
+    speed_control_speed = 100;
     speed_control_sum_err_max = 2000;
     
     speed_control_acc_speed = 90;
@@ -93,11 +99,11 @@ static void SwitchAndParamLoad(void) {
     rightPid.ki = 5;
     rightPid.kd = 10;
     
-    steer_actuator_right = 415;
-    steer_actuator_middle = 479;
-    steer_actuator_left = 543;
+    steer_actuator_right = 415; //740; //415;
+    steer_actuator_middle = 479; //809; //479;
+    steer_actuator_left = 543; //878; //543;
     
-    pre_sight = 28;
+    pre_sight = 25;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.025;
