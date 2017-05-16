@@ -115,10 +115,10 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-    if(OutOfRoadJudge() || StartLineJudge(pre_sight - 10)) {
-        MOTOR_STOP;
-        motor_on = false;
-    } else {
+//    if(OutOfRoadJudge() || StartLineJudge(pre_sight - 10)) {
+//        MOTOR_STOP;
+//        motor_on = false;
+//    } else {
         if(StraightLineJudge()) {
             resultSet.imgProcFlag |= STRAIGHT_ROAD;
         }
@@ -136,7 +136,6 @@ void ImgProcSummary() {
                 RightCurveCompensate();
                 break;
             case CrossRoad:
-                BUZZLE_ON;
                 resultSet.imgProcFlag |= CROSS_ROAD;
                 CrossRoadCompensate();
                 break;
@@ -158,7 +157,7 @@ void ImgProcSummary() {
                 return;
             default: break;
         }
-    }
+//    }
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine, IMG_COL / 2);
     }

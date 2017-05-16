@@ -74,10 +74,10 @@ int16_t GetRoadType() {
     int16_t curve = WhichCurve();
     if(curve == Unknown) {
         int16_t row;
-        for(row = 8; row < IMG_ROW; ++row) {
+        for(row = 5; row < IMG_ROW; ++row) {
             if((resultSet.rightBorder[row] - resultSet.leftBorder[row])
-                - (resultSet.rightBorder[row - 8] - resultSet.leftBorder[row - 8]) > 20
-                /*&& resultSet.rightBorder[row] - resultSet.leftBorder[row] > 140*/) {
+                - (resultSet.rightBorder[row - 5] - resultSet.leftBorder[row - 5]) > 6
+                && resultSet.rightBorder[row] - resultSet.leftBorder[row] > 140) {
                 break;
             }
         }
@@ -85,11 +85,11 @@ int16_t GetRoadType() {
             return MAYBE_BARRIER;
         }
         bool hasLeftInflx = false, hasRightInflx = false;
-        for(int16_t _row = row; _row >= Max(row - 10, 5); --_row) {
-            if(OpstSign(resultSet.leftTrend[_row], resultSet.leftTrend[_row - 5])) {
+        for(int16_t _row = row; _row >= Max(row - 10, 4); --_row) {
+            if(OpstSign(resultSet.leftTrend[_row], resultSet.leftTrend[_row - 2])) {
                 hasLeftInflx = true;
             }
-            if(OpstSign(resultSet.rightTrend[_row], resultSet.rightTrend[_row - 5])) {
+            if(OpstSign(resultSet.rightTrend[_row], resultSet.rightTrend[_row - 2])) {
                 hasRightInflx = true;
             }
             if(hasLeftInflx && hasRightInflx) {
@@ -120,7 +120,7 @@ bool IsRing() {
         }
         for(whiteCol = col; IsWhite(row, whiteCol) && whiteCol >= 0; --whiteCol) { }
         width = col - whiteCol;
-        for (col = IMG_COL / 2 + 1; IsBlack(row, col) && col < IMG_COL; ++col) { }
+        for(col = IMG_COL / 2 + 1; IsBlack(row, col) && col < IMG_COL; ++col) { }
         if(InRange(col, IMG_COL / 2 + 4, IMG_COL))
         {
             for(whiteCol = col; IsWhite(row, whiteCol) && whiteCol < IMG_COL; ++whiteCol) { }

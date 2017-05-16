@@ -103,7 +103,7 @@ static void SwitchAndParamLoad(void) {
     steer_actuator_middle = 479; //809; //479;
     steer_actuator_left = 543; //878; //543;
     
-    pre_sight = 25;
+    pre_sight = 28;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.025;

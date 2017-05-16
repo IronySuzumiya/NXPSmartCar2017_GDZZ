@@ -33,7 +33,7 @@ void CurveSlopeUpdate(int16_t row) {
         resultSet.middleZero[row] = IMG_COL / 2;
     }
     if(row >= 2) {
-        resultSet.leftTrend[row] = resultSet.leftBorder[row] - resultSet.leftBorder[row - 1];
-        resultSet.rightTrend[row] = resultSet.rightBorder[row] - resultSet.rightBorder[row - 1];
+        resultSet.leftTrend[row] = resultSet.leftBorder[row] - resultSet.leftBorder[row - 2];
+        resultSet.rightTrend[row] = resultSet.rightBorder[row] - resultSet.rightBorder[row - 2];
     }
 }
