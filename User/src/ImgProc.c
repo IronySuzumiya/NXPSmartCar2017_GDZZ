@@ -57,23 +57,25 @@ void ImgProcInit(void) {
 }
 
 void ImgProcHREF(uint32_t pinxArray) {
-    //if pinxArray & (1 << CAMERA_HREF_PIN) then
-    if(imgBufRow < IMG_ROW && imgRealRow > IMG_ABDN_ROW)
-    {
-        imgProc[imgRealRow % IMG_ROW_INTV]();
+    if(pinxArray & (1 << CAMERA_HREF_PIN)) {
+        if(imgBufRow < IMG_ROW && imgRealRow > IMG_ABDN_ROW)
+        {
+            imgProc[imgRealRow % IMG_ROW_INTV]();
+        }
+        imgRealRow++;
     }
-    imgRealRow++;
 }
 
 void ImgProcVSYN(uint32_t pinxArray) {
-    //if pinxArray & (1 << CAMERA_VSYN_PIN) then
-    ImgProcSummary();
-    imgRealRow = 0;
-    imgBufRow = 0;
-    resultSet.leftBorderNotFoundCnt = 0;
-    resultSet.rightBorderNotFoundCnt = 0;
-    resultSet.imgProcFlag = 0;
-    searchForBordersStartIndex = IMG_COL / 2;
+    if(pinxArray & (1 << CAMERA_VSYN_PIN)) {
+        ImgProcSummary();
+        imgRealRow = 0;
+        imgBufRow = 0;
+        resultSet.leftBorderNotFoundCnt = 0;
+        resultSet.rightBorderNotFoundCnt = 0;
+        resultSet.imgProcFlag = 0;
+        searchForBordersStartIndex = IMG_COL / 2;
+    }
 }
 
 void ImgProc0() {

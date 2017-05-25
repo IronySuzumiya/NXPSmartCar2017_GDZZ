@@ -25,21 +25,8 @@ static void DataCommTimeOutInt(void);
 static void DataCommSendMessageInt(void);
 #endif
 
-static inline bool Odd(uint8_t num) {
-    uint8_t cnt = 0;
-    for(uint8_t i = 0; i < 7; ++i) {
-        if(num & 1 << i)
-            ++cnt;
-    }
-    return cnt % 2;
-}
-
-static inline bool Check(uint8_t num) {
-    return Odd(num) ? num & 0x80 : !(num & 0x80);
-}
-
 static inline void SendAck() {
-    UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, ACK | 0x80);
+    UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, ACK);
 }
 
 static inline void SendLastMessage() {
@@ -47,11 +34,11 @@ static inline void SendLastMessage() {
 }
 
 static inline void SendMessage(uint8_t message) {
-    message |= Odd(message) ? 0x00 : 0x80;
     UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, message);
     waitingForAck = true;
     lastMessage = message;
     PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+    PIT_ResetCounter(DATACOMM_TIME_OUT_TIMER_CHL);
 }
 
 void DoubleCarRelativeInit() {
@@ -61,6 +48,7 @@ void DoubleCarRelativeInit() {
     GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
     
     /* used to recv messages from the other car */
+    UART_QuickInit(DATACOMM_DOUBLE_CAR_MAP, DATACOMM_DOUBLE_CAR_BAUD);
     UART_CallbackRxInstall(DATACOMM_DOUBLE_CAR_CHL, DoubleCarMessageRecv);
     UART_ITDMAConfig(DATACOMM_DOUBLE_CAR_CHL, kUART_IT_Rx, ENABLE);
     
@@ -103,6 +91,7 @@ void UltraSonicRecvIntTst(uint32_t pinxArray) {
         } else {
             if(ensure) {
                 MessageEnqueue(YOU_ARE_FRONT);
+                BUZZLE_ON;
                 front_car = false;
                 
                 /* begin the distance measuring */
@@ -110,6 +99,7 @@ void UltraSonicRecvIntTst(uint32_t pinxArray) {
                 GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
                 
                 /* if time out, send `MISSING` message */
+                PIT_QuickInit(ULTRA_SONIC_TIMER_CHL, ULTRA_SONIC_TIME_OUT);
                 PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
                 PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
             }
@@ -139,17 +129,24 @@ void UltraSonicTimeOutInt() {
 }
 
 void DoubleCarMessageRecv(uint16_t message) {
-    if(!Check(message)) {
-        return;
-    }
-    message &= ~0x80;
+    bool invalid = false;
     switch(message) {
         case YOU_ARE_FRONT:
+            BUZZLE_ON;
             front_car = true;
+            SendAck();
+            GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);
+            GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
+            PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
+            PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+            MessageEnqueue(OVER_TAKING);
             break;
         case OVER_TAKING:
+            BUZZLE_OFF;
+            SendAck();
             break;
         case MISSING:
+            SendAck();
             break;
         case ACK:
             PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
@@ -162,9 +159,13 @@ void DoubleCarMessageRecv(uint16_t message) {
                     }
                 }
             #endif
-            return;
+            break;
+        default:
+            invalid = true;
     }
-    SendAck();
+    if(!invalid) {
+        
+    }
 }
 
 void DataCommTimeOutInt() {

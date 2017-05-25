@@ -39,10 +39,17 @@ void MainInit() {
 }
 
 void NVICInit() {
-    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_2);
-    NVIC_SetPriority(HREF_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 1));
-    NVIC_SetPriority(VSYN_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 0));
-    NVIC_SetPriority(TIMR_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_2, 1, 0));
+    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_3);
+    
+    NVIC_SetPriority(VSYN_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 0, 0));
+    NVIC_SetPriority(HREF_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 0, 1));
+    
+    NVIC_SetPriority(TIMR_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
+    
+    NVIC_SetPriority(DCDT_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 2, 0));
+    NVIC_SetPriority(ULTR_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 2, 1));
+    NVIC_SetPriority(ULTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 2, 2));
+    NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 2, 3));
 }
 
 void BuzzleInit() {
@@ -59,7 +66,6 @@ void MainProc() {
     static int cnt = 0;
     if(cnt > 100) {
         cnt = 0;
-        BUZZLE_OFF;
     }
     ++cnt;
     EncoderGet(&leftSpeed, &rightSpeed);
@@ -74,13 +80,13 @@ void MainProc() {
     }
 }
 
-static void SwitchAndParamLoad(void) {
+static void SwitchAndParamLoad() {
     motor_on = true;
     encoder_on = true;
     speed_control_on = true;
     direction_control_on = true;
     steer_actuator_on = true;
-    img_trans_on = true;
+    img_trans_on = false;
     state_trans_on = false;
     mode_switch_on = false;
     

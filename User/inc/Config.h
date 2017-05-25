@@ -9,7 +9,7 @@
 
 #define xALL_FTM_QD
 
-#define xDOUBLE_CAR
+#define DOUBLE_CAR
 
 #define xPERIODICALLY_CHECK_MSG_QUEUE
 

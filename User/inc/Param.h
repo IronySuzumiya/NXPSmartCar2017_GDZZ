@@ -5,6 +5,10 @@
 #define  HREF_IRQ  PORTB_IRQn
 #define  VSYN_IRQ  PORTC_IRQn
 #define  TIMR_IRQ  PIT0_IRQn
+#define  ULTR_IRQ  PORTD_IRQn
+#define  DCDT_IRQ  UART3_RX_TX_IRQn
+#define  ULTO_IRQ  PIT1_IRQn
+#define  DCTO_IRQ  PIT2_IRQn
 
 //PIT
 #define  PIT_CHL  HW_PIT_CH0

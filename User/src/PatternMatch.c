@@ -19,7 +19,6 @@ static bool IsRingEnd(void);
 static int16_t WhichCurve(void);
 static bool IsCrossRoad(void);
 static int16_t WhichBarrier(void);
-static int16_t CrossRoadCompensateOneSide(int16_t borders[IMG_ROW], int16_t slopes[IMG_ROW], int16_t zeros[IMG_ROW], bool foundBorder[IMG_ROW]);
 
 static int16_t black_pt_row;
 static int16_t last_not_found_border_row;
@@ -499,28 +498,6 @@ void CrossRoadCompensate() {
 //    }
 //    
     MiddleLineUpdateAll();
-}
-
-int16_t CrossRoadCompensateOneSide(int16_t borders[IMG_ROW], int16_t slopes[IMG_ROW], int16_t zeros[IMG_ROW], bool foundBorder[IMG_ROW]) {
-    int compensateEnd = IMG_ROW;
-    int row = 6;
-    while (row < IMG_ROW && foundBorder[row]
-        && Abs(slopes[row] - slopes[row - 2]) < 3
-        && !OpstSign(slopes[row], slopes[row - 2])) { ++row; }
-    if(row == IMG_ROW) {
-        return compensateEnd;
-    }
-    int16_t compensateStart = row - 5;
-    for (row = compensateStart + 1; row < compensateEnd; ++row)
-    {
-        borders[row] = row * slopes[compensateStart] + zeros[compensateStart];
-        if(IsBlack(row, borders[row]))
-        {
-            compensateEnd = row;
-            break;
-        }
-    }
-    return compensateEnd;
 }
 
 bool StartLineJudge(int16_t row) {
