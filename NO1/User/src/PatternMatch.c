@@ -135,38 +135,30 @@ bool IsRing() {
 }
 
 bool IsRingEnd() {
-    if(resultSet.rightBorderNotFoundCnt < 15) {
+    if(resultSet.leftBorderNotFoundCnt < 15) {
         return false;
     }
-    {
-        int16_t row;
-        int16_t cnt = 0;
-        for(row = 0; row < IMG_ROW && resultSet.foundRightBorder[row]; ++row) { }
-        for(; row < IMG_ROW && !resultSet.foundRightBorder[row]; ++row) { ++cnt; }
-        last_not_found_border_row = row;
-        if(cnt < 9) {
-            return false;
-        }
-    }
-    int16_t cnt = 0;
     int16_t row;
+    for(row = 0; row < IMG_ROW && resultSet.foundLeftBorder[row]; ++row) { }
+    for(; row < IMG_ROW && !resultSet.foundLeftBorder[row]; ++row) { }
+    last_not_found_border_row = row;
+    
     for(row = 20; row < 40; ++row) {
-        if(OpstSign(resultSet.leftTrend[row], resultSet.leftTrend[row - 5])) {
+        if(OpstSign(resultSet.rightTrend[row], resultSet.rightTrend[row - 5])) {
             break;
         }
     }
     if(row >= 40) {
         return false;
     }
+    
+    int16_t cnt = 0;
     for(row = IMG_ROW - 1; row >= 35; --row) {
         if(IsWhite(row, resultSet.middleLine[row])) {
             ++cnt;
-            if(cnt > 12) {
-                return true;
-            }
         }
     }
-    return false;
+    return cnt > 12;
 }
 
 int16_t WhichCurve() {
