@@ -30,8 +30,11 @@
 #define  IMG_WHITE  0xfe
 #define  IMG_BLACK  0x00
 #define  IMG_EOF    0xff
+#ifdef NO1
+#define  IMG_READ_DELAY  130
+#else
 #define  IMG_READ_DELAY  110
-//130
+#endif
 
 //Double Car Relative
 #define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1

@@ -3,11 +3,15 @@
 
 #include "root.h"
 
+#ifdef NO1
+#define IsRingEnd IsRingEndFromRight
+#define RingCompensate RingCompensateGoRight
+#define RingEndCompensate RingEndCompensateFromRight
+#else
 #define IsRingEnd IsRingEndFromLeft
-
 #define RingCompensate RingCompensateGoLeft
-
 #define RingEndCompensate RingEndCompensateFromLeft
+#endif
 
 extern inline int16_t Abs(int16_t input) {
     return input >= 0 ? input : -input;

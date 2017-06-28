@@ -123,9 +123,9 @@ void ImgProcSummary() {
     static bool stop = false;
     bool accelerate = false;
     int16_t middle = IMG_COL / 2;
-    if(IsOutOfRoad() || StartLineJudge(pre_sight - 10)) {
+    /*if(IsOutOfRoad() || StartLineJudge(pre_sight - 10)) {
         stop = true;
-    } else {
+    } else {*/
         if(StraightLineJudge()) {
             accelerate = true;
         }
@@ -162,7 +162,7 @@ void ImgProcSummary() {
 //                middle += 22;
                 break;
         }
-    }
+    /*}*/
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine, middle);
     }

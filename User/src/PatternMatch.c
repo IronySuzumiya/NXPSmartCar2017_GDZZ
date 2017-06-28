@@ -24,7 +24,7 @@ static int16_t WhichCurve(void);
 static int16_t WhichBarrier(void);
 
 static int16_t black_pt_row;
-static int16_t last_not_found_border_row;
+//static int16_t last_not_found_border_row;
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
@@ -38,7 +38,7 @@ int16_t GetRoadType() {
         if(ringDistance > 90000) {
             ringDistance = 0;
             inRing = false;
-        } else if(ringDistance > 14000 && IsRingEnd()) {
+        } else if(ringDistance > 18000 && IsRingEnd()) {
             ringDistance = 0;
             ringEndDelay = true;
             inRing = false;
@@ -60,10 +60,10 @@ int16_t GetRoadType() {
         }
     }
     
-    int16_t curve = WhichCurve();
+//    int16_t curve = WhichCurve();
     
-    return curve != Unknown ? curve
-        : !inRing && !inCrossRoad && IsRing() ? Ring
+    return /*curve != Unknown ? curve
+        : */!inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
@@ -176,25 +176,70 @@ bool IsRing() {
 }
 
 bool IsRingEndFromLeft() {
-    int16_t row;
-    int16_t cnt = 0;
-    for(row = 20; row < IMG_COL - 1 && IsWhite(row, resultSet.middleLine[row]); ++row) {
-        if(resultSet.leftSlope[row] * resultSet.leftSlope[row - 5] < 0) {
-            ++cnt;
+    #if 0
+    int16_t leftRow, rightRow, leftCol, rightCol;
+    int16_t col = IMG_COL / 2;
+    
+    for(; col < IMG_COL / 2 + 20 && IsWhite(IMG_ROW - 1, col); ++col);
+    if(col == IMG_COL / 2 + 20) {
+        col = IMG_COL / 2;
+        for(; col > IMG_COL / 2 - 20 && IsWhite(IMG_ROW - 1, col); --col);
+        if(col == IMG_COL / 2 - 20) {
+            return false;
         }
     }
-    return cnt > 1;
+    
+    leftRow = rightRow = IMG_ROW - 1;
+    leftCol = rightCol = col;
+    for(; leftCol > 0 && IsBlack(leftRow, leftCol); --leftCol) { }
+    for(; leftRow > 0 && IsBlack(leftRow, leftCol); --leftRow) { }
+    for(; rightCol < IMG_COL - 1 && IsBlack(rightRow, rightCol); ++rightCol) { }
+    for(; rightRow > 0 && IsBlack(rightRow, rightCol); --rightRow) { }
+    
+    if(leftRow < 20 || rightRow < 20) {
+        return false;
+    }
+    
+    int16_t leftArray[10] = { leftCol }, rightArray[10] = { rightCol };
+    for(int16_t i = leftRow - 1; i > leftRow - 10; --i) {
+        for(; leftCol < IMG_COL && IsWhite(i, leftCol); ++leftCol) { }
+        leftArray[leftRow - i] = leftCol - 1;
+    }
+//    for(int16_t i = rightRow - 1; i > rightRow - 10; --i) {
+//        for(; rightCol >= 0 && IsWhite(i, rightCol); --rightCol) { }
+//        rightArray[rightRow - i] = rightCol + 1;
+//    }
+    double a = 9.0 / (leftArray[9] - leftArray[0]);
+    double b = 9.0 * leftArray[0] / (leftArray[0] - leftArray[9]);
+    int16_t r = 0;
+    for(int16_t i = 0; i < 10; ++i) {
+        r += Abs(leftArray[i] - (i - b) / a);
+    }
+    return r < 25;
+    #endif
+    double a = 9.0 / (resultSet.leftBorder[47] - resultSet.leftBorder[38]);
+    double b = 9.0 * resultSet.leftBorder[38] / (resultSet.leftBorder[38] - resultSet.leftBorder[47]);
+    int16_t r = 0;
+    for(int16_t row = 38; row < 48; ++row) {
+//        if(IsBlack(row, resultSet.middleLine[row])) {
+//            return false;
+//        }
+        r += Abs(resultSet.leftBorder[row] - (row - 38 - b) / a);
+    }
+    return r < 15;
 }
 
 bool IsRingEndFromRight() {
-    int16_t row;
-    int16_t cnt = 0;
-    for(row = 20; row < IMG_COL - 1 && IsWhite(row, resultSet.middleLine[row]); ++row) {
-        if(resultSet.rightSlope[row] * resultSet.rightSlope[row - 5] < 0) {
-            ++cnt;
-        }
+    double a = 9.0 / (resultSet.rightBorder[47] - resultSet.rightBorder[38]);
+    double b = 9.0 * resultSet.rightBorder[38] / (resultSet.rightBorder[38] - resultSet.rightBorder[47]);
+    int16_t r = 0;
+    for(int16_t row = 38; row < 48; ++row) {
+//        if(IsBlack(row, resultSet.middleLine[row])) {
+//            return false;
+//        }
+        r += Abs(resultSet.rightBorder[row] - (row - 38 - b) / a);
     }
-    return cnt > 1;
+    return r < 15;
 }
 
 bool IsCrossRoad() {

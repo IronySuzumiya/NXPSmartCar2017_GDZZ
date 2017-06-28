@@ -78,16 +78,16 @@ void MainProc() {
     }
     if(waitForOvertaking) {
         ++waitForOvertakingCnt;
-        if(waitForOvertakingCnt > 440) {
+        if(waitForOvertakingCnt > 250) {
             overtaking = true;
-            overtakingcnt = 250;
+            overtakingcnt = 50;
         }
     } else {
         waitForOvertakingCnt = 0;
     }
     if(overtaking) {
         ++overtakingcnt;
-        if(overtakingcnt > 250) {
+        if(overtakingcnt > 50) {
             overtakingcnt = 0;
             overtaking = false;
             waitForOvertaking = false;
@@ -124,7 +124,7 @@ static void SwitchAndParamLoad() {
     speed_control_on = true;
     direction_control_on = true;
     steer_actuator_on = true;
-    img_trans_on = true;
+    img_trans_on = false;
     state_trans_on = false;
     mode_switch_on = false;
     
@@ -136,37 +136,48 @@ static void SwitchAndParamLoad() {
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
-    leftPid.kp = 135; //130;
-    leftPid.ki = 12; //15;
+    
+    #ifdef NO1
+    leftPid.kp = 130;
+    leftPid.ki = 15;
     leftPid.kd = 25;
-    rightPid.kp = 135; //130;
-    rightPid.ki = 12; //15;
+    rightPid.kp = 130;
+    rightPid.ki = 15;
     rightPid.kd = 25;
+    #else
+    leftPid.kp = 135;
+    leftPid.ki = 12;
+    leftPid.kd = 25;
+    rightPid.kp = 135;
+    rightPid.ki = 12;
+    rightPid.kd = 25;
+    #endif
     
-//    leftPid.kp = 135;
-//    leftPid.ki = 12;
-//    leftPid.kd = 25;
-//    rightPid.kp = 135;
-//    rightPid.ki = 12;
-//    rightPid.kd = 25;
+    #ifdef NO1
+    steer_actuator_right = 415;
+    steer_actuator_middle = 452;
+    steer_actuator_left = 555;
+    pre_sight = 21;
+    #else
+    steer_actuator_right = 340;
+    steer_actuator_middle = 410;
+    steer_actuator_left = 480;
+    pre_sight = 20;
+    #endif
     
-    steer_actuator_right = 340; //415;
-    steer_actuator_middle = 410; //452;
-    steer_actuator_left = 480; //555;
-    pre_sight = 21; //18;
-    
-//    steer_actuator_right = 340;
-//    steer_actuator_middle = 410;
-//    steer_actuator_left = 480;
-//    pre_sight = 20;
-    
+    #ifdef NO1
+    direction_control_kd = 0.2;
+    direction_control_kpj = 0.02;
+    direction_control_kpc = 0.0001;
+    #else
     direction_control_kd = 0.2;
     direction_control_kpj = 0.025;
     direction_control_kpc = 0.0001;
+    #endif
     
-//    direction_control_kd = 0.2;
-//    direction_control_kpj = 0.025;
-//    direction_control_kpc = 0.0001;
-    
+    #ifdef NO1
+    front_car = true;
+    #else
     front_car = false;
+    #endif
 }
