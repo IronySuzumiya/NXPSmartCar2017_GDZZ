@@ -7,8 +7,12 @@
 static void NVICInit(void);
 static void BuzzleInit(void);
 static void TimerInit(void);
+static void DoubleCarControl(void);
+static void DistanceControl(void);
+static void BuzzleControl(bool);
 static void MainProc(void);
 static void SwitchAndParamLoad(void);
+static void GetReady(void);
 
 void MainInit() {
     DelayInit();
@@ -31,6 +35,8 @@ void MainInit() {
     
     ImgProcInit();
     
+    GetReady();
+    
     #ifdef DOUBLE_CAR
     DoubleCarRelativeInit();
     #endif
@@ -52,6 +58,12 @@ void NVICInit() {
     NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 2, 3));
 }
 
+void GetReady() {
+    GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPD);
+    while(!START_READ) { }
+    DelayMs(2000);
+}
+
 void BuzzleInit() {
     GPIO_QuickInit(BUZZLE_PORT, BUZZLE_PIN, kGPIO_Mode_OPP);
 }
@@ -62,32 +74,24 @@ void TimerInit() {
     PIT_ITDMAConfig(PIT_CHL, kPIT_IT_TOF, ENABLE);
 }
 
-void MainProc() {
-    static int cnt = 0;
+void DoubleCarControl() {
     static int waitForOvertakingCnt = 0;
     static int overtakingcnt = 0;
     static bool aroundOvertakingFlag = false;
     static int aroundOvertakingCnt = 0;
-    if(cnt > 500) {
-        cnt = 0;
-        BUZZLE_OFF;
-    }
-    ++cnt;
-    if(inRing) {
-        BUZZLE_ON;
-    }
     if(waitForOvertaking) {
         ++waitForOvertakingCnt;
-        if(waitForOvertakingCnt > 250) {
+        if(waitForOvertakingCnt > 700) {
             overtaking = true;
-            overtakingcnt = 50;
+            waitForOvertakingCnt = 0;
+            overtakingcnt = 200;
         }
     } else {
         waitForOvertakingCnt = 0;
     }
     if(overtaking) {
         ++overtakingcnt;
-        if(overtakingcnt > 50) {
+        if(overtakingcnt > 200) {
             overtakingcnt = 0;
             overtaking = false;
             waitForOvertaking = false;
@@ -97,14 +101,16 @@ void MainProc() {
     }
     if(aroundOvertakingFlag) {
         ++aroundOvertakingCnt;
-        if(aroundOvertakingCnt > 200) {
+        if(aroundOvertakingCnt > 400) {
             aroundOvertaking = false;
             aroundOvertakingFlag = false;
             aroundOvertakingCnt = 0;
         }
     }
-    EncoderGet(&leftSpeed, &rightSpeed);
-    if(inRing || ringEndDelay) {
+}
+
+void DistanceControl() {
+    if(inRing || ringEndDelay || ringInterval) {
         ringDistance += (leftSpeed + rightSpeed) / 2 * 5;
     }
     if(inCrossRoad) {
@@ -113,6 +119,28 @@ void MainProc() {
     if(aroundBarrier) {
         barrierDistance += (leftSpeed + rightSpeed) / 2 * 5;
     }
+}
+
+void BuzzleControl(bool flag) {
+    static int cnt = 0;
+    if(++cnt > 500) {
+        cnt = 0;
+        BUZZLE_OFF;
+    }
+    if(flag) {
+        BUZZLE_ON;
+    }
+}
+
+void MainProc() {
+    BuzzleControl(inRing);
+    
+    DoubleCarControl();
+    
+    EncoderGet(&leftSpeed, &rightSpeed);
+    
+    DistanceControl();
+    
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
     }
@@ -128,11 +156,11 @@ static void SwitchAndParamLoad() {
     state_trans_on = false;
     mode_switch_on = false;
     
-    speed_control_speed = 85;
+    speed_control_speed = 100;
     speed_control_sum_err_max = 2000;
     
-    speed_control_acc_speed = 87;
-    speed_control_dec_speed = 83;
+    speed_control_acc = 5;
+    speed_control_dec = 5;
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
@@ -157,12 +185,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 415;
     steer_actuator_middle = 452;
     steer_actuator_left = 555;
-    pre_sight = 21;
+    pre_sight = 24;
     #else
     steer_actuator_right = 340;
     steer_actuator_middle = 410;
     steer_actuator_left = 480;
-    pre_sight = 20;
+    pre_sight = 23;
     #endif
     
     #ifdef NO1

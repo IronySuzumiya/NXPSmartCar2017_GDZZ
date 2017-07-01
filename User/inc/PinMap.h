@@ -16,7 +16,7 @@
 //Data Communication
 #define  DATACOMM_IMG_TRANS_MAP     UART3_RX_PE05_TX_PE04
 #define  DATACOMM_IMG_TRANS_CHL     HW_UART3
-#define  DATACOMM_IMG_TRANS_BAUD    115200
+#define  DATACOMM_IMG_TRANS_BAUD    9600
 #define  DATACOMM_VISUALSCOPE_CHL   DATACOMM_IMG_TRANS_CHL
 
 //Camera
@@ -75,5 +75,10 @@
 #define  IR_PORT  HW_GPIOD
 #define  IR_PIN   0
 #define  IR_READ  PDin(IR_PIN)
+
+//Start
+#define  START_PORT  HW_GPIOE
+#define  START_PIN   0
+#define  START_READ  PEin(START_PIN)
 
 #endif

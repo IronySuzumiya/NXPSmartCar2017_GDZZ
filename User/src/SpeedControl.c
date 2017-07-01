@@ -11,8 +11,8 @@ int16_t leftSpeed, rightSpeed;
 int16_t speed_control_sum_err_max;
 bool speed_control_on;
 int16_t speed_control_speed;
-int16_t speed_control_acc_speed;
-int16_t speed_control_dec_speed;
+int16_t speed_control_acc;
+int16_t speed_control_dec;
 
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
@@ -23,35 +23,25 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
     MotorOut(SpeedControlPID(&leftPid), SpeedControlPID(&rightPid));
 }
 
-void SpeedTargetSet(bool acc, bool stop) {
-//    #ifdef DOUBLE_CAR
-//        static int16_t current_speed;
-//        if(!front_car) {
-//            if(distance > AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX) {
-//                current_speed = speed_control_acc_speed;
-//            } else if(distance < AVG_DISTANCE_BETWEEN - DIFF_DISTANCE_MAX) {
-//                current_speed = speed_control_dec_speed;
-//            } else {
-//                current_speed = speed_control_speed;
-//            }
-//        }
-//    #else
-        #define current_speed  speed_control_speed
-//    #endif
+void SpeedTargetSet(int16_t speed, bool diff) {
+    #ifdef DOUBLE_CAR
+        if(!front_car && speed != 0) {
+            speed = TOO_FAR ? speed + speed_control_acc :
+                TOO_CLOSE ? speed - speed_control_dec :
+                speed;
+        }
+    #endif
     
-    if(waitForOvertaking || stop) {
-        leftPid.targetValue = rightPid.targetValue = 0;
-    } else if(acc) {
-        leftPid.targetValue = rightPid.targetValue = current_speed;
+    if(!diff) {
+        leftPid.targetValue = rightPid.targetValue = speed;
     } else {
         int16_t tmpSpeed;
         if(directionAngle > 0) {
-             tmpSpeed = current_speed - 2.6 * directionAngle;
+             tmpSpeed = speed - 2.6 * directionAngle;
              leftPid.targetValue = tmpSpeed;
              rightPid.targetValue = tmpSpeed * (0.031 * directionAngle + 1);
-        }
-        else {
-             tmpSpeed = current_speed + 2.6 * directionAngle;
+        } else {
+             tmpSpeed = speed + 2.6 * directionAngle;
              rightPid.targetValue = tmpSpeed;
              leftPid.targetValue = tmpSpeed * (0.031 * (-directionAngle) + 1);
         }

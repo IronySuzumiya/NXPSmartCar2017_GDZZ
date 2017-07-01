@@ -10,6 +10,7 @@ int32_t ringDistance;
 int32_t crossRoadDistance;
 bool inRing;
 bool ringEndDelay;
+bool ringInterval;
 bool inCrossRoad;
 
 int16_t barrierType;
@@ -33,12 +34,18 @@ int16_t GetRoadType() {
         } else {
             ringDistance = 0;
             ringEndDelay = false;
+            ringInterval = true;
+        }
+    } else if(ringInterval) {
+        if(ringDistance > 20000) {
+            ringDistance = 0;
+            ringInterval = false;
         }
     } else if(inRing) {
         if(ringDistance > 90000) {
             ringDistance = 0;
             inRing = false;
-        } else if(ringDistance > 18000 && IsRingEnd()) {
+        } else if(ringDistance > 25000 && IsRingEnd()) {
             ringDistance = 0;
             ringEndDelay = true;
             inRing = false;
@@ -63,7 +70,7 @@ int16_t GetRoadType() {
 //    int16_t curve = WhichCurve();
     
     return /*curve != Unknown ? curve
-        : */!inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
+        : */!inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
         : !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;

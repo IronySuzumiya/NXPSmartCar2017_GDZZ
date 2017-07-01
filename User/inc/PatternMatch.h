@@ -50,6 +50,7 @@ extern int32_t ringDistance;
 extern int32_t crossRoadDistance;
 extern bool inRing;
 extern bool ringEndDelay;
+extern bool ringInterval;
 extern bool inCrossRoad;
 extern int32_t barrierDistance;
 extern bool aroundBarrier;

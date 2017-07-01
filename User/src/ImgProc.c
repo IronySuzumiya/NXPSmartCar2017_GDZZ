@@ -121,14 +121,11 @@ void ImgProc3() {
 
 void ImgProcSummary() {
     static bool stop = false;
-    bool accelerate = false;
     int16_t middle = IMG_COL / 2;
-    /*if(IsOutOfRoad() || StartLineJudge(pre_sight - 10)) {
+    
+    if(!aroundOvertaking && (IsOutOfRoad() || StartLineJudge(pre_sight - 10))) {
         stop = true;
-    } else {*/
-        if(StraightLineJudge()) {
-            accelerate = true;
-        }
+    } else {
         switch(GetRoadType()) {
             case Ring:
                 RingCompensate();
@@ -156,17 +153,23 @@ void ImgProcSummary() {
                 RightCurveCompensate();
                 break;
             case LeftBarrier:
-//                middle -= 22;
+    //                middle -= 22;
                 break;
             case RightBarrier:
-//                middle += 22;
+    //                middle += 22;
                 break;
         }
-    /*}*/
+    }
+    
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine, middle);
     }
+    
     if(speed_control_on) {
-        SpeedTargetSet(accelerate, stop);
+        bool accelerate = StraightLineJudge();
+        SpeedTargetSet(stop || waitForOvertaking ? 0 :
+            accelerate ? speed_control_speed * 1.1 :
+            inRing || ringEndDelay || aroundOvertaking ? 85 : speed_control_speed
+            , !stop && !waitForOvertaking && !accelerate);
     }
 }
