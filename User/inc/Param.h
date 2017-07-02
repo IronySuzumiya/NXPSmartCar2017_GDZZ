@@ -40,7 +40,7 @@
 #define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1
 #define  ULTRA_SONIC_TIME_OUT   50000
 #define  TIMER_INIT_COUNT       2499991uL
-#define  AVG_DISTANCE_BETWEEN   60
+#define  AVG_DISTANCE_BETWEEN   80
 #define  DIFF_DISTANCE_MAX      15
 #define  DATACOMM_TIME_OUT_TIMER_CHL    HW_PIT_CH2
 #define  DATACOMM_TIME_OUT              5000
@@ -52,5 +52,7 @@
 #define  YOU_ARE_FRONT          0x02
 #define  OVER_TAKING            0x03
 #define  MISSING                0x04
+#define  START                  0x05
+#define  FINAL                  0x06
 
 #endif

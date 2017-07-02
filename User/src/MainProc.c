@@ -35,11 +35,11 @@ void MainInit() {
     
     ImgProcInit();
     
-//    GetReady();
-    
     #ifdef DOUBLE_CAR
     DoubleCarRelativeInit();
     #endif
+    
+    GetReady();
     
     TimerInit();
 }
@@ -59,9 +59,15 @@ void NVICInit() {
 }
 
 void GetReady() {
-    GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPD);
-    while(!START_READ) { }
-    DelayMs(2000);
+    if(front_car) {
+        GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
+        while(START_READ) { }
+        DelayMs(2000);
+        SendMessage(START);
+    } else {
+        while(!start) { }
+        DelayMs(100);
+    }
 }
 
 void BuzzleInit() {
@@ -110,14 +116,21 @@ void DoubleCarControl() {
 }
 
 void DistanceControl() {
+    int16_t dist = (leftSpeed + rightSpeed) / 2 * 5;
     if(inRing || ringEndDelay || ringInterval) {
-        ringDistance += (leftSpeed + rightSpeed) / 2 * 5;
+        ringDistance += dist;
     }
     if(inCrossRoad) {
-        crossRoadDistance += (leftSpeed + rightSpeed) / 2 * 5;
+        crossRoadDistance += dist;
     }
     if(aroundBarrier) {
-        barrierDistance += (leftSpeed + rightSpeed) / 2 * 5;
+        barrierDistance += dist;
+    }
+    if(!firstOvertaking) {
+        startDistance += dist;
+    }
+    if(final) {
+        finalDistance += dist;
     }
 }
 
@@ -156,11 +169,11 @@ static void SwitchAndParamLoad() {
     state_trans_on = false;
     mode_switch_on = false;
     
-    speed_control_speed = 95;
+    speed_control_speed = 100;
     speed_control_sum_err_max = 2000;
     
     speed_control_acc = 10;
-    speed_control_dec = 10;
+    speed_control_dec = 20;
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
@@ -185,12 +198,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 415;
     steer_actuator_middle = 452;
     steer_actuator_left = 555;
-    pre_sight = 24;
+    pre_sight = pre_sight_default = 22;
     #else
     steer_actuator_right = 340;
     steer_actuator_middle = 410;
     steer_actuator_left = 480;
-    pre_sight = 23;
+    pre_sight = pre_sight_default = 23;
     #endif
     
     #ifdef NO1

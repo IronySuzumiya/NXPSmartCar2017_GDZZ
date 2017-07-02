@@ -15,6 +15,7 @@ extern int16_t ultraSonicMissingCnt;
 extern float distance;
 extern uint32_t time;
 extern bool front_car;
-extern bool double_car;
+extern bool start;
+extern bool pursue;
 
 #endif

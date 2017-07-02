@@ -9,6 +9,8 @@ int16_t ultraSonicMissingCnt;
 float distance;
 uint32_t time;
 bool front_car;
+bool start;
+bool pursue;
 
 static uint8_t messageQueue[MESSAGE_QUEUE_SIZE];
 static uint8_t *messageQueueEnd = messageQueue;
@@ -154,6 +156,12 @@ void DoubleCarMessageRecv(uint16_t message) {
             break;
         case MISSING:
 //            SendAck();
+            break;
+        case START:
+            start = true;
+            break;
+        case FINAL:
+            pursue = true;
             break;
 //        case ACK:
 //            PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);

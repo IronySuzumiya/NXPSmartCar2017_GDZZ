@@ -178,8 +178,13 @@ bool IsRing() {
         cursor = (left + right) / 2;
     }
     
-    return inRing = leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
-        /*&& Abs(cnt[0] - cnt[1]) < 4*/ && maxWidth > 75 && maxWidth - minWidth > 50;
+    return inRing =
+//        #ifdef NO1
+            leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
+//        #else
+//            rightMost >= IMG_COL - 80 && cnt[2] > 3 && cnt[3] > 3 && cnt[2] < 7
+//        #endif
+        /*&& Abs(cnt[0] - cnt[1]) < 4 */&& maxWidth > 75 && maxWidth - minWidth > 50;
 }
 
 bool IsRingEndFromLeft() {

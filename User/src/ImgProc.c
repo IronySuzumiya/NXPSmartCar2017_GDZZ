@@ -13,11 +13,16 @@ byte imgBuf[IMG_ROW][IMG_COL];
 
 int16_t dirError;
 bool direction_control_on;
+int16_t pre_sight_default;
 int16_t pre_sight;
 img_proc_struct resultSet;
 bool waitForOvertaking;
 bool overtaking;
 bool aroundOvertaking;
+int32_t startDistance;
+bool firstOvertaking;
+int32_t finalDistance;
+bool final;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -123,8 +128,67 @@ void ImgProcSummary() {
     static bool stop = false;
     int16_t middle = IMG_COL / 2;
     
-    if(!aroundOvertaking && (IsOutOfRoad() || StartLineJudge(pre_sight - 10))) {
+    if(!firstOvertaking) {
+        if(!aroundOvertaking) {
+            if(front_car) {
+                if(startDistance > 20000) {
+                    waitForOvertaking = true;
+                    aroundOvertaking = true;
+                } else {
+                    middle -= 40;
+                }
+            } else {
+                if(startDistance > 25000) {
+                    if(!overtaking) {
+                        overtaking = true;
+                        SendMessage(OVER_TAKING);
+                    }
+                    aroundOvertaking = true;
+                } else {
+                    middle += 32;
+                }
+            }
+        }
+        if(startDistance > 40000) {
+            firstOvertaking = true;
+        }
+    } else if(!aroundOvertaking && IsOutOfRoad()) {
         stop = true;
+    } else if(!final && StartLineJudge(pre_sight)) {
+        if(front_car) {
+            SendMessage(FINAL);
+            pursue = true;
+            middle -= 40;
+            final = true;
+        } else {
+            middle += 32;
+            final = true;
+        }
+    } else if(final) {
+        if(!front_car && finalDistance > 40000) {
+            stop = true;
+        } else if(front_car && finalDistance > 60000) {
+            stop = true;
+        } else if(!aroundOvertaking) {
+            if(front_car) {
+                if(finalDistance > 20000) {
+                    waitForOvertaking = true;
+                    aroundOvertaking = true;
+                } else {
+                    middle -= 40;
+                }
+            } else {
+                if(finalDistance > 15000) {
+                    if(!overtaking) {
+                        overtaking = true;
+                        SendMessage(OVER_TAKING);
+                    }
+                    aroundOvertaking = true;
+                } else {
+                    middle += 32;
+                }
+            }
+        }
     } else {
         switch(GetRoadType()) {
             case Ring:
@@ -153,10 +217,10 @@ void ImgProcSummary() {
                 RightCurveCompensate();
                 break;
             case LeftBarrier:
-    //                middle -= 22;
+//                middle -= 22;
                 break;
             case RightBarrier:
-    //                middle += 22;
+//                middle += 22;
                 break;
         }
     }

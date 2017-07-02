@@ -20,10 +20,15 @@ extern byte imgBuf[IMG_ROW][IMG_COL];
 
 extern int16_t dirError;
 extern bool direction_control_on;
+extern int16_t pre_sight_default;
 extern int16_t pre_sight;
 extern img_proc_struct resultSet;
 extern bool waitForOvertaking;
 extern bool overtaking;
 extern bool aroundOvertaking;
+extern bool firstOvertaking;
+extern int32_t startDistance;
+extern bool final;
+extern int32_t finalDistance;
 
 #endif

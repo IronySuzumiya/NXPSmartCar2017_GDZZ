@@ -15,4 +15,8 @@
 
 #define NO2
 
+#define DYNAMIC_PRESIGHT
+
+#define PURSUEING_DEPENDING_PRESIGHT
+
 #endif

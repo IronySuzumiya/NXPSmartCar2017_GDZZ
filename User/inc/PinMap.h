@@ -77,8 +77,8 @@
 #define  IR_READ  PDin(IR_PIN)
 
 //Start
-#define  START_PORT  HW_GPIOE
-#define  START_PIN   0
-#define  START_READ  PEin(START_PIN)
+#define  START_PORT  HW_GPIOC
+#define  START_PIN   8
+#define  START_READ  PCin(START_PIN)
 
 #endif
