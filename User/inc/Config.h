@@ -13,6 +13,6 @@
 
 #define xPERIODICALLY_CHECK_MSG_QUEUE
 
-#define NO1
+#define NO2
 
 #endif

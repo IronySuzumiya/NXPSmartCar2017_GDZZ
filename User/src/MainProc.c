@@ -35,7 +35,7 @@ void MainInit() {
     
     ImgProcInit();
     
-    GetReady();
+//    GetReady();
     
     #ifdef DOUBLE_CAR
     DoubleCarRelativeInit();
@@ -156,11 +156,11 @@ static void SwitchAndParamLoad() {
     state_trans_on = false;
     mode_switch_on = false;
     
-    speed_control_speed = 100;
+    speed_control_speed = 95;
     speed_control_sum_err_max = 2000;
     
-    speed_control_acc = 5;
-    speed_control_dec = 5;
+    speed_control_acc = 10;
+    speed_control_dec = 10;
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;

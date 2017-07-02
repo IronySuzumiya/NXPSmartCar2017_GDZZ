@@ -9,9 +9,7 @@ static void ImgTransAtPreSight(img_proc_struct* resultSetPtr);
 static uint16_t CrcCheck(uint8_t *buf, uint8_t crcCnt);
 
 void DataCommInit() {
-    #ifndef DOUBLE_CAR
     UART_QuickInit(DATACOMM_IMG_TRANS_MAP, DATACOMM_IMG_TRANS_BAUD);
-    #endif
 }
 
 void ImgTransOnlyBorderAndMiddleLine(int8_t* leftBorder, int8_t* middleLine, int8_t* rightBorder) {

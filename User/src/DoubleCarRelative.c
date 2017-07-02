@@ -55,6 +55,8 @@ void DoubleCarRelativeInit() {
     
     /* ultra sonic can be missed, and `only` `for now`, do nothing if time out */
     PIT_QuickInit(ULTRA_SONIC_TIMER_CHL, ULTRA_SONIC_TIME_OUT);
+    PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
+    PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
     
     /* if time out, re-send the last message */
 //    PIT_QuickInit(DATACOMM_TIME_OUT_TIMER_CHL, DATACOMM_TIME_OUT);
@@ -127,9 +129,10 @@ void UltraSonicRecvInt(uint32_t pinxArray) {
 
 void UltraSonicTimeOutInt() {
     ++ultraSonicMissingCnt;
-    if(ultraSonicMissingCnt > 10) {
+    if(ultraSonicMissingCnt > 5) {
         ultraSonicMissingCnt = 0;
-        MessageEnqueue(MISSING);
+        distance = AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX + 233;
+//        SendMessage(MISSING);
     }
 }
 

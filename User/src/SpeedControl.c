@@ -25,10 +25,12 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 
 void SpeedTargetSet(int16_t speed, bool diff) {
     #ifdef DOUBLE_CAR
-        if(!front_car && speed != 0) {
-            speed = TOO_FAR ? speed + speed_control_acc :
-                TOO_CLOSE ? speed - speed_control_dec :
-                speed;
+        if(speed != 0) {
+            if(!front_car) {
+                speed = TOO_FAR ? speed + speed_control_acc :
+                    TOO_CLOSE ? speed - speed_control_dec :
+                    speed;
+            }
         }
     #endif
     
