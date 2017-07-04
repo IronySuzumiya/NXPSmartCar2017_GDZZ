@@ -1,32 +1,25 @@
-#include "DoubleCarRelative.h"
+#include "DoubleCar.h"
 #include "MainProc.h"
 #include "gpio.h"
 #include "pit.h"
 #include "uart.h"
 #include "ImgProc.h"
+#include "PatternMatch.h"
 
 int16_t ultraSonicMissingCnt;
-float distance;
+float distanceBetweenTheTwoCars;
 uint32_t time;
-bool front_car;
-bool start;
-bool pursue;
+bool leader_car;
+bool pursueing;
 
+#ifdef RELIABLE_CONNECTION
 static uint8_t messageQueue[MESSAGE_QUEUE_SIZE];
 static uint8_t *messageQueueEnd = messageQueue;
 static uint8_t *messageQueueHead = messageQueue;
-
 static bool waitingForAck;
 static uint8_t lastMessage;
 
-static void UltraSonicRecvIntTst(uint32_t pinxArray);
-static void UltraSonicRecvInt(uint32_t pinxArray);
-static void UltraSonicTimeOutInt(void);
-static void DoubleCarMessageRecv(uint16_t byte);
 static void DataCommTimeOutInt(void);
-#ifdef PERIODICALLY_CHECK_MSG_QUEUE
-static void DataCommSendMessageInt(void);
-#endif
 
 static inline void SendAck() {
     UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, ACK);
@@ -36,12 +29,27 @@ static inline void SendLastMessage() {
     UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, lastMessage);
 }
 
+#ifdef PERIODICALLY_CHECK_MSG_QUEUE
+static void DataCommSendMessageInt(void);
+#endif
+#endif
+
+#ifdef DYNAMIC_INIT_LEADER_CAR
+static void UltraSonicRecvIntTst(uint32_t pinxArray);
+#endif
+
+static void UltraSonicRecvInt(uint32_t pinxArray);
+static void UltraSonicTimeOutInt(void);
+static void DoubleCarMessageRecv(uint16_t byte);
+
 void SendMessage(uint8_t message) {
     UART_WriteByte(DATACOMM_DOUBLE_CAR_CHL, message);
-//    waitingForAck = true;
-//    lastMessage = message;
-//    PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
-//    PIT_ResetCounter(DATACOMM_TIME_OUT_TIMER_CHL);
+    #ifdef RELIABLE_CONNECTION
+    waitingForAck = true;
+    lastMessage = message;
+    PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+    PIT_ResetCounter(DATACOMM_TIME_OUT_TIMER_CHL);
+    #endif
 }
 
 void DoubleCarRelativeInit() {
@@ -60,10 +68,11 @@ void DoubleCarRelativeInit() {
     PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
     PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
     
+    #ifdef RELIABLE_CONNECTION
     /* if time out, re-send the last message */
-//    PIT_QuickInit(DATACOMM_TIME_OUT_TIMER_CHL, DATACOMM_TIME_OUT);
-//    PIT_CallbackInstall(DATACOMM_TIME_OUT_TIMER_CHL, DataCommTimeOutInt);
-//    PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+    PIT_QuickInit(DATACOMM_TIME_OUT_TIMER_CHL, DATACOMM_TIME_OUT);
+    PIT_CallbackInstall(DATACOMM_TIME_OUT_TIMER_CHL, DataCommTimeOutInt);
+    PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
     
     #ifdef PERIODICALLY_CHECK_MSG_QUEUE
     /* for every period, if not waiting for an ack, check if any message in the queue and send it */
@@ -71,8 +80,10 @@ void DoubleCarRelativeInit() {
     PIT_CallbackInstall(DATACOMM_SEND_MSG_TIMER_CHL, DataCommSendMessageInt);
     PIT_ITDMAConfig(DATACOMM_SEND_MSG_TIMER_CHL, kPIT_IT_TOF, ENABLE);
     #endif
+    #endif
 }
 
+#ifdef RELIABLE_CONNECTION
 void MessageEnqueue(uint8_t message) {
     *messageQueueEnd++ = message;
     if(messageQueueEnd - messageQueue == MESSAGE_QUEUE_SIZE) {
@@ -87,7 +98,9 @@ void MessageEnqueue(uint8_t message) {
     }
     #endif
 }
+#endif
 
+#ifdef DYNAMIC_INIT_LEADER_CAR
 void UltraSonicRecvIntTst(uint32_t pinxArray) {
     static bool ensure = false;
     static int16_t cnt = 0;
@@ -97,12 +110,12 @@ void UltraSonicRecvIntTst(uint32_t pinxArray) {
         } else {
             ++cnt;
             if(ensure && cnt > 10) {
-                SendMessage(YOU_ARE_FRONT); //MessageEnqueue(YOU_ARE_FRONT);
-                front_car = false;
+                SendMessage(YOU_ARE_LEADER);
+                leader_car = false;
                 motor_on = true;
                 BUZZLE_ON;
                 
-                /* begin the distance measuring */
+                /* begin the distanceBetweenTheTwoCars measuring */
                 GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, DISABLE);
                 GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);
                 GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
@@ -115,6 +128,7 @@ void UltraSonicRecvIntTst(uint32_t pinxArray) {
         }
     }
 }
+#endif
 
 void UltraSonicRecvInt(uint32_t pinxArray) {
     if(pinxArray & (1 << ULTRA_SONIC_RECV_PIN)) {
@@ -123,7 +137,7 @@ void UltraSonicRecvInt(uint32_t pinxArray) {
             PIT_ResetCounter(ULTRA_SONIC_TIMER_CHL);
         } else {
             time = (TIMER_INIT_COUNT - PIT_GetCounterValue(ULTRA_SONIC_TIMER_CHL)) / (TIMER_INIT_COUNT / ULTRA_SONIC_TIME_OUT);
-            distance = CalculateDistanceWithTime(time);
+            distanceBetweenTheTwoCars = CalculateDistanceWithTime(time);
             PIT_ResetCounter(ULTRA_SONIC_TIMER_CHL);
         }
     }
@@ -133,54 +147,58 @@ void UltraSonicTimeOutInt() {
     ++ultraSonicMissingCnt;
     if(ultraSonicMissingCnt > 5) {
         ultraSonicMissingCnt = 0;
-        distance = AVG_DISTANCE_BETWEEN + DIFF_DISTANCE_MAX + 233;
+        distanceBetweenTheTwoCars = AVG_DISTANCE_BETWEEN_THE_TWO_CARS + DIFF_DISTANCE_MAX + 233;
 //        SendMessage(MISSING);
     }
 }
 
 void DoubleCarMessageRecv(uint16_t message) {
     switch(message) {
-        case YOU_ARE_FRONT:
-            front_car = true;
-            motor_on = true;
-            BUZZLE_ON;
-//            SendAck();
-            GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);
-            GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
-//            PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
-//            PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+        case YOU_ARE_LEADER:
+            leader_car = true;
             break;
-        case OVER_TAKING:
+        case OVERTAKING:
             overtaking = true;
-//            SendAck();
             break;
         case MISSING:
-//            SendAck();
             break;
         case START:
-            start = true;
+            enabled = true;
             break;
         case FINAL:
-            pursue = true;
+            pursueing = true;
+            goAlongLeft = true;
             break;
-//        case ACK:
-//            PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
-//            waitingForAck = false;
-//            #ifndef PERIODICALLY_CHECK_MSG_QUEUE
-//                if(messageQueueHead != messageQueueEnd) {
-//                    SendMessage(*messageQueueHead++);
-//                    if(messageQueueHead - messageQueue == MESSAGE_QUEUE_SIZE) {
-//                        messageQueueHead = messageQueue;
-//                    }
-//                }
-//            #endif
-//            break;
+        case CROSS_ROAD:
+            inCrossRoad = true;
+            crossRoadDistance = 0;
+            break;
+        case MOVE_RIGHT_NOW:
+            overtaking = true;
+            overtakingCnt = 200;
+            break;
+        #ifdef RELIABLE_CONNECTION
+        case ACK:
+            PIT_ITDMAConfig(DATACOMM_TIME_OUT_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+            waitingForAck = false;
+            #ifndef PERIODICALLY_CHECK_MSG_QUEUE
+                if(messageQueueHead != messageQueueEnd) {
+                    SendMessage(*messageQueueHead++);
+                    if(messageQueueHead - messageQueue == MESSAGE_QUEUE_SIZE) {
+                        messageQueueHead = messageQueue;
+                    }
+                }
+            #endif
+            break;
+        #endif
     }
 }
 
+#ifdef RELIABLE_CONNECTION
 void DataCommTimeOutInt() {
     SendLastMessage();
 }
+#endif
 
 #ifdef PERIODICALLY_CHECK_MSG_QUEUE
 static void DataCommSendMessageInt() {

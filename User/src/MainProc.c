@@ -1,13 +1,25 @@
 #include "MainProc.h"
 #include "ImgUtility.h"
 #include "pit.h"
-#include "stdlib.h"
 #include "gpio.h"
+#include "Motor.h"
+#include "Encoder.h"
+#include "SteerActuator.h"
+#include "DataComm.h"
+#include "ImgProc.h"
+#include "SpeedControl.h"
+#include "DirectionControl.h"
+#include "ModeSwitch.h"
+#include "DoubleCar.h"
+
+bool enabled;
+int16_t waitForOvertakingCnt;
+int16_t overtakingCnt;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
 static void TimerInit(void);
-static void DoubleCarControl(void);
+static void OvertakingControl(void);
 static void DistanceControl(void);
 static void BuzzleControl(bool);
 static void MainProc(void);
@@ -36,10 +48,12 @@ void MainInit() {
     ImgProcInit();
     
     #ifdef DOUBLE_CAR
+    
     DoubleCarRelativeInit();
-    #endif
     
     GetReady();
+    
+    #endif
     
     TimerInit();
 }
@@ -59,13 +73,13 @@ void NVICInit() {
 }
 
 void GetReady() {
-    if(front_car) {
+    if(leader_car) {
         GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
         while(START_READ) { }
         DelayMs(2000);
         SendMessage(START);
     } else {
-        while(!start) { }
+        while(!enabled) { }
         DelayMs(100);
     }
 }
@@ -80,9 +94,7 @@ void TimerInit() {
     PIT_ITDMAConfig(PIT_CHL, kPIT_IT_TOF, ENABLE);
 }
 
-void DoubleCarControl() {
-    static int waitForOvertakingCnt = 0;
-    static int overtakingcnt = 0;
+void OvertakingControl() {
     static bool aroundOvertakingFlag = false;
     static int aroundOvertakingCnt = 0;
     if(waitForOvertaking) {
@@ -90,24 +102,24 @@ void DoubleCarControl() {
         if(waitForOvertakingCnt > 700) {
             overtaking = true;
             waitForOvertakingCnt = 0;
-            overtakingcnt = 200;
+            overtakingCnt = 200;
         }
     } else {
         waitForOvertakingCnt = 0;
     }
     if(overtaking) {
-        ++overtakingcnt;
-        if(overtakingcnt > 200) {
-            overtakingcnt = 0;
+        ++overtakingCnt;
+        if(overtakingCnt > 200) {
+            overtakingCnt = 0;
             overtaking = false;
             waitForOvertaking = false;
             aroundOvertakingFlag = true;
-            front_car = !front_car;
+            leader_car = !leader_car;
         }
     }
     if(aroundOvertakingFlag) {
         ++aroundOvertakingCnt;
-        if(aroundOvertakingCnt > 400) {
+        if(aroundOvertakingCnt > 300) {
             aroundOvertaking = false;
             aroundOvertakingFlag = false;
             aroundOvertakingCnt = 0;
@@ -117,6 +129,13 @@ void DoubleCarControl() {
 
 void DistanceControl() {
     int16_t dist = (leftSpeed + rightSpeed) / 2 * 5;
+    if(!startLineEnabled) {
+        if(wholeDistance < 200000L) {
+            wholeDistance += dist;
+        } else {
+            startLineEnabled = true;
+        }
+    }
     if(inRing || ringEndDelay || ringInterval) {
         ringDistance += dist;
     }
@@ -126,7 +145,7 @@ void DistanceControl() {
     if(aroundBarrier) {
         barrierDistance += dist;
     }
-    if(!firstOvertaking) {
+    if(!firstOvertakingFinished) {
         startDistance += dist;
     }
     if(final) {
@@ -136,7 +155,7 @@ void DistanceControl() {
 
 void BuzzleControl(bool flag) {
     static int cnt = 0;
-    if(++cnt > 500) {
+    if(++cnt > 50) {
         cnt = 0;
         BUZZLE_OFF;
     }
@@ -146,11 +165,16 @@ void BuzzleControl(bool flag) {
 }
 
 void MainProc() {
-    BuzzleControl(inRing);
+    if(encoder_on) {
+        EncoderGet(&leftSpeed, &rightSpeed);
+    } else {
+        EncoderClear();
+        leftSpeed = rightSpeed = 0;
+    }
     
-    DoubleCarControl();
+    BuzzleControl(final);
     
-    EncoderGet(&leftSpeed, &rightSpeed);
+    OvertakingControl();
     
     DistanceControl();
     
@@ -165,11 +189,8 @@ static void SwitchAndParamLoad() {
     speed_control_on = true;
     direction_control_on = true;
     steer_actuator_on = true;
-    img_trans_on = false;
-    state_trans_on = false;
-    mode_switch_on = false;
     
-    speed_control_speed = 100;
+    speed_control_speed = 90;
     speed_control_sum_err_max = 2000;
     
     speed_control_acc = 10;
@@ -198,12 +219,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 415;
     steer_actuator_middle = 452;
     steer_actuator_left = 555;
-    pre_sight = pre_sight_default = 22;
+    pre_sight = pre_sight_default = 21;
     #else
     steer_actuator_right = 340;
     steer_actuator_middle = 410;
     steer_actuator_left = 480;
-    pre_sight = pre_sight_default = 23;
+    pre_sight = pre_sight_default = 21;
     #endif
     
     #ifdef NO1
@@ -217,8 +238,8 @@ static void SwitchAndParamLoad() {
     #endif
     
     #ifdef NO1
-    front_car = true;
+    leader_car = true;
     #else
-    front_car = false;
+    leader_car = false;
     #endif
 }

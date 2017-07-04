@@ -38,10 +38,10 @@ typedef struct _img_proc_struct {
     int16_t middleLine[IMG_ROW];
     bool foundLeftBorder[IMG_ROW];
     bool foundRightBorder[IMG_ROW];
-    int16_t leftSlope[IMG_ROW];
-    int16_t leftZero[IMG_ROW];
-    int16_t rightSlope[IMG_ROW];
-    int16_t rightZero[IMG_ROW];
+//    int16_t leftSlope[IMG_ROW];
+//    int16_t leftZero[IMG_ROW];
+//    int16_t rightSlope[IMG_ROW];
+//    int16_t rightZero[IMG_ROW];
 //    int16_t middleSlope[IMG_ROW];
 //    int16_t middleZero[IMG_ROW];
 //    uint16_t imgProcFlag;

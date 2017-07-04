@@ -16,14 +16,5 @@ void SteerActuatorReset() {
 }
 
 void SteerActuatorOut(int16_t out) {
-    if(steer_actuator_on) {
-//        if(out < steer_actuator_right) {
-//            out = steer_actuator_right;
-//        } else if(out > steer_actuator_left) {
-//            out = steer_actuator_left;
-//        }
-        FTM_PWM_ChangeDuty(STEER_ACTUATOR_PORT, STEER_ACTUATOR_CHL, out);
-    } else {
-        FTM_PWM_ChangeDuty(STEER_ACTUATOR_PORT, STEER_ACTUATOR_CHL, steer_actuator_middle);
-    }
+    FTM_PWM_ChangeDuty(STEER_ACTUATOR_PORT, STEER_ACTUATOR_CHL, out);
 }

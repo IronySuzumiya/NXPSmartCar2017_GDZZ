@@ -15,44 +15,47 @@
 #define  PIT_PRD  5000
 
 //Camera
-#define  IMG_ABDN_ROW    47
-#define  IMG_ROW_INTV    4
+#define  IMG_ABDN_ROW  47
+#define  IMG_ROW_INTV  4
+#define  IMG_ROW       50
+#define  IMG_COL       225
+#define  WHITE_VAL     0
+#define  BLACK_VAL     1
+#define  IMG_WHITE     0xfe
+#define  IMG_BLACK     0x00
+#define  IMG_EOF       0xff
 
-//Image Proc Bit Map Relative
-/* byte is 8 (2^3) bits */
-#define  SHIFT  3
-/* make the after-shifted bit no more than 1 << 0x07 */
-#define  MASK   0x07
-
-#define  IMG_ROW    50
-#define  IMG_COL    225
-#define  WHITE_VAL  0
-#define  IMG_WHITE  0xfe
-#define  IMG_BLACK  0x00
-#define  IMG_EOF    0xff
 #ifdef NO1
 #define  IMG_READ_DELAY  130
 #else
 #define  IMG_READ_DELAY  110
 #endif
 
-//Double Car Relative
-#define  ULTRA_SONIC_TIMER_CHL  HW_PIT_CH1
-#define  ULTRA_SONIC_TIME_OUT   50000
-#define  TIMER_INIT_COUNT       2499991uL
-#define  AVG_DISTANCE_BETWEEN   80
-#define  DIFF_DISTANCE_MAX      15
-#define  DATACOMM_TIME_OUT_TIMER_CHL    HW_PIT_CH2
-#define  DATACOMM_TIME_OUT              5000
-#define  DATACOMM_SEND_MSG_TIMER_CHL    HW_PIT_CH3
-#define  DATACOMM_SEND_MSG_PERIOD       5000
+#ifdef USE_BMP
+#define  SHIFT  3
+#define  MASK   0x07
+#endif
+
+//Double Car
+#define  ULTRA_SONIC_TIMER_CHL              HW_PIT_CH1
+#define  ULTRA_SONIC_TIME_OUT               50000
+#define  TIMER_INIT_COUNT                   2499991uL
+#define  AVG_DISTANCE_BETWEEN_THE_TWO_CARS  80
+#define  DIFF_DISTANCE_MAX                  15
+#define  DATACOMM_TIME_OUT_TIMER_CHL        HW_PIT_CH2
+#define  DATACOMM_TIME_OUT                  5000
+#define  DATACOMM_SEND_MSG_TIMER_CHL        HW_PIT_CH3
+#define  DATACOMM_SEND_MSG_PERIOD           5000
+
 //Message
 #define  MESSAGE_QUEUE_SIZE     10
 #define  ACK                    0x01
-#define  YOU_ARE_FRONT          0x02
-#define  OVER_TAKING            0x03
+#define  YOU_ARE_LEADER         0x02
+#define  OVERTAKING             0x03
 #define  MISSING                0x04
 #define  START                  0x05
 #define  FINAL                  0x06
+#define  CROSS_ROAD             0x07
+#define  MOVE_RIGHT_NOW         0x08
 
 #endif

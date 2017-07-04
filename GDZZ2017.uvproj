@@ -497,25 +497,15 @@
               <FileType>1</FileType>
               <FilePath>.\Libraries\devices\src\SteerActuator.c</FilePath>
             </File>
-            <File>
-              <FileName>Infrared.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Libraries\devices\src\Infrared.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>user</GroupName>
           <Files>
             <File>
-              <FileName>DataComm.c</FileName>
+              <FileName>Main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\User\src\DataComm.c</FilePath>
-            </File>
-            <File>
-              <FileName>ImgProc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\src\ImgProc.c</FilePath>
+              <FilePath>.\User\src\Main.c</FilePath>
             </File>
             <File>
               <FileName>MainProc.c</FileName>
@@ -523,9 +513,44 @@
               <FilePath>.\User\src\MainProc.c</FilePath>
             </File>
             <File>
-              <FileName>Main.c</FileName>
+              <FileName>ImgProc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\User\src\Main.c</FilePath>
+              <FilePath>.\User\src\ImgProc.c</FilePath>
+            </File>
+            <File>
+              <FileName>BorderSearch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\BorderSearch.c</FilePath>
+            </File>
+            <File>
+              <FileName>MathProp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\MathProp.c</FilePath>
+            </File>
+            <File>
+              <FileName>PatternMatch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\PatternMatch.c</FilePath>
+            </File>
+            <File>
+              <FileName>Ring.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Ring.c</FilePath>
+            </File>
+            <File>
+              <FileName>CrossRoad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\CrossRoad.c</FilePath>
+            </File>
+            <File>
+              <FileName>Curve.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Curve.c</FilePath>
+            </File>
+            <File>
+              <FileName>Barrier.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Barrier.c</FilePath>
             </File>
             <File>
               <FileName>SpeedControl.c</FileName>
@@ -538,29 +563,19 @@
               <FilePath>.\User\src\DirectionControl.c</FilePath>
             </File>
             <File>
+              <FileName>DataComm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\DataComm.c</FilePath>
+            </File>
+            <File>
+              <FileName>DoubleCar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\DoubleCar.c</FilePath>
+            </File>
+            <File>
               <FileName>ModeSwitch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\src\ModeSwitch.c</FilePath>
-            </File>
-            <File>
-              <FileName>BorderSearchRelative.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\src\BorderSearchRelative.c</FilePath>
-            </File>
-            <File>
-              <FileName>MathPropertiesAnalyze.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\src\MathPropertiesAnalyze.c</FilePath>
-            </File>
-            <File>
-              <FileName>PatternMatch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\src\PatternMatch.c</FilePath>
-            </File>
-            <File>
-              <FileName>DoubleCarRelative.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\User\src\DoubleCarRelative.c</FilePath>
             </File>
             <File>
               <FileName>PinMap.h</FileName>
@@ -581,11 +596,6 @@
               <FileName>Config.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\User\inc\Config.h</FilePath>
-            </File>
-            <File>
-              <FileName>ImgUtility.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\User\inc\ImgUtility.h</FilePath>
             </File>
           </Files>
         </Group>

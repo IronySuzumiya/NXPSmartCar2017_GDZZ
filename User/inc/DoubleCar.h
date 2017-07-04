@@ -12,10 +12,9 @@ void MessageEnqueue(uint8_t message);
 void SendMessage(uint8_t message);
 
 extern int16_t ultraSonicMissingCnt;
-extern float distance;
+extern float distanceBetweenTheTwoCars;
 extern uint32_t time;
-extern bool front_car;
-extern bool start;
-extern bool pursue;
+extern bool leader_car;
+extern bool pursueing;
 
 #endif

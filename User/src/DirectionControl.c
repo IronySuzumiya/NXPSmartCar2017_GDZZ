@@ -2,6 +2,7 @@
 #include "SteerActuator.h"
 #include "ImgProc.h"
 #include "uart.h"
+#include "MainProc.h"
 
 double directionAngle;
 double direction_control_kd;
@@ -12,7 +13,11 @@ static int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle);
 static int16_t DirectionControlPID(int16_t dirError);
 
 void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
-    SteerActuatorOut(DirectionControlPID(DirectionErrorGet(middleLine, expectMiddle)));
+    if(steer_actuator_on) {
+        SteerActuatorOut(DirectionControlPID(DirectionErrorGet(middleLine, expectMiddle)));
+    } else {
+        SteerActuatorOut(steer_actuator_middle);
+    }
 }
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
@@ -26,17 +31,11 @@ int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionControlPID(int16_t error) {
     static int16_t lastError = 0;
-    float kp = direction_control_kpj + (error * error) * direction_control_kpc;
-    if(kp > 0.28) {
-        kp = 0.28;
-    }
-	directionAngle = kp * error + direction_control_kd * (error - lastError);
     
-	if(directionAngle > 14.4) {
-		directionAngle = 14.4;
-    } else if(directionAngle < -14.4) {
-		directionAngle = -14.4;
-    }
+	directionAngle = Min_f(direction_control_kpj + (error * error) * direction_control_kpc, 0.28)
+        * error + direction_control_kd * (error - lastError);
+    
+    directionAngle = Limit_f(directionAngle, -14.4, 14.4);
     
     lastError = error;
     

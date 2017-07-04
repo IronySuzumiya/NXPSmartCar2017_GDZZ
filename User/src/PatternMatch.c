@@ -1,31 +1,7 @@
 #include "PatternMatch.h"
-#include "ImgUtility.h"
 #include "ImgProc.h"
-#include "Motor.h"
-#include "stdio.h"
-#include "uart.h"
-#include "gpio.h"
-
-int32_t ringDistance;
-int32_t crossRoadDistance;
-bool inRing;
-bool ringEndDelay;
-bool ringInterval;
-bool inCrossRoad;
-
-int16_t barrierType;
-int32_t barrierDistance;
-bool aroundBarrier;
-
-static bool IsRing(void);
-static bool IsRingEndFromLeft(void);
-static bool IsRingEndFromRight(void);
-static bool IsCrossRoad(void);
-static int16_t WhichCurve(void);
-static int16_t WhichBarrier(void);
-
-static int16_t black_pt_row;
-//static int16_t last_not_found_border_row;
+#include "DoubleCar.h"
+#include "MainProc.h"
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
@@ -45,7 +21,7 @@ int16_t GetRoadType() {
         if(ringDistance > 90000) {
             ringDistance = 0;
             inRing = false;
-        } else if(ringDistance > 25000 && IsRingEnd()) {
+        } else if(ringDistance > 22000 && IsRingEnd()) {
             ringDistance = 0;
             ringEndDelay = true;
             inRing = false;
@@ -54,9 +30,10 @@ int16_t GetRoadType() {
             return Ring;
         }
     } else if(inCrossRoad) {
-        if(crossRoadDistance > 80000) {
-            crossRoadDistance = 0;
+        if((leader_car && crossRoadDistance > 135000L)
+            || (!leader_car && crossRoadDistance > 150000L)) {
             inCrossRoad = false;
+            crossRoadDistance = 0;
         }
     } else if(aroundBarrier) {
         if(barrierDistance > 5000) {
@@ -71,320 +48,13 @@ int16_t GetRoadType() {
     
     return /*curve != Unknown ? curve
         : */!inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
-        : !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
+        :
+        #ifdef DOUBLE_CAR
+            leader_car && 
+        #endif
+            !inRing && !ringEndDelay && !inCrossRoad && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
-}
-
-bool IsRing() {
-//    float acc = 0;
-//    float _cursor = resultSet.middleLine[4];
-//    int16_t cursor;
-//    for(int16_t i = 1; i <= 8; ++i) {
-//        acc += resultSet.middleLine[i] - resultSet.middleLine[i-1];
-//    }
-//    acc /= 8;
-//    int16_t row;
-//    int16_t _cnt = 0;
-//    for(row = 5; row < 40; ++row) {
-//        _cursor += acc + 0.5;
-//        cursor = _cursor;
-//        if(IsBlack(row, cursor)) {
-//            break;
-//        }
-//        if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > 200) {
-//            ++_cnt;
-//        }
-//    }
-    int16_t cursor = 0;
-    for(int16_t i = 0; i < 5; ++i) {
-        cursor += resultSet.middleLine[i];
-    }
-    cursor /= 5;
-    int16_t row;
-    int16_t _cnt = 0;
-    for(row = 5; row < 40; ++row) {
-        if(IsBlack(row, cursor)) {
-            break;
-        }
-        if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > 200) {
-            ++_cnt;
-        }
-    }
-    if(_cnt < 10 || row == 40) {
-        return false;
-    }
-    bool hasRightOffset = false;
-    for(int16_t col = cursor; col < Min(cursor + 15, IMG_COL); ++col) {
-        if(IsBlack(row - 1, col)) {
-            hasRightOffset = true;
-            cursor = col;
-            --row;
-            if(row == 0) {
-                return false;
-            }
-        }
-    }
-    if(!hasRightOffset) {
-        for(int16_t col = cursor; col > Max(cursor - 15, -1); --col) {
-            if(IsBlack(row - 1, col)) {
-                cursor = col;
-                --row;
-                if(row == 0) {
-                    return false;
-                }
-            }
-        }
-    }
-    int16_t left, right;
-    int16_t cnt[4] = { 0 };
-    int16_t minWidth, maxWidth;
-    int16_t leftMost, rightMost;
-    
-    left = right = cursor;
-    for(; IsBlack(row, left) && left > 0; --left) { }
-    for(; IsBlack(row, right) && right < IMG_COL - 1; ++right) { }
-    if(IsBlack(row, left) && IsBlack(row, right)) {
-        return false;
-    }
-    leftMost = left;
-    rightMost = right;
-    minWidth = maxWidth = right - left;
-    ++row;
-    
-    for(; row < IMG_ROW; ++row) {
-        left = right = cursor;
-        if(IsWhite(row, cursor)) {
-            break;
-        }
-        for(; IsBlack(row, left) && left > 0; --left) { }
-        for(; IsBlack(row, right) && right < IMG_COL - 1; ++right) { }
-        if(IsBlack(row, left) && IsBlack(row, right)) {
-            return false;
-        }
-        if(leftMost > left) {
-            leftMost = left;
-            ++cnt[0];
-        } else if(leftMost < left) {
-            ++cnt[1];
-        }
-        if(rightMost < right) {
-            rightMost = right;
-            ++cnt[2];
-        } else if(rightMost > right) {
-            ++cnt[3];
-        }
-        maxWidth = Max(right - left, maxWidth);
-        cursor = (left + right) / 2;
-    }
-    
-    return inRing =
-//        #ifdef NO1
-            leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
-//        #else
-//            rightMost >= IMG_COL - 80 && cnt[2] > 3 && cnt[3] > 3 && cnt[2] < 7
-//        #endif
-        /*&& Abs(cnt[0] - cnt[1]) < 4 */&& maxWidth > 75 && maxWidth - minWidth > 50;
-}
-
-bool IsRingEndFromLeft() {
-    #if 0
-    int16_t leftRow, rightRow, leftCol, rightCol;
-    int16_t col = IMG_COL / 2;
-    
-    for(; col < IMG_COL / 2 + 20 && IsWhite(IMG_ROW - 1, col); ++col);
-    if(col == IMG_COL / 2 + 20) {
-        col = IMG_COL / 2;
-        for(; col > IMG_COL / 2 - 20 && IsWhite(IMG_ROW - 1, col); --col);
-        if(col == IMG_COL / 2 - 20) {
-            return false;
-        }
-    }
-    
-    leftRow = rightRow = IMG_ROW - 1;
-    leftCol = rightCol = col;
-    for(; leftCol > 0 && IsBlack(leftRow, leftCol); --leftCol) { }
-    for(; leftRow > 0 && IsBlack(leftRow, leftCol); --leftRow) { }
-    for(; rightCol < IMG_COL - 1 && IsBlack(rightRow, rightCol); ++rightCol) { }
-    for(; rightRow > 0 && IsBlack(rightRow, rightCol); --rightRow) { }
-    
-    if(leftRow < 20 || rightRow < 20) {
-        return false;
-    }
-    
-    int16_t leftArray[10] = { leftCol }, rightArray[10] = { rightCol };
-    for(int16_t i = leftRow - 1; i > leftRow - 10; --i) {
-        for(; leftCol < IMG_COL && IsWhite(i, leftCol); ++leftCol) { }
-        leftArray[leftRow - i] = leftCol - 1;
-    }
-//    for(int16_t i = rightRow - 1; i > rightRow - 10; --i) {
-//        for(; rightCol >= 0 && IsWhite(i, rightCol); --rightCol) { }
-//        rightArray[rightRow - i] = rightCol + 1;
-//    }
-    double a = 9.0 / (leftArray[9] - leftArray[0]);
-    double b = 9.0 * leftArray[0] / (leftArray[0] - leftArray[9]);
-    int16_t r = 0;
-    for(int16_t i = 0; i < 10; ++i) {
-        r += Abs(leftArray[i] - (i - b) / a);
-    }
-    return r < 25;
-    #endif
-    double a = 9.0 / (resultSet.leftBorder[47] - resultSet.leftBorder[38]);
-    double b = 9.0 * resultSet.leftBorder[38] / (resultSet.leftBorder[38] - resultSet.leftBorder[47]);
-    int16_t r = 0;
-    for(int16_t row = 38; row < 48; ++row) {
-//        if(IsBlack(row, resultSet.middleLine[row])) {
-//            return false;
-//        }
-        r += Abs(resultSet.leftBorder[row] - (row - 38 - b) / a);
-    }
-    return r < 15;
-}
-
-bool IsRingEndFromRight() {
-    double a = 9.0 / (resultSet.rightBorder[47] - resultSet.rightBorder[38]);
-    double b = 9.0 * resultSet.rightBorder[38] / (resultSet.rightBorder[38] - resultSet.rightBorder[47]);
-    int16_t r = 0;
-    for(int16_t row = 38; row < 48; ++row) {
-//        if(IsBlack(row, resultSet.middleLine[row])) {
-//            return false;
-//        }
-        r += Abs(resultSet.rightBorder[row] - (row - 38 - b) / a);
-    }
-    return r < 15;
-}
-
-bool IsCrossRoad() {
-    int16_t cnt = 0;
-    for(int16_t i = 5; i < 30; ++i) {
-        if(!resultSet.foundLeftBorder[i] && !resultSet.foundRightBorder[i]) {
-            ++cnt;
-        }
-    }
-    for(int16_t i = 30; i < 45; ++i) {
-        if(IsBlack(i, resultSet.middleLine[i])
-            || resultSet.middleLine[i] > IMG_COL - 60
-            || resultSet.middleLine[i] < 60) {
-            return false;
-        }
-    }
-    return inCrossRoad = cnt > 6;
-}
-
-int16_t WhichCurve() {
-    int16_t row;
-    bool leftCurve = false;
-    bool rightCurve = false;
-    int16_t cnt = 0;
-    for (row = 5; row < IMG_ROW && IsWhite(row, resultSet.middleLine[row]); ++row) { }
-    if(row < IMG_ROW && !InRange(resultSet.middleLine[row], IMG_COL / 2 - 50, IMG_COL / 2 + 50)) {
-        black_pt_row = row;
-        for(; row >= 0; --row) {
-            if(!resultSet.foundLeftBorder[row]) {
-                leftCurve = true;
-                break;
-            } else if(!resultSet.foundRightBorder[row]) {
-                rightCurve = true;
-                break;
-            }
-        }
-        if(leftCurve) {
-            for(; row >= 0; --row) {
-                if(!resultSet.foundLeftBorder[row] && resultSet.foundRightBorder[row]) {
-                    ++cnt;
-                    if(cnt > 5) {
-                        return LeftCurve;
-                    }
-                }
-            }
-        } else if(rightCurve) {
-            for(; row >= 0; --row) {
-                if(!resultSet.foundRightBorder[row] && resultSet.foundLeftBorder[row]) {
-                    ++cnt;
-                    if(cnt > 5) {
-                        return RightCurve;
-                    }
-                }
-            }
-        }
-    }
-    return Unknown;
-}
-
-int16_t WhichBarrier() {
-    int16_t inRow;
-    int16_t outRow;
-    int16_t row;
-    int16_t _barrierType;
-    for(row = 10; row < 45 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
-    if(!InRange(resultSet.middleLine[row - 2], IMG_COL / 2 - 20, IMG_COL / 2 + 20)) {
-        return Unknown;
-    }
-    
-    _barrierType = resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 ? LeftBarrier : RightBarrier;
-    
-    inRow = row;
-    row += 2;
-    for(; row < IMG_ROW && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 10; ++row) { }
-    if((resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
-        || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] < 0 && _barrierType == RightBarrier)) {
-        return Unknown;
-    }
-    outRow = row;
-    if(outRow - inRow > 5 && row < IMG_ROW && resultSet.middleLine[row] > IMG_COL / 2 - 20
-        && resultSet.middleLine[row] < IMG_COL / 2 + 20) {
-        aroundBarrier = true;
-        return barrierType = _barrierType;
-    } else {
-        return Unknown;
-    }
-}
-
-void RingCompensateGoLeft() {
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-        resultSet.middleLine[i] = 0;
-    }
-}
-
-void RingCompensateGoRight() {
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-        resultSet.middleLine[i] = IMG_COL - 1;
-    }
-}
-
-void RingEndCompensateFromLeft() {
-//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-//        resultSet.middleLine[i] = 0;
-//    }
-}
-
-void RingEndCompensateFromRight() {
-//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-//        resultSet.middleLine[i] = IMG_COL - 1;
-//    }
-}
-
-void LeftCurveCompensate() {
-    for (int row_ = IMG_ROW - 1; row_ > black_pt_row; --row_)
-    {
-        resultSet.middleLine[row_] = 0;
-    }
-    for (int cnt = 0; cnt < 12; ++cnt)
-    {
-        resultSet.middleLine[black_pt_row - cnt] = cnt * resultSet.middleLine[black_pt_row - 12] / 12;
-    }
-}
-
-void RightCurveCompensate() {
-    for (int row_ = IMG_ROW - 1; row_ > black_pt_row; --row_)
-    {
-        resultSet.middleLine[row_] = IMG_COL - 1;
-    }
-    for (int cnt = 0; cnt < 12; ++cnt)
-    {
-        resultSet.middleLine[black_pt_row - cnt] = IMG_COL - 1
-            - cnt * (IMG_COL - 1 - resultSet.middleLine[black_pt_row - 12]) / 12;
-    }
 }
 
 bool IsOutOfRoad() {
@@ -407,22 +77,19 @@ bool IsOutOfRoad() {
     return false;
 }
 
-bool StartLineJudge(int16_t row) {
+bool IsStartLine(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
-    for(int16_t i = row; i >= row - 6; --i) {
-        for(int16_t j = IMG_COL / 2; j >= 0; --j) {
+    for(int16_t i = row + 6; i >= row; --i) {
+        for(int16_t j = IMG_COL / 2; j >= 60; --j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(toggleCnt > 14) {
+                if(++toggleCnt >= 12) {
                     toggleCnt = 0;
-                    ++patternRowCnt;
-                    if(patternRowCnt > 4) {
+                    if(++patternRowCnt >= 3) {
                         return true;
                     } else {
                         break;
                     }
-                } else {
-                    ++toggleCnt;
                 }
             }
         }
@@ -430,7 +97,7 @@ bool StartLineJudge(int16_t row) {
     return false;
 }
 
-bool StraightLineJudge(void) {
+bool IsStraightLine(void) {
     int16_t middleAreaCnt = 0;
     for(int16_t i = 0; i < IMG_ROW; ++i) {
         if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 10, IMG_COL / 2 + 10)) {

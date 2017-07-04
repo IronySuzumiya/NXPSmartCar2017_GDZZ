@@ -1,18 +1,16 @@
 #include "MainProc.h"
 #include "DataComm.h"
-#include "uart.h"
 #include "ImgUtility.h"
-#include "gpio.h"
 
 int main() {
     MainInit();
     while(1) {
-        if(state_trans_on) {
+        #ifdef USE_STAT_TRANS
             StateTrans(leftPid.currentValue, rightPid.currentValue, ringDistance, rightPid.targetValue);
-        }
-        if(img_trans_on) {
+        #endif
+        #ifdef USE_IMG_TRANS
             ImgTrans(&resultSet);
             DelayMs(50);
-        }
+        #endif
     }
 }

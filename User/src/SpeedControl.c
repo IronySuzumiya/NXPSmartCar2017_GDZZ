@@ -2,7 +2,7 @@
 #include "Motor.h"
 #include "Encoder.h"
 #include "DirectionControl.h"
-#include "DoubleCarRelative.h"
+#include "DoubleCar.h"
 #include "gpio.h"
 #include "ImgProc.h"
 
@@ -14,7 +14,7 @@ int16_t speed_control_speed;
 int16_t speed_control_acc;
 int16_t speed_control_dec;
 
-#if defined(DYNAMIC_PRESIGHT) && !defined(PURSUEING_DEPENDING_PRESIGHT)
+#if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 static int16_t GetPresight(int16_t speed);
 #endif
 static int16_t SpeedControlAcc(int16_t speed);
@@ -25,30 +25,34 @@ static void SpeedControlFilter(int16_t newValue, PID* pid);
 void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
     SpeedControlFilter(leftSpeed, &leftPid);
     SpeedControlFilter(rightSpeed, &rightPid);
-    MotorOut(SpeedControlPID(&leftPid), SpeedControlPID(&rightPid));
+    if(motor_on) {
+        MotorOut(SpeedControlPID(&leftPid), SpeedControlPID(&rightPid));
+    } else {
+        MOTOR_STOP;
+    }
 }
 
 void SpeedTargetSet(int16_t speed, bool diff) {
     #ifdef DOUBLE_CAR
         if(speed != 0) {
-            if(front_car) {
-                if(!firstOvertaking || pursue) {
+            if(leader_car) {
+                if(!firstOvertakingFinished || pursueing) {
                     speed = SpeedControlDec(speed);
                 }
-                #if defined(DYNAMIC_PRESIGHT) && defined(PURSUEING_DEPENDING_PRESIGHT)
+                #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
                     else {
                         pre_sight = pre_sight_default;
                     }
                 #endif
             } else {
-                if(!firstOvertaking || pursue) {
+                if(!firstOvertakingFinished || pursueing) {
                     speed = SpeedControlAcc(speed);
                 } else if(TOO_FAR) {
                     speed = SpeedControlAcc(speed);
                 } else if(TOO_CLOSE) {
                     speed = SpeedControlDec(speed);
                 }
-                #if defined(DYNAMIC_PRESIGHT) && defined(PURSUEING_DEPENDING_PRESIGHT)
+                #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
                     else {
                         pre_sight = pre_sight_default;
                     }
@@ -70,31 +74,33 @@ void SpeedTargetSet(int16_t speed, bool diff) {
              leftPid.targetValue = speed * (0.031 * (-directionAngle) + 1);
         }
     }
-    #if defined(DYNAMIC_PRESIGHT) && !defined(PURSUEING_DEPENDING_PRESIGHT)
+    #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
         pre_sight = GetPresight(speed);
     #endif
 }
 
 int16_t SpeedControlAcc(int16_t speed) {
     speed = speed + speed_control_acc;
-    #if defined(DYNAMIC_PRESIGHT) && defined(PURSUEING_DEPENDING_PRESIGHT)
-        pre_sight = pre_sight_default + 2;
+    #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
+        pre_sight = pre_sight_default + 4;
     #endif
     return speed;
 }
 
 int16_t SpeedControlDec(int16_t speed) {
     speed = speed - speed_control_dec;
-    #if defined(DYNAMIC_PRESIGHT) && defined(PURSUEING_DEPENDING_PRESIGHT)
-        pre_sight = pre_sight_default - 2;
+    #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
+        pre_sight = pre_sight_default - 3;
     #endif
     return speed;
 }
 
+#if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 int16_t GetPresight(int16_t speed) {
     return speed < 85 ? 20 : speed < 90 ? 22 : speed < 95 ? 23 : speed < 100 ? 24 :
         speed < 105 ? 26 : speed < 110 ? 27 : speed < 115 ? 28 : 30;
 }
+#endif
 
 int16_t SpeedControlPID(PID *pid) {
 	int16_t error;
@@ -102,7 +108,7 @@ int16_t SpeedControlPID(PID *pid) {
     
 	error = pid->targetValue - pid->currentValue;
     
-    #ifdef INC_PID
+    #ifdef USE_INC_PID
         pValue = pid->kp * (error - pid->lastError);
         iValue = pid->ki * error;
         dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
