@@ -167,7 +167,14 @@ void DoubleCarMessageRecv(uint16_t message) {
             break;
         case FINAL:
             pursueing = true;
+            #ifdef FINAL_OVERTAKING
             goAlongLeft = true;
+            #else
+            final = true;
+            #endif
+            break;
+        case DASH:
+            finalPursueingFinished = true;
             break;
         case CROSS_ROAD:
             inCrossRoad = true;

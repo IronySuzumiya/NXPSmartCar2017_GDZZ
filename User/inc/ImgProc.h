@@ -29,9 +29,11 @@ extern bool firstOvertakingFinished;
 extern int32_t startDistance;
 extern bool final;
 extern bool finalOvertakingFinished;
+extern bool finalPursueingFinished;
 extern int32_t finalDistance;
 extern int32_t wholeDistance;
 extern bool startLineEnabled;
 extern bool goAlongLeft;
+extern int32_t dashDistance;
 
 #endif

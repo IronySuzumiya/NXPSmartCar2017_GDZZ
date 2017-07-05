@@ -1,6 +1,7 @@
 #include "MainProc.h"
 #include "DataComm.h"
 #include "ImgUtility.h"
+#include "ImgProc.h"
 
 int main() {
     MainInit();

@@ -57,5 +57,6 @@
 #define  FINAL                  0x06
 #define  CROSS_ROAD             0x07
 #define  MOVE_RIGHT_NOW         0x08
+#define  DASH                   0x09
 
 #endif

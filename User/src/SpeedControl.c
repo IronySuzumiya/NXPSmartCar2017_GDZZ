@@ -17,8 +17,12 @@ int16_t speed_control_dec;
 #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 static int16_t GetPresight(int16_t speed);
 #endif
+
+#ifdef DOUBLE_CAR
 static int16_t SpeedControlAcc(int16_t speed);
 static int16_t SpeedControlDec(int16_t speed);
+#endif
+
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
 
@@ -79,6 +83,7 @@ void SpeedTargetSet(int16_t speed, bool diff) {
     #endif
 }
 
+#ifdef DOUBLE_CAR
 int16_t SpeedControlAcc(int16_t speed) {
     speed = speed + speed_control_acc;
     #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
@@ -94,6 +99,7 @@ int16_t SpeedControlDec(int16_t speed) {
     #endif
     return speed;
 }
+#endif
 
 #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 int16_t GetPresight(int16_t speed) {

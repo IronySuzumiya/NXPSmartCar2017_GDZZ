@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define NO1
+#define NO2
 
 #define xUSE_BMP
 
@@ -23,8 +23,10 @@
 
 #define xDYNAMIC_INIT_LEADER_CAR
 
-#ifndef DOUBLE_CAR
-#define xUSE_IMG_TRANS
+#ifdef DOUBLE_CAR
+#define xFINAL_OVERTAKING
+#else
+#define USE_IMG_TRANS
 #define xUSE_STAT_TRANS
 #endif
 

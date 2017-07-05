@@ -15,11 +15,11 @@ extern inline int16_t Max(int16_t a, int16_t b) {
     return a > b ? a : b;
 }
 
-extern inline int16_t Min_f(float a, float b) {
+extern inline float Min_f(float a, float b) {
     return a > b ? b : a;
 }
 
-extern inline int16_t Max_f(float a, float b) {
+extern inline float Max_f(float a, float b) {
     return a > b ? a : b;
 }
 
@@ -31,7 +31,11 @@ extern inline bool InRange(int16_t value, int16_t lbound, int16_t hbound) {
     return value > lbound && value < hbound;
 }
 
-extern inline float Limit(int16_t value, int16_t lbound, int16_t hbound) {
+extern inline bool InRange_f(float value, float lbound, float hbound) {
+    return value > lbound && value < hbound;
+}
+
+extern inline int16_t Limit(int16_t value, int16_t lbound, int16_t hbound) {
     return value > hbound ? hbound : value < lbound ? lbound : value;
 }
 

@@ -13,10 +13,10 @@ byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
 byte imgBuf[IMG_ROW][IMG_COL];
 #endif
 
+img_proc_struct resultSet;
 bool direction_control_on;
 int16_t pre_sight_default;
 int16_t pre_sight;
-img_proc_struct resultSet;
 bool waitForOvertaking;
 bool overtaking;
 bool aroundOvertaking;
@@ -25,9 +25,11 @@ bool firstOvertakingFinished;
 int32_t finalDistance;
 bool final;
 bool finalOvertakingFinished;
+bool finalPursueingFinished;
 int32_t wholeDistance;
 bool startLineEnabled;
 bool goAlongLeft;
+int32_t dashDistance;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -131,7 +133,6 @@ void ImgProc3() {
 void ImgProcSummary() {
     static bool stop = false;
     int16_t middle = IMG_COL / 2;
-    
     #ifdef DOUBLE_CAR
     if(!firstOvertakingFinished) {
         if(leader_car) {
@@ -145,7 +146,7 @@ void ImgProcSummary() {
         } else {
             if(startDistance < 30000) {
                 middle += 32;
-            } else if(startDistance > 40000) {
+            } else if(startDistance > 60000) {
                 overtaking = true;
                 SendMessage(MOVE_RIGHT_NOW);
                 aroundOvertaking = true;
@@ -156,9 +157,8 @@ void ImgProcSummary() {
         if(leader_car) {
             SendMessage(FINAL);
             final = true;
-        } else {
-            final = true;
         }
+    #ifdef FINAL_OVERTAKING
     } else if(final) {
         if(leader_car) {
             if(finalDistance < 11000) {
@@ -191,6 +191,17 @@ void ImgProcSummary() {
                 stop = true;
             }
         }
+    #else
+    } else if(final) {
+        if(!leader_car && pursueing && distanceBetweenTheTwoCars < 80) {
+            finalPursueingFinished = true;
+            pursueing = false;
+            SendMessage(DASH);
+        }
+        if(finalPursueingFinished && dashDistance > 70000) {
+            stop = true;
+        }
+    #endif
     #else
     if(startLineEnabled && IsStartLine(30)) {
         final = true;
@@ -253,7 +264,6 @@ void ImgProcSummary() {
                 break;
         }
     }
-    
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine, middle);
     }
@@ -261,9 +271,11 @@ void ImgProcSummary() {
     if(speed_control_on) {
         bool accelerate = IsStraightLine();
         SpeedTargetSet(stop || waitForOvertaking ? 0 :
+            final && leader_car && !finalPursueingFinished ? 0 :
+            final && finalPursueingFinished ? 120 :
             finalOvertakingFinished ? 30 :
             accelerate ? speed_control_speed * 1.1 :
             inRing || ringEndDelay || aroundOvertaking ? 85 : speed_control_speed
-            , !stop && !waitForOvertaking && !accelerate);
+            , !stop && !waitForOvertaking && !accelerate && !finalPursueingFinished);
     }
 }

@@ -24,7 +24,10 @@ static void DistanceControl(void);
 static void BuzzleControl(bool);
 static void MainProc(void);
 static void SwitchAndParamLoad(void);
+
+#ifdef DOUBLE_CAR
 static void GetReady(void);
+#endif
 
 void MainInit() {
     DelayInit();
@@ -72,6 +75,7 @@ void NVICInit() {
     NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 2, 3));
 }
 
+#ifdef DOUBLE_CAR
 void GetReady() {
     if(leader_car) {
         GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
@@ -83,6 +87,7 @@ void GetReady() {
         DelayMs(100);
     }
 }
+#endif
 
 void BuzzleInit() {
     GPIO_QuickInit(BUZZLE_PORT, BUZZLE_PIN, kGPIO_Mode_OPP);
@@ -150,6 +155,9 @@ void DistanceControl() {
     }
     if(final) {
         finalDistance += dist;
+    }
+    if(finalPursueingFinished) {
+        dashDistance += dist;
     }
 }
 
