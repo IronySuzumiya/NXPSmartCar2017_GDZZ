@@ -21,6 +21,8 @@ extern byte imgBuf[IMG_ROW][IMG_COL];
 extern bool direction_control_on;
 extern int16_t pre_sight_default;
 extern int16_t pre_sight;
+extern bool dynamic_presight;
+extern bool presight_only_depends_on_pursueing;
 extern img_proc_struct resultSet;
 extern bool waitForOvertaking;
 extern bool overtaking;

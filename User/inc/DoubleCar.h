@@ -18,5 +18,7 @@ extern float distanceBetweenTheTwoCars;
 extern uint32_t time;
 extern bool leader_car;
 extern bool pursueing;
+extern int32_t avg_distance_between_the_two_cars;
+extern int32_t diff_distance_max;
 
 #endif

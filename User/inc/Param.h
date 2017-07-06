@@ -40,8 +40,6 @@
 #define  ULTRA_SONIC_TIMER_CHL              HW_PIT_CH1
 #define  ULTRA_SONIC_TIME_OUT               50000
 #define  TIMER_INIT_COUNT                   2499991uL
-#define  AVG_DISTANCE_BETWEEN_THE_TWO_CARS  80
-#define  DIFF_DISTANCE_MAX                  15
 #define  DATACOMM_TIME_OUT_TIMER_CHL        HW_PIT_CH2
 #define  DATACOMM_TIME_OUT                  5000
 #define  DATACOMM_SEND_MSG_TIMER_CHL        HW_PIT_CH3

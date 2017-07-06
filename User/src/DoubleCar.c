@@ -13,6 +13,8 @@ float distanceBetweenTheTwoCars;
 uint32_t time;
 bool leader_car;
 bool pursueing;
+int32_t avg_distance_between_the_two_cars;
+int32_t diff_distance_max;
 
 #ifdef RELIABLE_CONNECTION
 static uint8_t messageQueue[MESSAGE_QUEUE_SIZE];
@@ -34,10 +36,6 @@ static inline void SendLastMessage() {
 #ifdef PERIODICALLY_CHECK_MSG_QUEUE
 static void DataCommSendMessageInt(void);
 #endif
-#endif
-
-#ifdef DYNAMIC_INIT_LEADER_CAR
-static void UltraSonicRecvIntTst(uint32_t pinxArray);
 #endif
 
 static void UltraSonicRecvInt(uint32_t pinxArray);
@@ -102,36 +100,6 @@ void MessageEnqueue(uint8_t message) {
 }
 #endif
 
-#ifdef DYNAMIC_INIT_LEADER_CAR
-void UltraSonicRecvIntTst(uint32_t pinxArray) {
-    static bool ensure = false;
-    static int16_t cnt = 0;
-    if(pinxArray & (1 << ULTRA_SONIC_RECV_PIN)) {
-        if(ULTRA_SONIC_RECV_READ) {
-            ensure = true;
-        } else {
-            ++cnt;
-            if(ensure && cnt > 10) {
-                SendMessage(YOU_ARE_LEADER);
-                leader_car = false;
-                motor_on = true;
-                BUZZLE_ON;
-                
-                /* begin the distanceBetweenTheTwoCars measuring */
-                GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, DISABLE);
-                GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);
-                GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
-                
-                /* if time out, send `MISSING` message */
-//                PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
-//                PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
-            }
-            ensure = false;
-        }
-    }
-}
-#endif
-
 void UltraSonicRecvInt(uint32_t pinxArray) {
     if(pinxArray & (1 << ULTRA_SONIC_RECV_PIN)) {
         if(ULTRA_SONIC_RECV_READ) {
@@ -149,7 +117,7 @@ void UltraSonicTimeOutInt() {
     ++ultraSonicMissingCnt;
     if(ultraSonicMissingCnt > 5) {
         ultraSonicMissingCnt = 0;
-        distanceBetweenTheTwoCars = AVG_DISTANCE_BETWEEN_THE_TWO_CARS + DIFF_DISTANCE_MAX + 233;
+        distanceBetweenTheTwoCars = avg_distance_between_the_two_cars + diff_distance_max + 233;
 //        SendMessage(MISSING);
     }
 }

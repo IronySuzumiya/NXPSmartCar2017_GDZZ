@@ -3,8 +3,8 @@
 
 #include "root.h"
 
-#define TOO_FAR (distanceBetweenTheTwoCars > AVG_DISTANCE_BETWEEN_THE_TWO_CARS + DIFF_DISTANCE_MAX)
-#define TOO_CLOSE (distanceBetweenTheTwoCars < AVG_DISTANCE_BETWEEN_THE_TWO_CARS - DIFF_DISTANCE_MAX)
+#define TOO_FAR (distanceBetweenTheTwoCars > avg_distance_between_the_two_cars + diff_distance_max)
+#define TOO_CLOSE (distanceBetweenTheTwoCars < avg_distance_between_the_two_cars - diff_distance_max)
 
 void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed);
 void SpeedTargetSet(int16_t speed, bool diff);

@@ -24,9 +24,6 @@ typedef uint8_t byte;
 
 #define NUMBER_OF_MODES 16
 
-typedef void (*mode_type)(void);
-typedef mode_type mode_type_array[NUMBER_OF_MODES];
-
 #define NUMBER_OF_IMG_PROC IMG_ROW_INTV
 
 typedef void (*img_proc_type)(void);

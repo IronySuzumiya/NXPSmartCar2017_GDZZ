@@ -47,21 +47,23 @@
 #define  STEER_ACTUATOR_CHL   HW_FTM_CH0
 
 //Mode Switch
-#define  MODE_SWITCH_PIN12_PORT  HW_GPIOC
-#define  MODE_SWITCH_PIN1        13
-#define  MODE_SWITCH_PIN2        16
-#define  MODE_SWITCH_PIN3_PORT   HW_GPIOD
-#define  MODE_SWITCH_PIN3        1
-#define  MODE_SWITCH_READ  ((!PDin(MODE_SWITCH_PIN3) << 2u)\
-                            | (!PCin(MODE_SWITCH_PIN2) << 1u)\
-                            | (!PCin(MODE_SWITCH_PIN1)))
+#define  MODE_SWITCH_PIN123_PORT  HW_GPIOC
+#define  MODE_SWITCH_PIN1         8
+#define  MODE_SWITCH_PIN2         13
+#define  MODE_SWITCH_PIN3         16
+#define  MODE_SWITCH_PIN4_PORT    HW_GPIOD
+#define  MODE_SWITCH_PIN4         1
+#define  MODE_SWITCH_READ         ((!PDin(MODE_SWITCH_PIN4) << 3u)\
+                                 | (!PCin(MODE_SWITCH_PIN3) << 2u)\
+                                 | (!PCin(MODE_SWITCH_PIN2) << 1u)\
+                                 | (!PCin(MODE_SWITCH_PIN1)))
 
 //Gear Switch
 #define  GEAR_SWITCH_PORT  HW_GPIOE
 #define  GEAR_SWITCH_PIN1  0
 #define  GEAR_SWITCH_PIN2  1
 #define  GEAR_SWITCH_READ  ((!PEin(GEAR_SWITCH_PIN2) << 1u)\
-                            | (!PEin(GEAR_SWITCH_PIN1)))
+                          | (!PEin(GEAR_SWITCH_PIN1)))
 
 //Double Car Relative
 #define  ULTRA_SONIC_RECV_PORT     HW_GPIOA

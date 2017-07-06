@@ -17,6 +17,8 @@ img_proc_struct resultSet;
 bool direction_control_on;
 int16_t pre_sight_default;
 int16_t pre_sight;
+bool dynamic_presight;
+bool presight_only_depends_on_pursueing;
 bool waitForOvertaking;
 bool overtaking;
 bool aroundOvertaking;

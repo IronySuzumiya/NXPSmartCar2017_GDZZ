@@ -85,11 +85,6 @@ void NVICInit() {
 void GetReady() {
     if(double_car) {
         if(leader_car) {
-            GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
-            while(START_READ) {
-                OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
-                DelayMs(500);
-            }
             DelayMs(2000);
             SendMessage(START);
         } else {
@@ -101,7 +96,6 @@ void GetReady() {
         }
     } else {
         GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
-        while(START_READ) { }
         DelayMs(2000);
         SendMessage(START);
     }
@@ -285,12 +279,9 @@ static void SwitchAndParamLoad() {
     reduction_ratio = 2.6;
     differential_ratio = 0.031;
     
-    double_car = true;
-    final_overtaking = false;
+    avg_distance_between_the_two_cars = 80;
+    diff_distance_max = 15;
     
-    #ifdef NO1
-    leader_car = true;
-    #else
-    leader_car = false;
-    #endif
+    dynamic_presight = true;
+    presight_only_depends_on_pursueing = true;
 }

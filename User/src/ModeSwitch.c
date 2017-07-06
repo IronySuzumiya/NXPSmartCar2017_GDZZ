@@ -1,41 +1,35 @@
 #include "ModeSwitch.h"
 #include "DoubleCar.h"
 #include "MainProc.h"
+#include "ImgProc.h"
 #include "gpio.h"
 
-static void Mode0(void);
-static void Mode1(void);
-static void Mode2(void);
-static void Mode3(void);
-static void Mode4(void);
-
-static mode_type_array mode = { Mode0, Mode1, Mode2, Mode3, Mode4, NULL };
+#pragma diag_suppress 1293
 
 void ModeSelect() {
-    GPIO_QuickInit(MODE_SWITCH_PIN12_PORT, MODE_SWITCH_PIN1, kGPIO_Mode_IPU);
-    GPIO_QuickInit(MODE_SWITCH_PIN12_PORT, MODE_SWITCH_PIN2, kGPIO_Mode_IPU);
-    GPIO_QuickInit(MODE_SWITCH_PIN3_PORT, MODE_SWITCH_PIN3, kGPIO_Mode_IPU);
-    mode[MODE_SWITCH_READ]();
-}
-
-void Mode0() {
-    double_car = false;
-    OLEDPrintf(5, 4, "Single Car");
-}
-
-void Mode1() {
-    double_car = true;
-    OLEDPrintf(5, 4, "Double Car");
-}
-
-void Mode2() {
-    
-}
-
-void Mode3() {
-    
-}
-
-void Mode4() {
-    
+    GPIO_QuickInit(MODE_SWITCH_PIN123_PORT, MODE_SWITCH_PIN1, kGPIO_Mode_IPU);
+    GPIO_QuickInit(MODE_SWITCH_PIN123_PORT, MODE_SWITCH_PIN2, kGPIO_Mode_IPU);
+    GPIO_QuickInit(MODE_SWITCH_PIN123_PORT, MODE_SWITCH_PIN3, kGPIO_Mode_IPU);
+    GPIO_QuickInit(MODE_SWITCH_PIN4_PORT, MODE_SWITCH_PIN4, kGPIO_Mode_IPU);
+    uint16_t mode = MODE_SWITCH_READ;
+    double_car = mode != 0;
+    if(double_car) {
+        if((firstOvertakingFinished = !!(mode & 0x02))) {
+            OLEDPrintf(5, 4, "FO Disabled");
+        } else {
+            OLEDPrintf(5, 4, "FO Enabled");
+        }
+        if((final_overtaking = !!(mode & 0x04))) {
+            OLEDPrintf(5, 5, "LO Disabled");
+        } else {
+            OLEDPrintf(5, 5, "LO Enabled");
+        }
+        if((leader_car = !!(mode & 0x08))) {
+            OLEDPrintf(5, 6, "Leader");
+        } else {
+            OLEDPrintf(5, 6, "Follower");
+        }
+    } else {
+        OLEDPrintf(5, 4, "Single Mode");
+    }
 }
