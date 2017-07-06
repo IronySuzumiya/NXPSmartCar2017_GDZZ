@@ -13,16 +13,15 @@ bool speed_control_on;
 int16_t speed_control_speed;
 int16_t speed_control_acc;
 int16_t speed_control_dec;
+float reduction_ratio;
+float differential_ratio;
 
 #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 static int16_t GetPresight(int16_t speed);
 #endif
 
-#ifdef DOUBLE_CAR
 static int16_t SpeedControlAcc(int16_t speed);
 static int16_t SpeedControlDec(int16_t speed);
-#endif
-
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
 
@@ -37,7 +36,7 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 }
 
 void SpeedTargetSet(int16_t speed, bool diff) {
-    #ifdef DOUBLE_CAR
+    if(double_car) {
         if(speed != 0) {
             if(leader_car) {
                 if(!firstOvertakingFinished || pursueing) {
@@ -63,19 +62,19 @@ void SpeedTargetSet(int16_t speed, bool diff) {
                 #endif
             }
         }
-    #endif
+    }
     
     if(!diff) {
         leftPid.targetValue = rightPid.targetValue = speed;
     } else {
         if(directionAngle > 0) {
-             speed -= 2.6 * directionAngle;
+             speed -= reduction_ratio * directionAngle;
              leftPid.targetValue = speed;
-             rightPid.targetValue = speed * (0.031 * directionAngle + 1);
+             rightPid.targetValue = speed * (differential_ratio * directionAngle + 1);
         } else {
-             speed += 2.6 * directionAngle;
+             speed += reduction_ratio * directionAngle;
              rightPid.targetValue = speed;
-             leftPid.targetValue = speed * (0.031 * (-directionAngle) + 1);
+             leftPid.targetValue = speed * (differential_ratio * (-directionAngle) + 1);
         }
     }
     #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
@@ -83,7 +82,6 @@ void SpeedTargetSet(int16_t speed, bool diff) {
     #endif
 }
 
-#ifdef DOUBLE_CAR
 int16_t SpeedControlAcc(int16_t speed) {
     speed = speed + speed_control_acc;
     #if defined(DYNAMIC_PRESIGHT) && defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
@@ -99,7 +97,6 @@ int16_t SpeedControlDec(int16_t speed) {
     #endif
     return speed;
 }
-#endif
 
 #if defined(DYNAMIC_PRESIGHT) && !defined(PRESIGHT_ONLY_DEPENDS_ON_PURSUEING)
 int16_t GetPresight(int16_t speed) {

@@ -48,11 +48,8 @@ int16_t GetRoadType() {
     
     return /*curve != Unknown ? curve
         : */!inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
-        :
-        #ifdef DOUBLE_CAR
-            leader_car && 
-        #endif
-            !inRing && !ringEndDelay && !inCrossRoad && IsCrossRoad() ? CrossRoad
+        : (double_car ? leader_car : true)
+            && !inRing && !ringEndDelay && !inCrossRoad && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }

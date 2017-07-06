@@ -2,6 +2,7 @@
 #include "DataComm.h"
 #include "ImgUtility.h"
 #include "ImgProc.h"
+#include "DoubleCar.h"
 
 int main() {
     MainInit();
@@ -13,5 +14,9 @@ int main() {
             ImgTrans(&resultSet);
             DelayMs(50);
         #endif
+        if(double_car) {
+            OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
+            DelayMs(500);
+        }
     }
 }

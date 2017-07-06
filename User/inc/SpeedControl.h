@@ -16,5 +16,7 @@ extern bool speed_control_on;
 extern int16_t speed_control_speed;
 extern int16_t speed_control_acc;
 extern int16_t speed_control_dec;
+extern float reduction_ratio;
+extern float differential_ratio;
 
 #endif

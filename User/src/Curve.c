@@ -3,7 +3,6 @@
 #include "MainProc.h"
 
 static int16_t black_pt_row;
-//static int16_t last_not_found_border_row;
 
 int16_t WhichCurve() {
     int16_t row;

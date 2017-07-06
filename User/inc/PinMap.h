@@ -47,15 +47,21 @@
 #define  STEER_ACTUATOR_CHL   HW_FTM_CH0
 
 //Mode Switch
-#define  MODE_SWITCH_PORT  HW_GPIOB
-#define  MODE_SWITCH_PIN1  20
-#define  MODE_SWITCH_PIN2  21
-#define  MODE_SWITCH_PIN3  22
-#define  MODE_SWITCH_PIN4  23
-#define  MODE_SWITCH_READ  ((PBin(MODE_SWITCH_PIN4) << 3u)\
-                            & (PBin(MODE_SWITCH_PIN3) << 2u)\
-                            & (PBin(MODE_SWITCH_PIN2) << 1u)\
-                            & (PBin(MODE_SWITCH_PIN1)))
+#define  MODE_SWITCH_PIN12_PORT  HW_GPIOC
+#define  MODE_SWITCH_PIN1        13
+#define  MODE_SWITCH_PIN2        16
+#define  MODE_SWITCH_PIN3_PORT   HW_GPIOD
+#define  MODE_SWITCH_PIN3        1
+#define  MODE_SWITCH_READ  ((!PDin(MODE_SWITCH_PIN3) << 2u)\
+                            | (!PCin(MODE_SWITCH_PIN2) << 1u)\
+                            | (!PCin(MODE_SWITCH_PIN1)))
+
+//Gear Switch
+#define  GEAR_SWITCH_PORT  HW_GPIOE
+#define  GEAR_SWITCH_PIN1  0
+#define  GEAR_SWITCH_PIN2  1
+#define  GEAR_SWITCH_READ  ((!PEin(GEAR_SWITCH_PIN2) << 1u)\
+                            | (!PEin(GEAR_SWITCH_PIN1)))
 
 //Double Car Relative
 #define  ULTRA_SONIC_RECV_PORT     HW_GPIOA
@@ -80,5 +86,20 @@
 #define  START_PORT  HW_GPIOC
 #define  START_PIN   8
 #define  START_READ  PCin(START_PIN)
+
+//OLED
+#define  OELD_PORT     HW_GPIOA
+#define  OELD_DC_PIN   14
+#define  OELD_RST_PIN  15
+#define  OELD_SDA_PIN  16
+#define  OELD_SCL_PIN  17
+
+//Joystick
+#define  JOYSTICK_PORT    HW_GPIOE
+#define  JOYSTICK_NORTH   16
+#define  JOYSTICK_SOUTH   2
+#define  JOYSTICK_WEST    6
+#define  JOYSTICK_EAST    17
+#define  JOYSTICK_MIDDLE  3
 
 #endif

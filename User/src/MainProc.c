@@ -11,6 +11,11 @@
 #include "DirectionControl.h"
 #include "ModeSwitch.h"
 #include "DoubleCar.h"
+#include "GearSwitch.h"
+#include "LQ12864.h"
+#include "stdarg.h"
+#include "stdio.h"
+#include "Joystick.h"
 
 bool enabled;
 int16_t waitForOvertakingCnt;
@@ -19,22 +24,24 @@ int16_t overtakingCnt;
 static void NVICInit(void);
 static void BuzzleInit(void);
 static void TimerInit(void);
+static void OLEDInit(void);
 static void OvertakingControl(void);
 static void DistanceControl(void);
 static void BuzzleControl(bool);
 static void MainProc(void);
 static void SwitchAndParamLoad(void);
-
-#ifdef DOUBLE_CAR
 static void GetReady(void);
-#endif
 
 void MainInit() {
     DelayInit();
     
     SwitchAndParamLoad();
     
+    OLEDInit();
+    
     ModeSelect();
+    
+    GearSelect();
     
     MotorInit();
     
@@ -50,13 +57,13 @@ void MainInit() {
     
     ImgProcInit();
     
-    #ifdef DOUBLE_CAR
+    JoystickInit();
     
-    DoubleCarRelativeInit();
+    if(double_car) {
+        DoubleCarInit();
+    }
     
     GetReady();
-    
-    #endif
     
     TimerInit();
 }
@@ -75,19 +82,30 @@ void NVICInit() {
     NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 2, 3));
 }
 
-#ifdef DOUBLE_CAR
 void GetReady() {
-    if(leader_car) {
+    if(double_car) {
+        if(leader_car) {
+            GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
+            while(START_READ) {
+                OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
+                DelayMs(500);
+            }
+            DelayMs(2000);
+            SendMessage(START);
+        } else {
+            while(!enabled) {
+                OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
+                DelayMs(500);
+            }
+            DelayMs(100);
+        }
+    } else {
         GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
         while(START_READ) { }
         DelayMs(2000);
         SendMessage(START);
-    } else {
-        while(!enabled) { }
-        DelayMs(100);
     }
 }
-#endif
 
 void BuzzleInit() {
     GPIO_QuickInit(BUZZLE_PORT, BUZZLE_PIN, kGPIO_Mode_OPP);
@@ -97,6 +115,25 @@ void TimerInit() {
     PIT_QuickInit(PIT_CHL, PIT_PRD);
     PIT_CallbackInstall(PIT_CHL, MainProc);
     PIT_ITDMAConfig(PIT_CHL, kPIT_IT_TOF, ENABLE);
+}
+
+void OLEDInit() {
+    OLED_Init();
+    OLEDPrintf(0, 0, "CUG welcome you!");
+}
+
+void OLEDClrRow(uint8_t row) {
+    // 21 spaces
+    OLEDPrintf(0, 0, "                     ");
+}
+
+void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
+    static char buf[255];
+    va_list ap;
+    va_start(ap, str);
+    
+    vsprintf(buf, str, ap);
+    OLED_P6x8Str(x, y, (uint8_t*)buf);
 }
 
 void OvertakingControl() {
@@ -180,7 +217,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(final);
+    BuzzleControl(aroundBarrier);
     
     OvertakingControl();
     
@@ -244,6 +281,12 @@ static void SwitchAndParamLoad() {
     direction_control_kpj = 0.025;
     direction_control_kpc = 0.0001;
     #endif
+    
+    reduction_ratio = 2.6;
+    differential_ratio = 0.031;
+    
+    double_car = true;
+    final_overtaking = false;
     
     #ifdef NO1
     leader_car = true;

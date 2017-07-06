@@ -7,10 +7,12 @@ extern inline float CalculateDistanceWithTime(uint32_t time) {
     return time * 0.034;
 }
 
-void DoubleCarRelativeInit(void);
+void DoubleCarInit(void);
 void MessageEnqueue(uint8_t message);
 void SendMessage(uint8_t message);
 
+extern bool double_car;
+extern bool final_overtaking;
 extern int16_t ultraSonicMissingCnt;
 extern float distanceBetweenTheTwoCars;
 extern uint32_t time;

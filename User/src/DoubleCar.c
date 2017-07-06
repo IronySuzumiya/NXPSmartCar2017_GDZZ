@@ -6,6 +6,8 @@
 #include "ImgProc.h"
 #include "PatternMatch.h"
 
+bool double_car;
+bool final_overtaking;
 int16_t ultraSonicMissingCnt;
 float distanceBetweenTheTwoCars;
 uint32_t time;
@@ -52,7 +54,7 @@ void SendMessage(uint8_t message) {
     #endif
 }
 
-void DoubleCarRelativeInit() {
+void DoubleCarInit() {
     /* try to recv ultra sonic. if so, tell the other car it's the front one */
     GPIO_QuickInit(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_Mode_IPU);
     GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);

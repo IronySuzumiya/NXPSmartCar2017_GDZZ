@@ -472,6 +472,11 @@
               <FileType>1</FileType>
               <FilePath>.\Libraries\devices\src\SteerActuator.c</FilePath>
             </File>
+            <File>
+              <FileName>LQ12864.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\devices\src\LQ12864.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -551,6 +556,16 @@
               <FileName>ModeSwitch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\src\ModeSwitch.c</FilePath>
+            </File>
+            <File>
+              <FileName>GearSwitch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\GearSwitch.c</FilePath>
+            </File>
+            <File>
+              <FileName>Joystick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Joystick.c</FilePath>
             </File>
             <File>
               <FileName>PinMap.h</FileName>

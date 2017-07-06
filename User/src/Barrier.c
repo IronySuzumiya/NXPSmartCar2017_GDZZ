@@ -28,8 +28,39 @@ int16_t WhichBarrier() {
     outRow = row;
     if(outRow - inRow > 5 && row < IMG_ROW && resultSet.middleLine[row] > IMG_COL / 2 - 20
         && resultSet.middleLine[row] < IMG_COL / 2 + 20) {
-        aroundBarrier = true;
-        return barrierType = _barrierType;
+        int16_t cnt = 0;
+        int16_t rowCnt = 0;
+        if(_barrierType == LeftBarrier) {
+            for(int16_t row = inRow; row < outRow; ++row) {
+                for(int16_t col = resultSet.middleLine[row]; col >= 40; --col) {
+                    if(TstImgBufAsBitMap(row, col) != TstImgBufAsBitMap(row, col + 1)) {
+                        if(++cnt > 2) {
+                            cnt = 0;
+                            ++rowCnt;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            for(int16_t row = inRow; row < outRow; ++row) {
+                for(int16_t col = resultSet.middleLine[row]; col < IMG_COL - 40; ++col) {
+                    if(TstImgBufAsBitMap(row, col - 1) != TstImgBufAsBitMap(row, col)) {
+                        if(++cnt > 2) {
+                            cnt = 0;
+                            ++rowCnt;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(rowCnt > 0.6 * (outRow - inRow)) {
+            aroundBarrier = true;
+            return barrierType = _barrierType;
+        } else {
+            return Unknown;
+        }
     } else {
         return Unknown;
     }

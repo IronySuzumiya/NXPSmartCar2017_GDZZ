@@ -43,6 +43,8 @@ extern inline float Limit_f(float value, float lbound, float hbound) {
     return value > hbound ? hbound : value < lbound ? lbound : value;
 }
 
+void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...);
+void OLEDClrRow(uint8_t row);
 void MainInit(void);
 
 extern bool enabled;
