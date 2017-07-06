@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define NO1
+#define NO2
 
 #define xUSE_BMP
 
