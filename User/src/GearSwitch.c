@@ -20,5 +20,5 @@ void GearSelect() {
             speed_control_speed = 100;
             break;
     }
-    OLEDPrintf(5, 1, "Current Speed: %d", speed_control_speed);
+    OLEDPrintf(5, 1, "Speed: %d", speed_control_speed);
 }

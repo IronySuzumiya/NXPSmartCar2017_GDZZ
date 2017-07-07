@@ -5,7 +5,6 @@
 #include "ImgUtility.h"
 #include "DataComm.h"
 #include "DoubleCar.h"
-#include "PatternMatch.h"
 
 #ifdef USE_BMP
 byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
@@ -14,24 +13,10 @@ byte imgBuf[IMG_ROW][IMG_COL];
 #endif
 
 img_proc_struct resultSet;
-bool direction_control_on;
 int16_t pre_sight_default;
 int16_t pre_sight;
 bool dynamic_presight;
 bool presight_only_depends_on_pursueing;
-bool waitForOvertaking;
-bool overtaking;
-bool aroundOvertaking;
-int32_t startDistance;
-bool firstOvertakingFinished;
-int32_t finalDistance;
-bool final;
-bool finalOvertakingFinished;
-bool finalPursueingFinished;
-int32_t wholeDistance;
-bool startLineEnabled;
-bool goAlongLeft;
-int32_t dashDistance;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -46,20 +31,6 @@ static void ImgProc3(void);
 static void ImgProcSummary(void);
 
 static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2 ,ImgProc3 };
-
-#ifdef USE_BMP
-inline void SetImgBufAsBitMap(int16_t row, int16_t col) {
-    imgBuf[row][col >> SHIFT] |= (1 << (col & MASK));
-}
-
-inline void ClrImgBufAsBitMap(int16_t row, int16_t col) {
-    imgBuf[row][col >> SHIFT] &= ~(1 << (col & MASK));
-}
-
-inline bool TstImgBufAsBitMap(int16_t row, int16_t col) {
-    return imgBuf[row][col >> SHIFT] & (1 << (col & MASK));
-}
-#endif
 
 void ImgProcInit(void) {
     GPIO_QuickInit(CAMERA_HREF_PORT, CAMERA_HREF_PIN, kGPIO_Mode_IPU);
@@ -96,22 +67,22 @@ void ImgProcVSYN(uint32_t pinxArray) {
 
 void ImgProc0() {
     int16_t i;
-    for(i = 0; i <= IMG_READ_DELAY; i++) { } //ignore those pixels near the border
+    for(i = 0; i <= IMG_READ_DELAY; ++i) { } //ignore those pixels near the border
     #ifdef USE_BMP
         static byte tmpBuf[IMG_COL]; //cache
-        for(i = IMG_COL - 1; i >= 0; i--) {
+        for(i = IMG_COL - 1; i >= 0; --i) {
             tmpBuf[i] = CAMERA_DATA_READ;
             __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
             __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
         }
-        for(i = IMG_COL - 1; i >= 0; i--) {
+        for(i = IMG_COL - 1; i >= 0; --i) {
             if(tmpBuf[i])
                 SetImgBufAsBitMap(imgBufRow, i);
             else
                 ClrImgBufAsBitMap(imgBufRow, i);
         }
     #else
-        for(i = IMG_COL - 1; i >= 0; i--) {
+        for(i = IMG_COL - 1; i >= 0; --i) {
             imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
         }
     #endif
@@ -133,134 +104,32 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-    static bool stop = false;
     int16_t middle = IMG_COL / 2;
     if(double_car) {
         if(!firstOvertakingFinished) {
-            if(leader_car) {
-                if(startDistance < 20000) {
-                    middle -= 40;
-                } else {
-                    waitForOvertaking = true;
-                    aroundOvertaking = true;
-                    firstOvertakingFinished = true;
-                }
-            } else {
-                if(startDistance < 30000) {
-                    middle += 30;
-                } else if(startDistance > 60000) {
-                    overtaking = true;
-                    SendMessage(MOVE_RIGHT_NOW);
-                    aroundOvertaking = true;
-                    firstOvertakingFinished = true;
-                }
-            }
-        } else if(!final && startLineEnabled && IsStartLine(30)) {
-            if(leader_car) {
-                SendMessage(FINAL);
-                final = true;
-            }
+            middle = FirstOvertakingAction();
+        } else if(!final && startLineEnabled && IsStartLine(30) && leader_car) {
+            SendMessage(FINAL);
+            final = true;
         } else if(final) {
             if(final_overtaking) {
-                if(leader_car) {
-                    if(finalDistance < 11000) {
-                        middle -= 48;
-                        finalOvertakingFinished = true;
-                    } else if(finalDistance < 25000 && goAlongLeft) {
-                        middle += 32;
-                    } else if(finalDistance < 50000) {
-                        if(finalOvertakingFinished) {
-                            finalOvertakingFinished = false;
-                            waitForOvertaking = true;
-                            aroundOvertaking = true;
-                        }
-                    } else {
-                        stop = true;
-                    }
-                } else {
-                    if(distanceBetweenTheTwoCars < 25000 && goAlongLeft) {
-                        middle += 32;
-                    } else if(distanceBetweenTheTwoCars < 40000) {
-                        if(goAlongLeft) {
-                            middle += 32;
-                        }
-                        if(!aroundOvertaking) {
-                            overtaking = true;
-                            SendMessage(OVERTAKING);
-                            aroundOvertaking = true;
-                        }
-                    } else {
-                        stop = true;
-                    }
-                }
+                middle = FinalOvertakingAction();
             } else {
-                if(!leader_car && pursueing && distanceBetweenTheTwoCars < 80) {
-                    finalPursueingFinished = true;
-                    pursueing = false;
-                    SendMessage(DASH);
-                }
-                if(finalPursueingFinished && dashDistance > 70000) {
-                    stop = true;
-                }
+                FinalDashAction();
             }
         }
     } else if(startLineEnabled && IsStartLine(30)) {
         final = true;
-    } else if(final) {
-        if(finalDistance < 11000) {
-            middle -= 48;
-            finalOvertakingFinished = true;
-        } else if(finalDistance < 30000) {
-            if(finalOvertakingFinished) {
-                finalOvertakingFinished = false;
-                waitForOvertaking = true;
-                aroundOvertaking = true;
-            }
-        } else {
-            stop = true;
-        }
+        finalPursueingFinished = true;
+    } else if(final && finalPursueingFinished && dashDistance > 70000) {
+        stop = true;
     }
     if(!aroundOvertaking && !final && IsOutOfRoad()) {
         stop = true;
     } else {
-        switch(GetRoadType()) {
-            case Ring:
-                inRing = true;
-                RingAction();
-                break;
-            case RingEnd:
-                if(double_car && !aroundOvertaking) {
-                    if(leader_car) {
-                        waitForOvertaking = true;
-                    } else if(!overtaking) {
-                        overtaking = true;
-                        SendMessage(OVERTAKING);
-                    }
-                    aroundOvertaking = true;
-                }
-                RingEndAction();
-                break;
-            case CrossRoad:
-                inCrossRoad = true;
-                crossRoadDistance = 0;
-                if(double_car && leader_car) {
-                    SendMessage(CROSS_ROAD);
-                }
-                break;
-            case LeftCurve:
-                LeftCurveAction();
-                break;
-            case RightCurve:
-                RightCurveAction();
-                break;
-            case LeftBarrier:
-                middle -= 22;
-                break;
-            case RightBarrier:
-                middle += 22;
-                break;
-        }
+        middle = CommonAction();
     }
+    
     if(direction_control_on) {
         DirectionControlProc(resultSet.middleLine, middle);
     }

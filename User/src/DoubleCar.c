@@ -4,7 +4,8 @@
 #include "pit.h"
 #include "uart.h"
 #include "ImgProc.h"
-#include "PatternMatch.h"
+#include "ImgUtility.h"
+#include "SpeedControl.h"
 
 bool double_car;
 bool final_overtaking;
@@ -15,6 +16,12 @@ bool leader_car;
 bool pursueing;
 int32_t avg_distance_between_the_two_cars;
 int32_t diff_distance_max;
+bool waitForOvertaking;
+bool overtaking;
+bool aroundOvertaking;
+int32_t waitForOvertakingTimeMax;
+int32_t overtakingTime;
+int32_t aroundOvertakingTimeMax;
 
 #ifdef RELIABLE_CONNECTION
 static uint8_t messageQueue[MESSAGE_QUEUE_SIZE];

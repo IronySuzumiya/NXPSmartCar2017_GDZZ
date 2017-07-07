@@ -4,6 +4,7 @@
 #include "DirectionControl.h"
 #include "DoubleCar.h"
 #include "gpio.h"
+#include "ImgUtility.h"
 #include "ImgProc.h"
 
 PID leftPid, rightPid;
@@ -15,7 +16,7 @@ int16_t speed_control_acc;
 int16_t speed_control_dec;
 float reduction_ratio;
 float differential_ratio;
-
+bool stop;
 
 static int16_t GetPresight(int16_t speed);
 static int16_t SpeedControlAcc(int16_t speed);

@@ -513,6 +513,11 @@
               <FilePath>.\User\src\PatternMatch.c</FilePath>
             </File>
             <File>
+              <FileName>Action.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\src\Action.c</FilePath>
+            </File>
+            <File>
               <FileName>Ring.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\src\Ring.c</FilePath>

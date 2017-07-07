@@ -2,6 +2,7 @@
 #include "DoubleCar.h"
 #include "MainProc.h"
 #include "ImgProc.h"
+#include "ImgUtility.h"
 #include "gpio.h"
 
 #pragma diag_suppress 1293

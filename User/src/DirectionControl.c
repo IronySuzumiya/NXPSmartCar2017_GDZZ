@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "MainProc.h"
 
+bool direction_control_on;
 double directionAngle;
 double direction_control_kd;
 double direction_control_kpj;

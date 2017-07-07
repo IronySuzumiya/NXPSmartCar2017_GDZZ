@@ -3,7 +3,8 @@
 
 #include "root.h"
 
+#define MODIFIABLE_PARAM_NUM 5
+
 void JoystickInit(void);
-void ParamModify(void);
 
 #endif

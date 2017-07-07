@@ -25,10 +25,12 @@
 #define  IMG_BLACK     0x00
 #define  IMG_EOF       0xff
 
-#ifdef NO1
+#if CAR_NO == 1
 #define  IMG_READ_DELAY  130
-#else
+#elif CAR_NO == 2
 #define  IMG_READ_DELAY  110
+#else
+#error "not implemented"
 #endif
 
 #ifdef USE_BMP

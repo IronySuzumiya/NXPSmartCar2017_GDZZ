@@ -114,12 +114,12 @@ void TimerInit() {
 
 void OLEDInit() {
     OLED_Init();
-    OLEDPrintf(0, 0, "CUG welcome you!");
+    OLEDPrintf(0, 0, "Nadeko-AI");
 }
 
 void OLEDClrRow(uint8_t row) {
     // 21 spaces
-    OLEDPrintf(0, 0, "                     ");
+    OLEDPrintf(0, row, "                     ");
 }
 
 void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
@@ -136,17 +136,17 @@ void OvertakingControl() {
     static int aroundOvertakingCnt = 0;
     if(waitForOvertaking) {
         ++waitForOvertakingCnt;
-        if(waitForOvertakingCnt > 700) {
+        if(waitForOvertakingCnt > waitForOvertakingTimeMax) {
             overtaking = true;
             waitForOvertakingCnt = 0;
-            overtakingCnt = 200;
+            overtakingCnt = overtakingTime;
         }
     } else {
         waitForOvertakingCnt = 0;
     }
     if(overtaking) {
         ++overtakingCnt;
-        if(overtakingCnt > 200) {
+        if(overtakingCnt > overtakingTime) {
             overtakingCnt = 0;
             overtaking = false;
             waitForOvertaking = false;
@@ -156,7 +156,7 @@ void OvertakingControl() {
     }
     if(aroundOvertakingFlag) {
         ++aroundOvertakingCnt;
-        if(aroundOvertakingCnt > 300) {
+        if(aroundOvertakingCnt > aroundOvertakingTimeMax) {
             aroundOvertaking = false;
             aroundOvertakingFlag = false;
             aroundOvertakingCnt = 0;
@@ -167,7 +167,7 @@ void OvertakingControl() {
 void DistanceControl() {
     int16_t dist = (leftSpeed + rightSpeed) / 2 * 5;
     if(!startLineEnabled) {
-        if(wholeDistance < 200000L) {
+        if(wholeDistance < 100000L) {
             wholeDistance += dist;
         } else {
             startLineEnabled = true;
@@ -239,46 +239,53 @@ static void SwitchAndParamLoad() {
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
     
-    #ifdef NO1
+    #if CAR_NO == 1
+    
     leftPid.kp = 130;
     leftPid.ki = 15;
     leftPid.kd = 25;
     rightPid.kp = 130;
     rightPid.ki = 15;
     rightPid.kd = 25;
-    #else
+    
+    steer_actuator_right = 415;
+    steer_actuator_middle = 452;
+    steer_actuator_left = 555;
+    pre_sight = pre_sight_default = 21;
+    
+    direction_control_kd = 0.2;
+    direction_control_kpj = 0.02;
+    direction_control_kpc = 0.0001;
+    
+    #elif CAR_NO == 2
+    
     leftPid.kp = 135;
     leftPid.ki = 12;
     leftPid.kd = 25;
     rightPid.kp = 135;
     rightPid.ki = 12;
     rightPid.kd = 25;
-    #endif
     
-    #ifdef NO1
-    steer_actuator_right = 415;
-    steer_actuator_middle = 452;
-    steer_actuator_left = 555;
-    pre_sight = pre_sight_default = 21;
-    #else
     steer_actuator_right = 340;
     steer_actuator_middle = 410;
     steer_actuator_left = 480;
     pre_sight = pre_sight_default = 21;
-    #endif
     
-    #ifdef NO1
-    direction_control_kd = 0.2;
-    direction_control_kpj = 0.02;
-    direction_control_kpc = 0.0001;
-    #else
     direction_control_kd = 0.2;
     direction_control_kpj = 0.025;
     direction_control_kpc = 0.0001;
+    
+    #else
+    
+    #error "not implemented"
+    
     #endif
     
     reduction_ratio = 2.6;
     differential_ratio = 0.031;
+    waitForOvertakingTimeMax = 700;
+    overtakingTime = 200;
+    aroundOvertakingTimeMax = 300;
     
     avg_distance_between_the_two_cars = 80;
     diff_distance_max = 15;

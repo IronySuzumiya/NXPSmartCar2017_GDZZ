@@ -3,11 +3,11 @@
 
 #include "root.h"
 
-#ifdef NO1
+#if CAR_NO == 1
 #define IsRingEnd IsRingEndFromRight
 #define RingAction RingActionGoRight
 #define RingEndAction RingEndActionFromRight
-#else
+#elif CAR_NO == 2
 #define IsRingEnd IsRingEndFromLeft
 #define RingAction RingActionGoLeft
 #define RingEndAction RingEndActionFromLeft
