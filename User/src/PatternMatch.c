@@ -5,7 +5,7 @@
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
-        if(ringDistance < 10000) {
+        if(ringDistance < 16000) {
             return RingEnd;
         } else {
             ringDistance = 0;
@@ -18,15 +18,16 @@ int16_t GetRoadType() {
             ringInterval = false;
         }
     } else if(inRing) {
-        if(ringDistance > 90000) {
+        if(ringDistance > 210000L) {
             ringDistance = 0;
-            inRing = false;
+            inRing = inBigRing = false;
         } else if(ringDistance > 22000 && IsRingEnd()) {
             ringDistance = 0;
             ringEndDelay = true;
-            inRing = false;
+            inRing = inBigRing = false;
             return RingEnd;
         } else if(ringDistance < 10000) {
+//            IsRing(); // check if big ring
             return Ring;
         }
     } else if(inCrossRoad) {
@@ -36,7 +37,7 @@ int16_t GetRoadType() {
             crossRoadDistance = 0;
         }
     } else if(aroundBarrier) {
-        if(barrierDistance > 5000) {
+        if(barrierDistance > 6000) {
             barrierDistance = 0;
             aroundBarrier = false;
         } else {
@@ -47,7 +48,7 @@ int16_t GetRoadType() {
 //    int16_t curve = WhichCurve();
     
     return /*curve != Unknown ? curve
-        : */!inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
+        :*/ !inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && !inCrossRoad && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
@@ -64,8 +65,7 @@ bool IsOutOfRoad() {
             }
         }
         if(cnt >= 85) {
-            ++line;
-            if(line >= 4) {
+            if(++line >= 4) {
                 return true;
             }
         }
@@ -80,7 +80,7 @@ bool IsStartLine(int16_t row) {
     for(int16_t i = row + 6; i >= row; --i) {
         for(int16_t j = IMG_COL / 2; j >= 60; --j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(++toggleCnt >= 12) {
+                if(++toggleCnt >= 6) {
                     toggleCnt = 0;
                     if(++patternRowCnt >= 3) {
                         return true;
@@ -98,7 +98,7 @@ bool IsStraightLine(void) {
     int16_t middleAreaCnt = 0;
     for(int16_t i = 0; i < IMG_ROW; ++i) {
         if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 10, IMG_COL / 2 + 10)) {
-            middleAreaCnt++;
+            ++middleAreaCnt;
         }
     }
     return middleAreaCnt > 38;

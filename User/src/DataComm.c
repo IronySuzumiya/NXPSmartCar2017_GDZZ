@@ -48,7 +48,9 @@ void ImgTrans(img_proc_struct* resultSetPtr) {
         byte tmp;
         int16_t j;
         for(int16_t i = IMG_ROW - 1; i >= 0; --i) {
-            if(resultSetPtr->middleLine[i] == j || resultSetPtr->leftBorder[i] == j || resultSetPtr->rightBorder[i] == j) {
+            if(resultSetPtr->middleLine[i] == j
+                || resultSetPtr->leftBorder[i] == j
+                || resultSetPtr->rightBorder[i] == j) {
                 tmp |= 0x01;
             } else {
                 if (IsBlack(i, j))
@@ -57,7 +59,9 @@ void ImgTrans(img_proc_struct* resultSetPtr) {
                     tmp &= ~0x01;
             }
             for(j = 1; j < IMG_COL; ++j) {
-                if(resultSetPtr->middleLine[i] == j || resultSetPtr->leftBorder[i] == j || resultSetPtr->rightBorder[i] == j) {
+                if(resultSetPtr->middleLine[i] == j
+                    || resultSetPtr->leftBorder[i] == j
+                    || resultSetPtr->rightBorder[i] == j) {
                     tmp |= 0x01 << (j % 8);
                 } else {
                     if (IsBlack(i, j))

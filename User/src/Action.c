@@ -2,6 +2,7 @@
 #include "DoubleCar.h"
 #include "SpeedControl.h"
 #include "ImgUtility.h"
+#include "gpio.h"
 
 int32_t startDistance;
 bool final;
@@ -16,7 +17,7 @@ int32_t dashDistance;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
-        if(startDistance < 20000) {
+        if(startDistance < 30000) {
             return IMG_COL / 2 - 40;
         } else {
             waitForOvertaking = true;
@@ -24,9 +25,9 @@ int16_t FirstOvertakingAction() {
             firstOvertakingFinished = true;
         }
     } else {
-        if(startDistance < 30000) {
+        if(startDistance < 40000) {
             return IMG_COL / 2 + 30;
-        } else if(startDistance > 60000) {
+        } else if(startDistance > 70000) {
             overtaking = true;
             SendMessage(MOVE_RIGHT_NOW);
             aroundOvertaking = true;
@@ -98,8 +99,15 @@ int16_t CommonAction() {
                 }
                 aroundOvertaking = true;
             }
-            RingEndAction();
-            break;
+//            if(inBigRing) {
+//                RingEndAction();
+//            }
+            BUZZLE_ON;
+            #if CAR_NO == 1
+            return IMG_COL / 2 - 22;
+            #elif CAR_NO == 2
+            return IMG_COL / 2 + 22;
+            #endif
         case CrossRoad:
             inCrossRoad = true;
             crossRoadDistance = 0;

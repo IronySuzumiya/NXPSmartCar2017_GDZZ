@@ -43,6 +43,8 @@ void MainInit() {
     
     GearSelect();
     
+    JoystickInit();
+    
     MotorInit();
     
     EncoderInit();
@@ -56,8 +58,6 @@ void MainInit() {
     NVICInit();
     
     ImgProcInit();
-    
-    JoystickInit();
     
     if(double_car) {
         DoubleCarInit();
@@ -96,9 +96,7 @@ void GetReady() {
             DelayMs(100);
         }
     } else {
-        GPIO_QuickInit(START_PORT, START_PIN, kGPIO_Mode_IPU);
         DelayMs(2000);
-        SendMessage(START);
     }
 }
 
@@ -212,7 +210,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(aroundBarrier);
+    BuzzleControl(false);
     
     OvertakingControl();
     

@@ -89,8 +89,10 @@ void ImgProc0() {
 }
 
 void ImgProc1() {
-    resultSet.foundLeftBorder[imgBufRow] = LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-    resultSet.foundRightBorder[imgBufRow] = RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    resultSet.foundLeftBorder[imgBufRow] =
+        LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    resultSet.foundRightBorder[imgBufRow] =
+        RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
 }
 
 void ImgProc2() {
@@ -119,13 +121,14 @@ void ImgProcSummary() {
             }
         }
     } else if(startLineEnabled && IsStartLine(30)) {
-        final = true;
-        finalPursueingFinished = true;
+//        final = true;
+//        finalPursueingFinished = true;
     } else if(final && finalPursueingFinished && dashDistance > 70000) {
-        stop = true;
+//        stop = true;
     }
+    
     if(!aroundOvertaking && !final && IsOutOfRoad()) {
-        stop = true;
+//        stop = true;
     } else {
         middle = CommonAction();
     }

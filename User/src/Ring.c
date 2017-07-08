@@ -2,8 +2,11 @@
 #include "MainProc.h"
 #include "ImgProc.h"
 
+#pragma diag_suppress 1293
+
 int32_t ringDistance;
 bool inRing;
+bool inBigRing;
 bool ringEndDelay;
 bool ringInterval;
 
@@ -90,27 +93,28 @@ bool IsRing() {
         cursor = (left + right) / 2;
     }
     
-    return leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7 && maxWidth > 75 && maxWidth - minWidth > 50;
+    return leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
+        && /*((inBigRing = maxWidth > 120) ||*/ maxWidth > 75/*)*/ && maxWidth - minWidth > 50;
 }
 
 bool IsRingEndFromLeft() {
-    double a = 9.0 / (resultSet.leftBorder[47] - resultSet.leftBorder[38]);
-    double b = 9.0 * resultSet.leftBorder[38] / (resultSet.leftBorder[38] - resultSet.leftBorder[47]);
-    int16_t r = 0;
-    for(int16_t row = 38; row < 48; ++row) {
-        r += Abs(resultSet.leftBorder[row] - (row - 38 - b) / a);
+    int16_t cnt = 0;
+    for(int16_t row = 30; row < 40; ++row) {
+        if(resultSet.middleLine[row] < resultSet.middleLine[row - 2]) {
+            ++cnt;
+        }
     }
-    return r < 15;
+    return cnt >= 6;
 }
 
 bool IsRingEndFromRight() {
-    double a = 9.0 / (resultSet.rightBorder[47] - resultSet.rightBorder[38]);
-    double b = 9.0 * resultSet.rightBorder[38] / (resultSet.rightBorder[38] - resultSet.rightBorder[47]);
-    int16_t r = 0;
-    for(int16_t row = 38; row < 48; ++row) {
-        r += Abs(resultSet.rightBorder[row] - (row - 38 - b) / a);
+    int16_t cnt = 0;
+    for(int16_t row = 30; row < 40; ++row) {
+        if(resultSet.middleLine[row] > resultSet.middleLine[row - 2]) {
+            ++cnt;
+        }
     }
-    return r < 15;
+    return cnt >= 6;
 }
 
 void RingActionGoLeft() {
@@ -126,9 +130,13 @@ void RingActionGoRight() {
 }
 
 void RingEndActionFromLeft() {
-    
+//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+//        resultSet.middleLine[i] = 0;
+//    }
 }
 
 void RingEndActionFromRight() {
-    
+//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+//        resultSet.middleLine[i] = IMG_COL - 1;
+//    }
 }
