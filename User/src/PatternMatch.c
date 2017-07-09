@@ -80,7 +80,7 @@ bool IsStartLine(int16_t row) {
     for(int16_t i = row + 6; i >= row; --i) {
         for(int16_t j = IMG_COL / 2; j >= 60; --j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(++toggleCnt >= 6) {
+                if(++toggleCnt >= 8) {
                     toggleCnt = 0;
                     if(++patternRowCnt >= 3) {
                         return true;

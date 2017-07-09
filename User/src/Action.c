@@ -86,6 +86,14 @@ void FinalDashAction() {
 int16_t CommonAction() {
     switch(GetRoadType()) {
         case Ring:
+            if(double_car) {
+                if(leader_car && !inRing) {
+                    SendMessage(HOLD);
+                } else if(holding) {
+                    holding = false;
+                    holdingDistance = 0;
+                }
+            }
             inRing = true;
             RingAction();
             break;

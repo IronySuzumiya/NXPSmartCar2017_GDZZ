@@ -58,5 +58,6 @@
 #define  CROSS_ROAD             0x07
 #define  MOVE_RIGHT_NOW         0x08
 #define  DASH                   0x09
+#define  HOLD                   0x0A
 
 #endif

@@ -44,7 +44,9 @@ void SpeedTargetSet(int16_t speed, bool diff) {
                     pre_sight = pre_sight_default;
                 }
             } else {
-                if(!firstOvertakingFinished || pursueing) {
+                if(holding) {
+                    speed = SpeedControlDec(speed);
+                } else if(!firstOvertakingFinished || pursueing) {
                     speed = SpeedControlAcc(speed);
                 } else if(TOO_FAR) {
                     speed = SpeedControlAcc(speed);

@@ -26,5 +26,7 @@ extern bool aroundOvertaking;
 extern int32_t waitForOvertakingTimeMax;
 extern int32_t overtakingTime;
 extern int32_t aroundOvertakingTimeMax;
+extern bool holding;
+extern int32_t holdingDistance;
 
 #endif

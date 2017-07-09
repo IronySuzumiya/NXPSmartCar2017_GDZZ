@@ -22,6 +22,8 @@ bool aroundOvertaking;
 int32_t waitForOvertakingTimeMax;
 int32_t overtakingTime;
 int32_t aroundOvertakingTimeMax;
+bool holding;
+int32_t holdingDistance;
 
 #ifdef RELIABLE_CONNECTION
 static uint8_t messageQueue[MESSAGE_QUEUE_SIZE];
@@ -160,6 +162,9 @@ void DoubleCarMessageRecv(uint16_t message) {
         case MOVE_RIGHT_NOW:
             overtaking = true;
             overtakingCnt = 200;
+            break;
+        case HOLD:
+            holding = true;
             break;
         #ifdef RELIABLE_CONNECTION
         case ACK:

@@ -121,14 +121,14 @@ void ImgProcSummary() {
             }
         }
     } else if(startLineEnabled && IsStartLine(30)) {
-//        final = true;
-//        finalPursueingFinished = true;
+        final = true;
+        finalPursueingFinished = true;
     } else if(final && finalPursueingFinished && dashDistance > 70000) {
-//        stop = true;
+        stop = true;
     }
     
-    if(!aroundOvertaking && !final && IsOutOfRoad()) {
-//        stop = true;
+    if(enabled && !aroundOvertaking && !final && IsOutOfRoad()) {
+        stop = true;
     } else {
         middle = CommonAction();
     }

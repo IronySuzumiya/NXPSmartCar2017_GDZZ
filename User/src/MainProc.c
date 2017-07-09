@@ -88,6 +88,7 @@ void GetReady() {
         if(leader_car) {
             DelayMs(2000);
             SendMessage(START);
+            enabled = true;
         } else {
             while(!enabled) {
                 OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
@@ -97,6 +98,7 @@ void GetReady() {
         }
     } else {
         DelayMs(2000);
+        enabled = true;
     }
 }
 
@@ -188,6 +190,13 @@ void DistanceControl() {
     }
     if(finalPursueingFinished) {
         dashDistance += dist;
+    }
+    if(holding) {
+        holdingDistance += dist;
+        if(holdingDistance > 20000) {
+            holding = false;
+            holdingDistance = 0;
+        }
     }
 }
 
