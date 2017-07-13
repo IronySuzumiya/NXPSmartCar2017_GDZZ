@@ -156,9 +156,7 @@ void DoubleCarMessageRecv(uint16_t message) {
             crossRoadDistance = 0;
             break;
         case MOVE_RIGHT_NOW:
-            overtaking = true;
-            overtakingCnt = overtakingTime;
-            aroundOvertakingCnt = aroundOvertakingTimeMax;
+            waitForDoubleCarAction = false;
             break;
         case HOLD:
             holding = true;

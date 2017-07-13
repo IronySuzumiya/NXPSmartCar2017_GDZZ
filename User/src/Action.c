@@ -17,57 +17,60 @@ bool firstOvertakingFinished;
 bool secondOvertakingFinished;
 bool goAlongLeft;
 int32_t dashDistance;
+bool waitForDoubleCarAction;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
-        if(startDistance < 6000) {
-            return IMG_COL / 2 - 40;
+        if(startDistance < 3000) {
+            return IMG_COL / 2 - 28;
         } else {
-            waitForOvertaking = true;
-            aroundOvertaking = true;
+            waitForDoubleCarAction = true;
             firstOvertakingFinished = true;
-            return IMG_COL / 2 - (secondOvertakingFinished ? 0 : 40);
+            if(!secondOvertakingFinished) {
+                return IMG_COL / 2 - 28;
+            } else {
+                leader_car = !leader_car;
+                return IMG_COL / 2;
+            }
         }
     } else {
         if(startDistance < 8000) {
-            return IMG_COL / 2 + 30;
-        } else if(startDistance < 14000) {
-            return IMG_COL / 2 + (secondOvertakingFinished ? 0 : 30);
-        } else {
-            overtaking = true;
-            SendMessage(MOVE_RIGHT_NOW);
-            aroundOvertaking = true;
-            overtakingCnt = overtakingTime;
-            aroundOvertakingCnt = aroundOvertakingTimeMax;
+            return IMG_COL / 2 + 25;
+        } else if(!secondOvertakingFinished) {
             firstOvertakingFinished = true;
-            return IMG_COL / 2 + (secondOvertakingFinished ? 0 : 30);
+            return IMG_COL / 2 + 25;
+        } else {
+            if(startDistance < 15000) {
+                return IMG_COL / 2;
+            } else {
+                SendMessage(MOVE_RIGHT_NOW);
+                leader_car = !leader_car;
+                firstOvertakingFinished = true;
+                return IMG_COL / 2;
+            }
         }
     }
 }
 
 int16_t SecondOvertakingAction() {
     if(leader_car) {
-        if(secondDistance < 1000) {
-            return IMG_COL / 2 - 40;
+        if(secondDistance < 6000) {
+            return IMG_COL / 2 - 28;
+        } else if(secondDistance < 11000) {
+            return IMG_COL / 2;
         } else {
-            waitForOvertaking = true;
-            aroundOvertaking = true;
+            SendMessage(MOVE_RIGHT_NOW);
             secondOvertakingFinished = true;
-            return IMG_COL / 2 - (secondOvertakingFinished ? 0 : 40);
+            return IMG_COL / 2;
         }
     } else {
-        if(secondDistance < 3000) {
-            return IMG_COL / 2 + 30;
-        } else if(secondDistance < 9000) {
-            return IMG_COL / 2 + (secondOvertakingFinished ? 0 : 30);
+        if(secondDistance < 500) {
+            return IMG_COL / 2 + 25;
         } else {
-            overtaking = true;
-            SendMessage(MOVE_RIGHT_NOW);
-            aroundOvertaking = true;
-            overtakingCnt = overtakingTime;
-            aroundOvertakingCnt = aroundOvertakingTimeMax;
+            waitForDoubleCarAction = true;
             secondOvertakingFinished = true;
-            return IMG_COL / 2 + (secondOvertakingFinished ? 0 : 30);
+            SendMessage(MOVE_RIGHT_NOW);
+            return IMG_COL / 2 + 25;
         }
     }
 }
@@ -150,9 +153,9 @@ int16_t CommonAction() {
         case CrossRoad:
             inCrossRoad = true;
             crossRoadDistance = 0;
-            if(double_car && leader_car) {
-                SendMessage(CROSS_ROAD);
-            }
+//            if(double_car && leader_car) {
+//                SendMessage(CROSS_ROAD);
+//            }
             CrossRoadAction();
             break;
         case LeftCurve:

@@ -21,5 +21,6 @@ extern bool firstOvertakingFinished;
 extern bool secondOvertakingFinished;
 extern bool goAlongLeft;
 extern int32_t dashDistance;
+extern bool waitForDoubleCarAction;
 
 #endif

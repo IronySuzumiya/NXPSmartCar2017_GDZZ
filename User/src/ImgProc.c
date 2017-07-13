@@ -108,18 +108,22 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
+    bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     if(double_car) {
         if(!firstOvertakingFinished) {
             middle = FirstOvertakingAction();
+            doubleCarAction = true;
         } else if(!secondOvertakingFinished) {
             middle = SecondOvertakingAction();
+            doubleCarAction = true;
         } else if(!final && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
             SendMessage(FINAL);
             final = true;
         } else if(final) {
             if(final_overtaking) {
                 middle = FinalOvertakingAction();
+                doubleCarAction = true;
             } else {
                 FinalDashAction();
             }
@@ -137,7 +141,11 @@ void ImgProcSummary() {
     if(enabled && !aroundOvertaking && !final && IsOutOfRoad()) {
         stop = true;
     } else {
-        middle = CommonAction();
+        if(doubleCarAction) {
+            CommonAction();
+        } else {
+            middle = CommonAction();
+        }
     }
     
     if(direction_control_on) {
@@ -146,12 +154,12 @@ void ImgProcSummary() {
     
     if(speed_control_on) {
         bool accelerate = IsStraightLine();
-        SpeedTargetSet(stop || waitForOvertaking ? 0 :
+        SpeedTargetSet(stop || waitForOvertaking || waitForDoubleCarAction ? 0 :
             final && leader_car && !finalPursueingFinished ? 0 :
             final && finalPursueingFinished ? 130 :
             finalOvertakingFinished ? 30 :
             accelerate ? speed_control_speed * 1.1 :
             inRing || ringEndDelay || aroundOvertaking ? 85 : speed_control_speed
-            , !stop && !waitForOvertaking && !accelerate && !finalPursueingFinished);
+            , !stop && !waitForOvertaking && !waitForDoubleCarAction && !accelerate && !finalPursueingFinished);
     }
 }
