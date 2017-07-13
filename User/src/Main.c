@@ -15,7 +15,7 @@ int main() {
             DelayMs(50);
         #endif
         if(double_car) {
-            OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
+            OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
             DelayMs(500);
         }
     }

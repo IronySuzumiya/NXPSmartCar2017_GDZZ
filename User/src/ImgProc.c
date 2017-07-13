@@ -5,6 +5,7 @@
 #include "ImgUtility.h"
 #include "DataComm.h"
 #include "DoubleCar.h"
+#include "ModeSwitch.h"
 
 #ifdef USE_BMP
 byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
@@ -17,6 +18,7 @@ int16_t pre_sight_default;
 int16_t pre_sight;
 bool dynamic_presight;
 bool presight_only_depends_on_pursueing;
+int16_t startLinePresight;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -110,7 +112,9 @@ void ImgProcSummary() {
     if(double_car) {
         if(!firstOvertakingFinished) {
             middle = FirstOvertakingAction();
-        } else if(!final && startLineEnabled && IsStartLine(30) && leader_car) {
+        } else if(!secondOvertakingFinished) {
+            middle = SecondOvertakingAction();
+        } else if(!final && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
             SendMessage(FINAL);
             final = true;
         } else if(final) {
@@ -120,10 +124,13 @@ void ImgProcSummary() {
                 FinalDashAction();
             }
         }
-    } else if(startLineEnabled && IsStartLine(30)) {
-        final = true;
-        finalPursueingFinished = true;
-    } else if(final && finalPursueingFinished && dashDistance > 70000) {
+    } else if(startLineEnabled && IsStartLine(startLinePresight)) {
+        if(!debugMode) {
+            final = true;
+            finalPursueingFinished = true;
+        }
+        BUZZLE_ON;
+    } else if(final && finalPursueingFinished && dashDistance > 14000) {
         stop = true;
     }
     
@@ -141,7 +148,7 @@ void ImgProcSummary() {
         bool accelerate = IsStraightLine();
         SpeedTargetSet(stop || waitForOvertaking ? 0 :
             final && leader_car && !finalPursueingFinished ? 0 :
-            final && finalPursueingFinished ? 120 :
+            final && finalPursueingFinished ? 130 :
             finalOvertakingFinished ? 30 :
             accelerate ? speed_control_speed * 1.1 :
             inRing || ringEndDelay || aroundOvertaking ? 85 : speed_control_speed

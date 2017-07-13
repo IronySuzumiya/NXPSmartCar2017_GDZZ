@@ -62,17 +62,14 @@ void SendMessage(uint8_t message) {
 }
 
 void DoubleCarInit() {
-    /* try to recv ultra sonic. if so, tell the other car it's the front one */
     GPIO_QuickInit(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_Mode_IPU);
     GPIO_CallbackInstall(ULTRA_SONIC_RECV_PORT, UltraSonicRecvInt);
     GPIO_ITDMAConfig(ULTRA_SONIC_RECV_PORT, ULTRA_SONIC_RECV_PIN, kGPIO_IT_RisingFallingEdge, ENABLE);
     
-    /* used to recv messages from the other car */
     UART_QuickInit(DATACOMM_DOUBLE_CAR_MAP, DATACOMM_DOUBLE_CAR_BAUD);
     UART_CallbackRxInstall(DATACOMM_DOUBLE_CAR_CHL, DoubleCarMessageRecv);
     UART_ITDMAConfig(DATACOMM_DOUBLE_CAR_CHL, kUART_IT_Rx, ENABLE);
     
-    /* ultra sonic can be missed, and `only` `for now`, do nothing if time out */
     PIT_QuickInit(ULTRA_SONIC_TIMER_CHL, ULTRA_SONIC_TIME_OUT);
     PIT_CallbackInstall(ULTRA_SONIC_TIMER_CHL, UltraSonicTimeOutInt);
     PIT_ITDMAConfig(ULTRA_SONIC_TIMER_CHL, kPIT_IT_TOF, ENABLE);
@@ -127,7 +124,6 @@ void UltraSonicTimeOutInt() {
     if(ultraSonicMissingCnt > 5) {
         ultraSonicMissingCnt = 0;
         distanceBetweenTheTwoCars = avg_distance_between_the_two_cars + diff_distance_max + 233;
-//        SendMessage(MISSING);
     }
 }
 
@@ -161,7 +157,8 @@ void DoubleCarMessageRecv(uint16_t message) {
             break;
         case MOVE_RIGHT_NOW:
             overtaking = true;
-            overtakingCnt = 200;
+            overtakingCnt = overtakingTime;
+            aroundOvertakingCnt = aroundOvertakingTimeMax;
             break;
         case HOLD:
             holding = true;

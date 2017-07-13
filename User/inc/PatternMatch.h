@@ -13,4 +13,8 @@ bool IsOutOfRoad(void);
 bool IsStartLine(int16_t row);
 bool IsStraightLine(void);
 
+extern int32_t crossRoadDistanceLeaderMax;
+extern int32_t crossRoadDistanceFollowerMax;
+extern int16_t startLineWidth;
+
 #endif

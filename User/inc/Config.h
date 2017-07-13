@@ -15,7 +15,7 @@
 
 #define xPERIODICALLY_CHECK_MSG_QUEUE
 
-#define xUSE_IMG_TRANS
+#define USE_IMG_TRANS
 
 #define xUSE_STAT_TRANS
 

@@ -6,9 +6,9 @@
 void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle);
 
 extern bool direction_control_on;
-extern double directionAngle;
-extern double direction_control_kd;
-extern double direction_control_kpj;
-extern double direction_control_kpc;
+extern float directionAngle;
+extern float direction_control_kd;
+extern float direction_control_kpj;
+extern float direction_control_kpc;
 
 #endif

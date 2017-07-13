@@ -47,16 +47,28 @@
 #define  STEER_ACTUATOR_CHL   HW_FTM_CH0
 
 //Mode Switch
+#if CAR_NO == 1
 #define  MODE_SWITCH_PIN123_PORT  HW_GPIOC
 #define  MODE_SWITCH_PIN1         8
 #define  MODE_SWITCH_PIN2         13
 #define  MODE_SWITCH_PIN3         16
 #define  MODE_SWITCH_PIN4_PORT    HW_GPIOD
 #define  MODE_SWITCH_PIN4         1
-#define  MODE_SWITCH_READ         ((!PDin(MODE_SWITCH_PIN4) << 3u)\
-                                 | (!PCin(MODE_SWITCH_PIN3) << 2u)\
-                                 | (!PCin(MODE_SWITCH_PIN2) << 1u)\
-                                 | (!PCin(MODE_SWITCH_PIN1)))
+#define  MODE_SWITCH_READ  ((!PDin(MODE_SWITCH_PIN4) << 3u)\
+                          | (!PCin(MODE_SWITCH_PIN3) << 2u)\
+                          | (!PCin(MODE_SWITCH_PIN2) << 1u)\
+                          | (!PCin(MODE_SWITCH_PIN1)))
+#elif CAR_NO == 2
+#define  MODE_SWITCH_PORT  HW_GPIOC
+#define  MODE_SWITCH_PIN1  8
+#define  MODE_SWITCH_PIN2  13
+#define  MODE_SWITCH_PIN3  16
+#define  MODE_SWITCH_PIN4  17
+#define  MODE_SWITCH_READ  ((!PCin(MODE_SWITCH_PIN4) << 3u)\
+                          | (!PCin(MODE_SWITCH_PIN3) << 2u)\
+                          | (!PCin(MODE_SWITCH_PIN2) << 1u)\
+                          | (!PCin(MODE_SWITCH_PIN1)))
+#endif
 
 //Gear Switch
 #define  GEAR_SWITCH_PORT  HW_GPIOE
@@ -97,11 +109,23 @@
 #define  OELD_SCL_PIN  17
 
 //Joystick
-#define  JOYSTICK_PORT    HW_GPIOE
-#define  JOYSTICK_NORTH   16
-#define  JOYSTICK_SOUTH   2
-#define  JOYSTICK_WEST    6
-#define  JOYSTICK_EAST    17
-#define  JOYSTICK_MIDDLE  3
+#if CAR_NO == 1
+#define  JOYSTICK_PORT         HW_GPIOE
+#define  JOYSTICK_SOUTH        2
+#define  JOYSTICK_WEST         6
+#define  JOYSTICK_MIDDLE       3
+#define  JOYSTICK_NORTH        26
+#define  JOYSTICK_MIDDLE_READ  PEin(JOYSTICK_MIDDLE)
+#define  JOYSTICK_WEST_READ    PEin(JOYSTICK_WEST)
+#elif CAR_NO == 2
+#define  JOYSTICK_OLD_PORT     HW_GPIOE
+#define  JOYSTICK_SOUTH        2
+#define  JOYSTICK_WEST         6
+#define  JOYSTICK_MIDDLE       3
+#define  JOYSTICK_NEW_PORT     HW_GPIOD
+#define  JOYSTICK_NORTH        0
+#define  JOYSTICK_EAST         1
+#define  JOYSTICK_MIDDLE_READ  PEin(JOYSTICK_MIDDLE)
+#endif
 
 #endif

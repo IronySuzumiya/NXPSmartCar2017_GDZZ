@@ -48,6 +48,10 @@ void SpeedTargetSet(int16_t speed, bool diff) {
                     speed = SpeedControlDec(speed);
                 } else if(!firstOvertakingFinished || pursueing) {
                     speed = SpeedControlAcc(speed);
+//                } else if(EXT_FAR) {
+//                    speed = SpeedControlAcc(SpeedControlAcc(speed));
+//                } else if(EXT_CLOSE) {
+//                    speed = SpeedControlDec(SpeedControlDec(speed));
                 } else if(TOO_FAR) {
                     speed = SpeedControlAcc(speed);
                 } else if(TOO_CLOSE) {
@@ -78,19 +82,17 @@ void SpeedTargetSet(int16_t speed, bool diff) {
 }
 
 int16_t SpeedControlAcc(int16_t speed) {
-    speed = speed + speed_control_acc;
     if(dynamic_presight && presight_only_depends_on_pursueing) {
         pre_sight = pre_sight_default + 4;
     }
-    return speed;
+    return speed + speed_control_acc;
 }
 
 int16_t SpeedControlDec(int16_t speed) {
-    speed = speed - speed_control_dec;
     if(dynamic_presight && presight_only_depends_on_pursueing) {
         pre_sight = pre_sight_default - 3;
     }
-    return speed;
+    return speed - speed_control_dec;
 }
 
 int16_t GetPresight(int16_t speed) {

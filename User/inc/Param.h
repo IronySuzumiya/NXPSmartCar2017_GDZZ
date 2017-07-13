@@ -9,6 +9,7 @@
 #define  DCDT_IRQ  UART3_RX_TX_IRQn
 #define  ULTO_IRQ  PIT1_IRQn
 #define  DCTO_IRQ  PIT2_IRQn
+#define  JYSK_IRQ  PIT3_IRQn
 
 //PIT
 #define  PIT_CHL  HW_PIT_CH0
@@ -59,5 +60,10 @@
 #define  MOVE_RIGHT_NOW         0x08
 #define  DASH                   0x09
 #define  HOLD                   0x0A
+
+//Joystick
+//#warning "there is a conflict between doublecar-datacomm and joystick-confirming-timer on pit-ch3"
+#define  JOYSTICK_CONFIRMING_TIMER_CHL  HW_PIT_CH3
+#define  JOYSTICK_CONFIRMING_TIME       50000
 
 #endif

@@ -12,7 +12,7 @@
 #include "ModeSwitch.h"
 #include "DoubleCar.h"
 #include "GearSwitch.h"
-#include "LQ12864.h"
+#include "OLED.h"
 #include "stdarg.h"
 #include "stdio.h"
 #include "Joystick.h"
@@ -20,6 +20,8 @@
 bool enabled;
 int16_t waitForOvertakingCnt;
 int16_t overtakingCnt;
+bool aroundOvertakingFlag;
+int aroundOvertakingCnt;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
@@ -81,24 +83,26 @@ void NVICInit() {
     
     NVIC_SetPriority(ULTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 3, 0));
     NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 3, 1));
+    
+    NVIC_SetPriority(JYSK_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 4, 0));
 }
 
 void GetReady() {
     if(double_car) {
         if(leader_car) {
+            while(!enabled);
             DelayMs(2000);
             SendMessage(START);
-            enabled = true;
         } else {
             while(!enabled) {
-                OLEDPrintf(5, 2, "distance: %.3f", distanceBetweenTheTwoCars);
+                OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
                 DelayMs(500);
             }
             DelayMs(100);
         }
     } else {
+        while(!enabled);
         DelayMs(2000);
-        enabled = true;
     }
 }
 
@@ -132,8 +136,6 @@ void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
 }
 
 void OvertakingControl() {
-    static bool aroundOvertakingFlag = false;
-    static int aroundOvertakingCnt = 0;
     if(waitForOvertaking) {
         ++waitForOvertakingCnt;
         if(waitForOvertakingCnt > waitForOvertakingTimeMax) {
@@ -165,9 +167,9 @@ void OvertakingControl() {
 }
 
 void DistanceControl() {
-    int16_t dist = (leftSpeed + rightSpeed) / 2 * 5;
+    int16_t dist = (leftSpeed + rightSpeed) / 2;
     if(!startLineEnabled) {
-        if(wholeDistance < 100000L) {
+        if(wholeDistance < 5000) {
             wholeDistance += dist;
         } else {
             startLineEnabled = true;
@@ -185,6 +187,9 @@ void DistanceControl() {
     if(!firstOvertakingFinished) {
         startDistance += dist;
     }
+    if(firstOvertakingFinished && !secondOvertakingFinished) {
+        secondDistance += dist;
+    }
     if(final) {
         finalDistance += dist;
     }
@@ -193,7 +198,7 @@ void DistanceControl() {
     }
     if(holding) {
         holdingDistance += dist;
-        if(holdingDistance > 20000) {
+        if(holdingDistance > 4000) {
             holding = false;
             holdingDistance = 0;
         }
@@ -219,7 +224,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(false);
+    BuzzleControl(inCrossRoad);
     
     OvertakingControl();
     
@@ -240,8 +245,8 @@ static void SwitchAndParamLoad() {
     speed_control_speed = 90;
     speed_control_sum_err_max = 2000;
     
-    speed_control_acc = 10;
-    speed_control_dec = 20;
+    speed_control_acc = 5;
+    speed_control_dec = 10;
     
     leftPid.targetValue = speed_control_speed;
     rightPid.targetValue = speed_control_speed;
@@ -258,11 +263,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 415;
     steer_actuator_middle = 452;
     steer_actuator_left = 555;
-    pre_sight = pre_sight_default = 21;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
-    direction_control_kpc = 0.0001;
+    direction_control_kpc = 0.000125;
+    
+    differential_ratio = 0.034;
     
     #elif CAR_NO == 2
     
@@ -276,11 +282,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 340;
     steer_actuator_middle = 410;
     steer_actuator_left = 480;
-    pre_sight = pre_sight_default = 21;
     
     direction_control_kd = 0.2;
-    direction_control_kpj = 0.025;
+    direction_control_kpj = 0.02;
     direction_control_kpc = 0.0001;
+    
+    differential_ratio = 0.033;
     
     #else
     
@@ -289,14 +296,15 @@ static void SwitchAndParamLoad() {
     #endif
     
     reduction_ratio = 2.6;
-    differential_ratio = 0.031;
     waitForOvertakingTimeMax = 700;
-    overtakingTime = 200;
+    overtakingTime = 80;
     aroundOvertakingTimeMax = 300;
-    
     avg_distance_between_the_two_cars = 80;
-    diff_distance_max = 15;
-    
-    dynamic_presight = true;
-    presight_only_depends_on_pursueing = true;
+    diff_distance_max = 7;
+    dynamic_presight = false;
+    presight_only_depends_on_pursueing = false;
+    crossRoadDistanceLeaderMax = 2000;
+    crossRoadDistanceFollowerMax = 2000;
+    startLinePresight = 32;
+    startLineWidth = 124;
 }

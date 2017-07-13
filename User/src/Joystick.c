@@ -3,6 +3,12 @@
 #include "SpeedControl.h"
 #include "MainProc.h"
 #include "DoubleCar.h"
+#include "ImgProc.h"
+#include "pit.h"
+#include "ImgUtility.h"
+#include "DirectionControl.h"
+
+static int16_t joystickConfirmingCnt;
 
 static struct _temp_handle {
     int16_t index;
@@ -10,6 +16,7 @@ static struct _temp_handle {
         int16_t i16;
         int32_t i32;
         float f;
+        bool b;
     } u;
 } temp = {
     0, 0
@@ -17,20 +24,49 @@ static struct _temp_handle {
 
 static struct _param_handle {
     int16_t index;
-    enum { INT16, INT32, FLOAT } type[MODIFIABLE_PARAM_NUM];
+    enum { INT16, INT32, FLOAT, BOOL } type[MODIFIABLE_PARAM_NUM];
     char *name[MODIFIABLE_PARAM_NUM];
     void *(ref[MODIFIABLE_PARAM_NUM]);
     float div[MODIFIABLE_PARAM_NUM];
 } param = {
     0,
-    { FLOAT, FLOAT, INT32, INT32, INT32 },
-    { "redu", "diff", "wait", "ovtk", "arov" },
+    { FLOAT, FLOAT, INT32,
+        INT32, INT32, INT32,
+        INT32, BOOL, BOOL,
+        INT32, INT32, INT16,
+        INT16, INT16, INT16,
+        INT16, FLOAT, FLOAT,
+        FLOAT },
+    { "reduratio", "diffratio", "waitfovtk",
+        "ovtk", "arndovtk", "avgdist",
+        "diffdistm", "dynmprst", "prstdpdonps",
+        "crdistlead", "crdistfoll", "speed",
+        "sttlnprst", "presight", "prstdeflt",
+        "sttlnwidth", "dirkpj", "dirkpc",
+        "dirkd" },
     { &reduction_ratio, &differential_ratio, &waitForOvertakingTimeMax,
-        &overtakingTime, &aroundOvertakingTimeMax },
-    { 0.02, 0.0002, 5, 2, 2 }
+        &overtakingTime, &aroundOvertakingTimeMax, &avg_distance_between_the_two_cars,
+        &diff_distance_max, &dynamic_presight, &presight_only_depends_on_pursueing,
+        &crossRoadDistanceLeaderMax, &crossRoadDistanceFollowerMax, &speed_control_speed,
+        &startLinePresight, &pre_sight, &pre_sight_default,
+        &startLineWidth, &direction_control_kpj, &direction_control_kpc,
+        &direction_control_kd },
+    { 0.02, 0.0002, 5,
+        2, 2, 1,
+        1, 1, 1,
+        50, 50, 1,
+        1, 1, 1,
+        2, 0.0001, 0.00001,
+        0.01 }
 };
 
+static void JoystickConfirmingInt(void);
+#if CAR_NO == 1
 static void JoystickInt(uint32_t pinxArray);
+#elif CAR_NO == 2
+static void JoystickInt1(uint32_t pinxArray);
+static void JoystickInt2(uint32_t pinxArray);
+#endif
 static void ParamShow(void);
 static void ParamFetch(void);
 static void ParamInc(void);
@@ -38,26 +74,94 @@ static void ParamDec(void);
 static void ParamUpdate(void);
 
 void JoystickInit() {
-    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
+    #if CAR_NO == 1
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_Mode_IPU);
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_Mode_IPU);
-    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_EAST, kGPIO_Mode_IPU);
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_Mode_IPU);
+    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
+    
     GPIO_CallbackInstall(JOYSTICK_PORT, JoystickInt);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_IT_FallingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_IT_FallingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_IT_FallingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_EAST, kGPIO_IT_FallingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_IT_FallingEdge, ENABLE);
+    
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_IT_RisingFallingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_IT_RisingFallingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_IT_RisingEdge, ENABLE);
+    #elif CAR_NO == 2
+    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_SOUTH, kGPIO_Mode_IPU);
+    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_WEST, kGPIO_Mode_IPU);
+    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_MIDDLE, kGPIO_Mode_IPU);
+    
+    GPIO_QuickInit(JOYSTICK_NEW_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
+    GPIO_QuickInit(JOYSTICK_NEW_PORT, JOYSTICK_EAST, kGPIO_Mode_IPU);
+    
+    GPIO_CallbackInstall(JOYSTICK_OLD_PORT, JoystickInt1);
+    GPIO_CallbackInstall(JOYSTICK_NEW_PORT, JoystickInt2);
+    
+    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_SOUTH, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_WEST, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_MIDDLE, kGPIO_IT_RisingFallingEdge, ENABLE);
+    
+    GPIO_ITDMAConfig(JOYSTICK_NEW_PORT, JOYSTICK_NORTH, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_NEW_PORT, JOYSTICK_EAST, kGPIO_IT_RisingEdge, ENABLE);
+    #endif
+    
+    PIT_QuickInit(JOYSTICK_CONFIRMING_TIMER_CHL, JOYSTICK_CONFIRMING_TIME);
+    PIT_CallbackInstall(JOYSTICK_CONFIRMING_TIMER_CHL, JoystickConfirmingInt);
+    PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+    
     ParamFetch();
     ParamShow();
 }
 
+#if CAR_NO == 1
 void JoystickInt(uint32_t pinxArray) {
-    if(pinxArray & (1 << JOYSTICK_NORTH)) {
+    if(pinxArray & (1 << JOYSTICK_SOUTH)) {
+        ParamDec();
+        ParamShow();
+    } else if(pinxArray & (1 << JOYSTICK_WEST)) {
+        if(JOYSTICK_WEST_READ) {
+            if(joystickConfirmingCnt >= 15) {
+                param.index = (param.index + 1) % MODIFIABLE_PARAM_NUM;
+                ParamFetch();
+                ParamShow();
+            } else {
+                if(--param.index < 0) {
+                    param.index = MODIFIABLE_PARAM_NUM - 1;
+                }
+                ParamFetch();
+                ParamShow();
+            }
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+            joystickConfirmingCnt = 0;
+        } else {
+            PIT_ResetCounter(JOYSTICK_CONFIRMING_TIMER_CHL);
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+        }
+    } else if(pinxArray & (1 << JOYSTICK_MIDDLE)) {
+        if(JOYSTICK_MIDDLE_READ) {
+            if(joystickConfirmingCnt >= 20) {
+                OLEDPrintf(70, 3, "GoGoGo");
+                enabled = true;
+            } else {
+                ParamUpdate();
+                ParamShow();
+                DelayMs(5);
+                OLEDPrintf(70, 3, "OK!");
+            }
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+            joystickConfirmingCnt = 0;
+        } else {
+            PIT_ResetCounter(JOYSTICK_CONFIRMING_TIMER_CHL);
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+        }
+    } else if(pinxArray & (1 << JOYSTICK_NORTH)) {
         ParamInc();
         ParamShow();
-    } else if(pinxArray & (1 << JOYSTICK_SOUTH)) {
+    }
+}
+#elif CAR_NO == 2
+void JoystickInt1(uint32_t pinxArray) {
+    if(pinxArray & (1 << JOYSTICK_SOUTH)) {
         ParamDec();
         ParamShow();
     } else if(pinxArray & (1 << JOYSTICK_WEST)) {
@@ -66,21 +170,45 @@ void JoystickInt(uint32_t pinxArray) {
         }
         ParamFetch();
         ParamShow();
+    } else if(pinxArray & (1 << JOYSTICK_MIDDLE)) {
+        if(JOYSTICK_MIDDLE_READ) {
+            if(joystickConfirmingCnt >= 20) {
+                OLEDPrintf(70, 3, "GoGoGo");
+                enabled = true;
+            } else {
+                ParamUpdate();
+                ParamShow();
+                DelayMs(5);
+                OLEDPrintf(70, 3, "OK!");
+            }
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
+            joystickConfirmingCnt = 0;
+        } else {
+            PIT_ResetCounter(JOYSTICK_CONFIRMING_TIMER_CHL);
+            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, ENABLE);
+        }
+    }
+}
+
+void JoystickInt2(uint32_t pinxArray) {
+    if(pinxArray & (1 << JOYSTICK_NORTH)) {
+        ParamInc();
+        ParamShow();
     } else if(pinxArray & (1 << JOYSTICK_EAST)) {
         param.index = (param.index + 1) % MODIFIABLE_PARAM_NUM;
         ParamFetch();
         ParamShow();
-    } else if(pinxArray & (1 << JOYSTICK_MIDDLE)) {
-        ParamUpdate();
-        ParamShow();
-        DelayMs(100);
-        OLEDPrintf(18, 3, "OK!");
     }
+}
+#endif
+
+void JoystickConfirmingInt() {
+    ++joystickConfirmingCnt;
 }
 
 void ParamShow() {
     OLEDClrRow(3);
-    DelayMs(100);
+    DelayMs(5);
     switch(param.type[temp.index]) {
         case INT16:
             OLEDPrintf(5, 3, "%s: %d", param.name[temp.index], temp.u.i16);
@@ -89,7 +217,10 @@ void ParamShow() {
             OLEDPrintf(5, 3, "%s: %d", param.name[temp.index], temp.u.i32);
             break;
         case FLOAT:
-            OLEDPrintf(5, 3, "%s: %.4f", param.name[temp.index], temp.u.f);
+            OLEDPrintf(5, 3, "%s: %.5f", param.name[temp.index], temp.u.f);
+            break;
+        case BOOL:
+            OLEDPrintf(5, 3, "%s: %s", param.name[temp.index], temp.u.b ? "true" : "false");
             break;
     }
 }
@@ -106,6 +237,9 @@ void ParamFetch() {
         case FLOAT:
             temp.u.f = *(float *)(param.ref[param.index]);
             break;
+        case BOOL:
+            temp.u.b = *(bool *)(param.ref[param.index]);
+            break;
     }
 }
 
@@ -119,6 +253,9 @@ void ParamInc() {
             break;
         case FLOAT:
             temp.u.f += param.div[temp.index];
+            break;
+        case BOOL:
+            temp.u.b = !temp.u.b;
             break;
     }
 }
@@ -134,6 +271,9 @@ void ParamDec() {
         case FLOAT:
             temp.u.f -= param.div[temp.index];
             break;
+        case BOOL:
+            temp.u.b = !temp.u.b;
+            break;
     }
 }
 
@@ -147,6 +287,9 @@ void ParamUpdate() {
             break;
         case FLOAT:
             *(float *)(param.ref[temp.index]) = temp.u.f;
+            break;
+        case BOOL:
+            *(bool *)(param.ref[temp.index]) = temp.u.b;
             break;
     }
 }

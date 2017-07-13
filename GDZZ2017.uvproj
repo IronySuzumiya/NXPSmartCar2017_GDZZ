@@ -473,9 +473,9 @@
               <FilePath>.\Libraries\devices\src\SteerActuator.c</FilePath>
             </File>
             <File>
-              <FileName>LQ12864.c</FileName>
+              <FileName>OLED.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Libraries\devices\src\LQ12864.c</FilePath>
+              <FilePath>.\Libraries\devices\src\OLED.c</FilePath>
             </File>
           </Files>
         </Group>

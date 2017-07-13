@@ -5,10 +5,10 @@
 #include "MainProc.h"
 
 bool direction_control_on;
-double directionAngle;
-double direction_control_kd;
-double direction_control_kpj;
-double direction_control_kpc;
+float directionAngle;
+float direction_control_kd;
+float direction_control_kpj;
+float direction_control_kpc;
 
 static int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle);
 static int16_t DirectionControlPID(int16_t dirError);

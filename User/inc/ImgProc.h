@@ -37,5 +37,6 @@ extern int16_t pre_sight_default;
 extern int16_t pre_sight;
 extern bool dynamic_presight;
 extern bool presight_only_depends_on_pursueing;
+extern int16_t startLinePresight;
 
 #endif

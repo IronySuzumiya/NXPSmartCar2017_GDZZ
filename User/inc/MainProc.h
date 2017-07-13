@@ -50,5 +50,7 @@ void MainInit(void);
 extern bool enabled;
 extern int16_t waitForOvertakingCnt;
 extern int16_t overtakingCnt;
+extern bool aroundOvertakingFlag;
+extern int aroundOvertakingCnt;
 
 #endif
