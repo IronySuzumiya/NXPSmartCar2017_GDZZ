@@ -1,21 +1,13 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define CAR_NO 1
+#define CAR_NO 2
 
 #define xUSE_BMP
 
 #define xUSE_NEW_FORMAT
 
-#define USE_INC_PID
-
-#define xUSE_ONLY_FTM_QD
-
-#define xRELIABLE_CONNECTION
-
-#define xPERIODICALLY_CHECK_MSG_QUEUE
-
-#define xUSE_IMG_TRANS
+#define USE_IMG_TRANS
 
 #define xUSE_STAT_TRANS
 

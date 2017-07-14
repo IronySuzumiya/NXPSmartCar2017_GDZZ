@@ -13,41 +13,41 @@ void GearSelect() {
         
         case 0x03:
             speed_control_speed = 95;
-            pre_sight = pre_sight_default = 20;
+            pre_sight = 20;
             break;
         case 0x02:
             speed_control_speed = 105;
-            pre_sight = pre_sight_default = 22;
+            pre_sight = 22;
             break;
         case 0x01:
             speed_control_speed = 120;
-            pre_sight = pre_sight_default = 25;
+            pre_sight = 25;
             break;
         case 0x00:
             speed_control_speed = 125;
-            pre_sight = pre_sight_default = 26;
+            pre_sight = 26;
             break;
         
         #elif CAR_NO == 2
         
         case 0x03:
             speed_control_speed = 95;
-            pre_sight = pre_sight_default = 20;
+            pre_sight = 20;
             break;
         case 0x02:
             speed_control_speed = 105;
-            pre_sight = pre_sight_default = 22;
+            pre_sight = 22;
             break;
         case 0x01:
             speed_control_speed = 120;
-            pre_sight = pre_sight_default = 26;
+            pre_sight = 26;
             break;
         case 0x00:
             speed_control_speed = 125;
-            pre_sight = pre_sight_default = 27;
+            pre_sight = 27;
             break;
         
         #endif
     }
-    OLEDPrintf(5, 1, "S: %d  P: %d", speed_control_speed, pre_sight_default);
+    OLEDPrintf(5, 1, "S: %d  P: %d", speed_control_speed, pre_sight);
 }

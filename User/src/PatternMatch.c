@@ -2,9 +2,8 @@
 #include "ImgProc.h"
 #include "DoubleCar.h"
 #include "MainProc.h"
+#include "Action.h"
 
-int32_t crossRoadDistanceLeaderMax;
-int32_t crossRoadDistanceFollowerMax;
 int16_t startLineWidth;
 
 int16_t GetRoadType() {
@@ -12,47 +11,57 @@ int16_t GetRoadType() {
         if(ringDistance < 3200) {
             return RingEnd;
         } else {
-            ringDistance = 0;
             ringEndDelay = false;
-            ringInterval = true;
-        }
-    } else if(ringInterval) {
-        if(ringDistance > 4000) {
             ringDistance = 0;
-            ringInterval = false;
         }
     } else if(inRing) {
         if(ringDistance > 42000) {
+            inRing = false;
             ringDistance = 0;
-            inRing = inBigRing = false;
         } else if(ringDistance > 4400 && IsRingEnd()) {
+            inRing = false;
             ringDistance = 0;
             ringEndDelay = true;
-            inRing = inBigRing = false;
             return RingEnd;
         } else if(ringDistance < 2000) {
             return Ring;
         }
-    } else if(inCrossRoad) {
-        if(/*(!double_car && */crossRoadDistance > crossRoadDistanceLeaderMax/*)
-            || (leader_car && crossRoadDistance > crossRoadDistanceLeaderMax)
-            || (!leader_car && crossRoadDistance > crossRoadDistanceFollowerMax)*/) {
-            inCrossRoad = false;
-            crossRoadDistance = 0;
-        }
     } else if(aroundBarrier) {
-        if(barrierDistance > 1200) {
-            barrierDistance = 0;
-            aroundBarrier = false;
+        if(barrierOvertaking) {
+            if(!leader_car && barrierDistance > 1200) {
+                barrierDistance = 0;
+                aroundBarrier = false;
+            } else if(leader_car && barrierDistance > 12000) {
+                barrierDistance = 0;
+                aroundBarrier = false;
+                beingOvertaken = true;
+            } else if(leader_car && barrierDistance > 7500) {
+                return barrierType == LeftBarrier ? DummyRightBarrier : DummyLeftBarrier;
+            } else {
+                return barrierType;
+            }
         } else {
-            return barrierType;
+            if(barrierDistance > 1500) {
+                barrierDistance = 0;
+                aroundBarrier = false;
+            } else {
+                return barrierType;
+            }
+        }
+    } else if(afterCrossRoad) {
+        if(afterCrossRoadDistance < 5000) {
+            return DummyRightBarrier;
+        } else {
+            afterCrossRoad = false;
+            afterCrossRoadDistance = 0;
+            beingOvertaken = true;
         }
     }
     
 //    int16_t curve = WhichCurve();
     
     return /*curve != Unknown ? curve
-        :*/ !inRing && !ringEndDelay && !ringInterval && !inCrossRoad && IsRing() ? Ring
+        :*/ !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()

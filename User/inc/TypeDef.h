@@ -55,7 +55,9 @@ enum _road_type {
     RightCurve,
     CrossRoad,
     LeftBarrier,
-    RightBarrier
+    RightBarrier,
+    DummyLeftBarrier,
+    DummyRightBarrier
 };
 
 #endif

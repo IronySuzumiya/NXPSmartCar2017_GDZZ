@@ -23,8 +23,6 @@ void RingEndActionFromRight(void);
 
 extern int32_t ringDistance;
 extern bool inRing;
-extern bool inBigRing;
 extern bool ringEndDelay;
-extern bool ringInterval;
 
 #endif

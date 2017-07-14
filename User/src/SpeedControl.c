@@ -18,9 +18,6 @@ float reduction_ratio;
 float differential_ratio;
 bool stop;
 
-static int16_t GetPresight(int16_t speed);
-static int16_t SpeedControlAcc(int16_t speed);
-static int16_t SpeedControlDec(int16_t speed);
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);
 
@@ -35,35 +32,17 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 }
 
 void SpeedTargetSet(int16_t speed, bool diff) {
-    if(double_car) {
-        if(speed != 0) {
-            if(leader_car) {
-                if(!firstOvertakingFinished || pursueing) {
-                    speed = SpeedControlDec(speed);
-                } else {
-                    pre_sight = pre_sight_default;
-                }
-            } else {
-                if(holding) {
-                    speed = SpeedControlDec(speed);
-                } else if(!firstOvertakingFinished || pursueing) {
-                    speed = SpeedControlAcc(speed);
-//                } else if(EXT_FAR) {
-//                    speed = SpeedControlAcc(SpeedControlAcc(speed));
-//                } else if(EXT_CLOSE) {
-//                    speed = SpeedControlDec(SpeedControlDec(speed));
-                } else if(TOO_FAR) {
-                    speed = SpeedControlAcc(speed);
-                } else if(TOO_CLOSE) {
-                    speed = SpeedControlDec(speed);
-                } else {
-                    pre_sight = pre_sight_default;
-                }
-            }
+    if(double_car && !leader_car && speed != 0) {
+        if(holding) {
+            speed -= speed_control_dec;
+        } else if(TOO_FAR || (final && !finalPursueingFinished)) {
+            speed += speed_control_acc;
+        } else if(TOO_CLOSE) {
+            speed -= speed_control_dec;
         }
     }
     
-    if(!diff) {
+    if(!diff || speed == 0) {
         leftPid.targetValue = rightPid.targetValue = speed;
     } else {
         if(directionAngle > 0) {
@@ -76,28 +55,6 @@ void SpeedTargetSet(int16_t speed, bool diff) {
              leftPid.targetValue = speed * (differential_ratio * (-directionAngle) + 1);
         }
     }
-    if(dynamic_presight && !presight_only_depends_on_pursueing) {
-        pre_sight = GetPresight(speed);
-    }
-}
-
-int16_t SpeedControlAcc(int16_t speed) {
-    if(dynamic_presight && presight_only_depends_on_pursueing) {
-        pre_sight = pre_sight_default + 4;
-    }
-    return speed + speed_control_acc;
-}
-
-int16_t SpeedControlDec(int16_t speed) {
-    if(dynamic_presight && presight_only_depends_on_pursueing) {
-        pre_sight = pre_sight_default - 3;
-    }
-    return speed - speed_control_dec;
-}
-
-int16_t GetPresight(int16_t speed) {
-    return speed < 85 ? 20 : speed < 90 ? 22 : speed < 95 ? 23 : speed < 100 ? 24 :
-        speed < 105 ? 26 : speed < 110 ? 27 : speed < 115 ? 28 : 30;
 }
 
 int16_t SpeedControlPID(PID *pid) {
@@ -106,27 +63,14 @@ int16_t SpeedControlPID(PID *pid) {
     
 	error = pid->targetValue - pid->currentValue;
     
-    #ifdef USE_INC_PID
-        pValue = pid->kp * (error - pid->lastError);
-        iValue = pid->ki * error;
-        dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
-        pid->prevError = pid->lastError;
-        pid->output += pValue + iValue + dValue;
-        if(pid->output > 10000) {
-            pid->output = 10000;
-        }
-    #else
-        pid->sumError += error;
-        if(pid->sumError > speed_control_sum_err_max) {
-            pid->sumError = speed_control_sum_err_max;
-        } else if(pid->sumError < -speed_control_sum_err_max) {
-            pid->sumError = -speed_control_sum_err_max;
-        }
-        pValue = pid->kp * error;
-        iValue = pid->ki * pid->sumError;
-        dValue = pid->kd * (error - pid->lastError);
-        pid->output = pValue + iValue + dValue;
-    #endif
+    pValue = pid->kp * (error - pid->lastError);
+    iValue = pid->ki * error;
+    dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
+    pid->prevError = pid->lastError;
+    pid->output += pValue + iValue + dValue;
+    if(pid->output > 10000) {
+        pid->output = 10000;
+    }
     
 	pid->lastError = error;
     

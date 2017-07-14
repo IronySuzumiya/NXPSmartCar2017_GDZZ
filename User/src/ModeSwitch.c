@@ -5,8 +5,6 @@
 #include "ImgUtility.h"
 #include "gpio.h"
 
-bool debugMode;
-
 #pragma diag_suppress 1293
 
 void ModeSelect() {
@@ -24,28 +22,22 @@ void ModeSelect() {
     uint16_t mode = MODE_SWITCH_READ;
     double_car = !!(mode & 0x01);
     if(double_car) {
-        if((firstOvertakingFinished = !!(mode & 0x02))) {
-            OLEDPrintf(5, 4, "1st Ovtk Disabled");
+        if((crossRoadOvertaking = !!(mode & 0x02))) {
+            OLEDPrintf(5, 4, "Crs Ovtk Enabled");
         } else {
-            OLEDPrintf(5, 4, "1st Ovtk Enabled");
+            OLEDPrintf(5, 4, "Crs Ovtk Disabled");
         }
-        if((secondOvertakingFinished = !!(mode & 0x04))) {
-            OLEDPrintf(5, 5, "2nd Ovtk Disabled");
+        if((barrierOvertaking = !!(mode & 0x04))) {
+            OLEDPrintf(5, 5, "Bar Ovtk Enabled");
         } else {
-            OLEDPrintf(5, 5, "2nd Ovtk Enabled");
+            OLEDPrintf(5, 5, "Bar Ovtk Disabled");
         }
         if((leader_car = !!(mode & 0x08))) {
             OLEDPrintf(5, 6, "Leader");
         } else {
             OLEDPrintf(5, 6, "Follower");
         }
-        // no enough switches
-        final_overtaking = false;
     } else {
-        if((startLineEnabled = debugMode = !!(mode & 0x02))) {
-            OLEDPrintf(5, 4, "Debug Mode");
-        } else {
-            OLEDPrintf(5, 4, "Single Mode");
-        }
+        OLEDPrintf(5, 4, "Single Mode");
     }
 }

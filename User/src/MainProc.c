@@ -18,16 +18,11 @@
 #include "Joystick.h"
 
 bool enabled;
-int16_t waitForOvertakingCnt;
-int16_t overtakingCnt;
-bool aroundOvertakingFlag;
-int aroundOvertakingCnt;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
 static void TimerInit(void);
 static void OLEDInit(void);
-static void OvertakingControl(void);
 static void DistanceControl(void);
 static void BuzzleControl(bool);
 static void MainProc(void);
@@ -82,9 +77,7 @@ void NVICInit() {
     NVIC_SetPriority(ULTR_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 2, 1));
     
     NVIC_SetPriority(ULTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 3, 0));
-    NVIC_SetPriority(DCTO_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 3, 1));
-    
-    NVIC_SetPriority(JYSK_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 4, 0));
+    NVIC_SetPriority(JYSK_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_3, 3, 1));
 }
 
 void GetReady() {
@@ -135,37 +128,6 @@ void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
     OLED_P6x8Str(x, y, (uint8_t*)buf);
 }
 
-void OvertakingControl() {
-    if(waitForOvertaking) {
-        ++waitForOvertakingCnt;
-        if(waitForOvertakingCnt > waitForOvertakingTimeMax) {
-            overtaking = true;
-            waitForOvertakingCnt = 0;
-            overtakingCnt = overtakingTime;
-        }
-    } else {
-        waitForOvertakingCnt = 0;
-    }
-    if(overtaking) {
-        ++overtakingCnt;
-        if(overtakingCnt > overtakingTime) {
-            overtakingCnt = 0;
-            overtaking = false;
-            waitForOvertaking = false;
-            aroundOvertakingFlag = true;
-            leader_car = !leader_car;
-        }
-    }
-    if(aroundOvertakingFlag) {
-        ++aroundOvertakingCnt;
-        if(aroundOvertakingCnt > aroundOvertakingTimeMax) {
-            aroundOvertaking = false;
-            aroundOvertakingFlag = false;
-            aroundOvertakingCnt = 0;
-        }
-    }
-}
-
 void DistanceControl() {
     int16_t dist = (leftSpeed + rightSpeed) / 2;
     if(!startLineEnabled) {
@@ -175,20 +137,25 @@ void DistanceControl() {
             startLineEnabled = true;
         }
     }
-    if(inRing || ringEndDelay || ringInterval) {
+    if(inRing || ringEndDelay) {
         ringDistance += dist;
     }
     if(inCrossRoad) {
         crossRoadDistance += dist;
+        if(crossRoadDistance > crossRoadDistanceMax) {
+            inCrossRoad = false;
+            crossRoadDistance = 0;
+            afterCrossRoad = crossRoadOvertaking && leader_car;
+        }
+    }
+    if(afterCrossRoad) {
+        afterCrossRoadDistance += dist;
     }
     if(aroundBarrier) {
         barrierDistance += dist;
     }
     if(!firstOvertakingFinished) {
         startDistance += dist;
-    }
-    if(firstOvertakingFinished && !secondOvertakingFinished) {
-        secondDistance += dist;
     }
     if(final) {
         finalDistance += dist;
@@ -201,6 +168,22 @@ void DistanceControl() {
         if(holdingDistance > 4000) {
             holding = false;
             holdingDistance = 0;
+        }
+    }
+    if(overtaking) {
+        overtakingDistance += dist;
+        if(overtakingDistance > overtakingDistanceMax) {
+            overtakingDistance = 0;
+            overtaking = false;
+        }
+    }
+    if(sendOvertakingFinishedMsgLater) {
+        sendOvertakingFinishedMsgLaterDistance += dist;
+        if(sendOvertakingFinishedMsgLaterDistance > sendOvertakingFinishedMsgLaterDistanceMax) {
+            sendOvertakingFinishedMsgLater = false;
+            sendOvertakingFinishedMsgLaterDistance = 0;
+            SendMessage(OVERTAKINGFINISHED);
+            leader_car = !leader_car;
         }
     }
 }
@@ -217,6 +200,8 @@ void BuzzleControl(bool flag) {
 }
 
 void MainProc() {
+    static int16_t cnt = 0;
+    
     if(encoder_on) {
         EncoderGet(&leftSpeed, &rightSpeed);
     } else {
@@ -224,11 +209,15 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(inCrossRoad);
-    
-    OvertakingControl();
+    BuzzleControl(beingOvertaken);
     
     DistanceControl();
+    
+    if(beingOvertaken) {
+        if(++cnt > 1000) {
+            beingOvertaken = false;
+        }
+    }
     
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
@@ -296,15 +285,11 @@ static void SwitchAndParamLoad() {
     #endif
     
     reduction_ratio = 2.6;
-    waitForOvertakingTimeMax = 700;
-    overtakingTime = 80;
-    aroundOvertakingTimeMax = 300;
-    avg_distance_between_the_two_cars = 80;
+    avg_distance_between_the_two_cars = 120;
     diff_distance_max = 7;
-    dynamic_presight = false;
-    presight_only_depends_on_pursueing = false;
-    crossRoadDistanceLeaderMax = 2000;
-    crossRoadDistanceFollowerMax = 2000;
+    crossRoadDistanceMax = 2000;
     startLinePresight = 32;
     startLineWidth = 124;
+    sendOvertakingFinishedMsgLaterDistanceMax = 7000;
+    overtakingDistanceMax = 5000;
 }

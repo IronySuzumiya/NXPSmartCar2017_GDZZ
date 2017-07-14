@@ -6,9 +6,7 @@
 
 int32_t ringDistance;
 bool inRing;
-bool inBigRing;
 bool ringEndDelay;
-bool ringInterval;
 
 bool IsRing() {
     int16_t cursor = 0;
@@ -26,7 +24,7 @@ bool IsRing() {
             ++_cnt;
         }
     }
-    if(_cnt < 10 || row == 40) {
+    if(_cnt < 8 || row == 40) {
         return false;
     }
     bool hasRightOffset = false;
@@ -94,7 +92,7 @@ bool IsRing() {
     }
     
     return leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
-        && /*((inBigRing = maxWidth > 120) ||*/ maxWidth > 75/*)*/ && maxWidth - minWidth > 50;
+        &&  maxWidth > 70 && maxWidth - minWidth > 40;
 }
 
 bool IsRingEndFromLeft() {

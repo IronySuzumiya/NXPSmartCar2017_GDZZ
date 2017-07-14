@@ -5,6 +5,4 @@
 
 void ModeSelect(void);
 
-extern bool debugMode;
-
 #endif
