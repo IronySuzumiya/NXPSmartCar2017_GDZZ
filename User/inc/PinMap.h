@@ -125,4 +125,12 @@
 #define  JOYSTICK_MIDDLE_READ  PEin(JOYSTICK_MIDDLE)
 #endif
 
+//Gyro
+#if CAR_NO == 1
+#define  GYRO_MAP         ADC0_SE18_E25
+#elif CAR_NO == 2
+#define  GYRO_MAP         ADC1_SE19_DM0
+#endif
+#define  GYRO_RESOLUTION  kADC_SingleDiff12or13
+
 #endif

@@ -16,8 +16,10 @@
 #include "stdarg.h"
 #include "stdio.h"
 #include "Joystick.h"
+#include "Gyro.h"
 
 bool enabled;
+bool gyro;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
@@ -47,6 +49,8 @@ void MainInit() {
     EncoderInit();
     
     SteerActuatorInit();
+    
+    GyroInit();
     
     DataCommInit();
     
@@ -83,14 +87,18 @@ void NVICInit() {
 void GetReady() {
     if(double_car) {
         if(leader_car) {
-            while(!enabled);
+            while(!enabled) {
+                OLEDPrintf(5, 2, "val: %d", GyroRead());
+                DelayMs(500);
+            }
             DelayMs(2000);
             if(!barrierOvertaking) {
                 SendMessage(START);
             }
         } else {
             while(!enabled) {
-                if(aroundBarrier) { }
+                OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
+                DelayMs(500);
             }
             DelayMs(100);
         }
@@ -201,7 +209,7 @@ void BuzzleControl(bool flag) {
 }
 
 void MainProc() {
-    static int16_t cnt = 0;
+    static int16_t ovtcnt = 0;
     
     if(encoder_on) {
         EncoderGet(&leftSpeed, &rightSpeed);
@@ -210,13 +218,14 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(aroundBarrier);
+    BuzzleControl(false);
     
     DistanceControl();
     
     if(beingOvertaken) {
-        if(++cnt > 1000) {
+        if(++ovtcnt > 1000) {
             beingOvertaken = false;
+            ovtcnt = 0;
         }
     }
     
@@ -293,5 +302,6 @@ static void SwitchAndParamLoad() {
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
-    barrierSpeed = 60;
+    speedAroundBarrier = 60;
+    speedInRing = 80;
 }

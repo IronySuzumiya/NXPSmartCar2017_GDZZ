@@ -21,6 +21,7 @@ extern int16_t speed_control_dec;
 extern float reduction_ratio;
 extern float differential_ratio;
 extern bool stop;
-extern int16_t barrierSpeed;
+extern int16_t speedAroundBarrier;
+extern int16_t speedInRing;
 
 #endif

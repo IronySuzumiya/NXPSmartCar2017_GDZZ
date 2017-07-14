@@ -48,5 +48,6 @@ void OLEDClrRow(uint8_t row);
 void MainInit(void);
 
 extern bool enabled;
+extern bool gyro;
 
 #endif

@@ -17,7 +17,8 @@ int16_t speed_control_dec;
 float reduction_ratio;
 float differential_ratio;
 bool stop;
-int16_t barrierSpeed;
+int16_t speedAroundBarrier;
+int16_t speedInRing;
 
 static int16_t SpeedControlPID(PID *pid);
 static void SpeedControlFilter(int16_t newValue, PID* pid);

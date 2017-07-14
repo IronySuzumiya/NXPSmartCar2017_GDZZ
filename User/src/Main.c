@@ -3,6 +3,8 @@
 #include "ImgUtility.h"
 #include "ImgProc.h"
 #include "DoubleCar.h"
+#include "Gyro.h"
+#include "gpio.h"
 
 int main() {
     MainInit();

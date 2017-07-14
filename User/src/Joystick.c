@@ -33,19 +33,23 @@ static struct _param_handle {
     { FLOAT, FLOAT, INT32,
       INT32, INT16, INT16,
       INT16, INT16, FLOAT,
-      FLOAT, FLOAT, INT16 },
+      FLOAT, FLOAT, INT16,
+      INT16 },
     { "reduction",   "speeddiff",  "avgdistance",
       "diffdistmax", "speed",      "presight",
       "sttlnprst",   "sttlnwidth", "dirkpj",
-      "dirkpc",      "dirkd",      "barrspeed" },
+      "dirkpc",      "dirkd",      "barrspeed",
+      "ringspeed" },
     { &reduction_ratio,       &differential_ratio,   &avg_distance_between_the_two_cars,
       &diff_distance_max,     &speed_control_speed,  &pre_sight,
       &startLinePresight,     &startLineWidth,       &direction_control_kpj,
-      &direction_control_kpc, &direction_control_kd, &barrierSpeed },
+      &direction_control_kpc, &direction_control_kd, &speedAroundBarrier,
+      &speedInRing },
     { 0.02,    0.0002, 1,
       1,       1,      1,
       1,       2,      0.0001,
-      0.00001, 0.01,   2 }
+      0.00001, 0.01,   2,
+      1 }
 };
 
 static void JoystickConfirmingInt(void);
