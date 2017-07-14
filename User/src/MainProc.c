@@ -145,7 +145,18 @@ void DistanceControl() {
         if(crossRoadDistance > crossRoadDistanceMax) {
             inCrossRoad = false;
             crossRoadDistance = 0;
-            afterCrossRoad = crossRoadOvertaking && leader_car;
+            if(!skippingFirstCrossRoad && !afterCrossRoad) {
+                skippingFirstCrossRoad = crossRoadOvertaking && !firstCrossRoadSkipped;
+                afterCrossRoad = crossRoadOvertaking && firstCrossRoadSkipped;
+            }
+        }
+    }
+    if(skippingFirstCrossRoad) {
+        skippingFirstCrossRoadDistance += dist;
+        if(skippingFirstCrossRoadDistance > skippingFirstCrossRoadDistanceMax) {
+            skippingFirstCrossRoad = false;
+            skippingFirstCrossRoadDistance = 0;
+            firstCrossRoadSkipped = true;
         }
     }
     if(afterCrossRoad) {
@@ -209,7 +220,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(beingOvertaken);
+    BuzzleControl(firstCrossRoadSkipped);
     
     DistanceControl();
     
@@ -292,4 +303,5 @@ static void SwitchAndParamLoad() {
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
+    skippingFirstCrossRoadDistanceMax = 18000;
 }

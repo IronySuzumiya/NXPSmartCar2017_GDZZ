@@ -5,6 +5,10 @@
 int32_t crossRoadDistance;
 int32_t crossRoadDistanceMax;
 bool inCrossRoad;
+int32_t skippingFirstCrossRoadDistance;
+int32_t skippingFirstCrossRoadDistanceMax;
+bool skippingFirstCrossRoad;
+bool firstCrossRoadSkipped;
 
 bool IsCrossRoad() {
     int16_t cnt = 0;
@@ -13,13 +17,12 @@ bool IsCrossRoad() {
             ++cnt;
         }
     }
-//    for(int16_t i = 20; i < 45; ++i) {
-//        if(IsBlack(i, resultSet.middleLine[i])
-//            || resultSet.middleLine[i] > IMG_COL - 60
-//            || resultSet.middleLine[i] < 60) {
-//            return false;
-//        }
-//    }
+    for(int16_t i = 20; i < 45; ++i) {
+        if(resultSet.middleLine[i] > IMG_COL - 60
+            || resultSet.middleLine[i] < 60) {
+            return false;
+        }
+    }
     return cnt > 9;
 }
 

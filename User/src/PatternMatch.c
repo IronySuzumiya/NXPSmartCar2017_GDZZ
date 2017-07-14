@@ -28,17 +28,26 @@ int16_t GetRoadType() {
         }
     } else if(aroundBarrier) {
         if(barrierOvertaking) {
-            if(!leader_car && barrierDistance > 1200) {
-                barrierDistance = 0;
-                aroundBarrier = false;
-            } else if(leader_car && barrierDistance > 12000) {
-                barrierDistance = 0;
-                aroundBarrier = false;
-                beingOvertaken = true;
-            } else if(leader_car && barrierDistance > 7500) {
-                return barrierType == LeftBarrier ? DummyRightBarrier : DummyLeftBarrier;
+            if(leader_car) {
+                if(barrierDistance < 7500) {
+                    return barrierType;
+                } else if(barrierDistance < 12000) {
+                    return barrierType == LeftBarrier ? DummyRightBarrier : DummyLeftBarrier;
+                } else {
+                    barrierDistance = 0;
+                    aroundBarrier = false;
+                    leader_car = !leader_car;
+                    beingOvertaken = true;
+                }
             } else {
-                return barrierType;
+                if(barrierDistance < 1200) {
+                    return barrierType;
+                } else if(barrierDistance > 9000) {
+                    barrierDistance = 0;
+                    aroundBarrier = false;
+                    leader_car = !leader_car;
+                    SendMessage(OVERTAKINGFINISHED);
+                }
             }
         } else {
             if(barrierDistance > 1500) {
@@ -49,12 +58,22 @@ int16_t GetRoadType() {
             }
         }
     } else if(afterCrossRoad) {
-        if(afterCrossRoadDistance < 5000) {
-            return DummyRightBarrier;
+        if(leader_car) {
+            if(afterCrossRoadDistance < 5000) {
+                return DummyRightBarrier;
+            } else {
+                afterCrossRoad = false;
+                afterCrossRoadDistance = 0;
+                leader_car = !leader_car;
+                beingOvertaken = true;
+            }
         } else {
-            afterCrossRoad = false;
-            afterCrossRoadDistance = 0;
-            beingOvertaken = true;
+            if(afterCrossRoadDistance > 12000) {
+                afterCrossRoad = false;
+                afterCrossRoadDistance = 0;
+                leader_car = !leader_car;
+                SendMessage(OVERTAKINGFINISHED);
+            }
         }
     }
     

@@ -108,15 +108,15 @@ void ImgProcSummary() {
     bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     if(double_car) {
-//        if(!firstOvertakingFinished) {
-//            middle = FirstOvertakingAction();
-//            doubleCarAction = true;
-//        } else if(!final && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
-//            SendMessage(FINAL);
-//            final = true;
-//        } else if(final) {
-//            FinalDashAction();
-//        }
+        /*if(!firstOvertakingFinished) {
+            middle = FirstOvertakingAction();
+            doubleCarAction = true;
+        } else */if(!final && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
+            SendMessage(FINAL);
+            final = true;
+        } else if(final) {
+            FinalDashAction();
+        }
     } else if(startLineEnabled && IsStartLine(startLinePresight)) {
         final = true;
         finalPursueingFinished = true;

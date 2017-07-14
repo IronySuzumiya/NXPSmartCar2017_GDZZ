@@ -98,6 +98,9 @@ bool IsRing() {
 bool IsRingEndFromLeft() {
     int16_t cnt = 0;
     for(int16_t row = 30; row < 40; ++row) {
+        if(IsBlack(row, resultSet.middleLine[row])) {
+            break;
+        }
         if(resultSet.middleLine[row] < resultSet.middleLine[row - 2]) {
             ++cnt;
         }
@@ -108,6 +111,9 @@ bool IsRingEndFromLeft() {
 bool IsRingEndFromRight() {
     int16_t cnt = 0;
     for(int16_t row = 30; row < 40; ++row) {
+        if(IsBlack(row, resultSet.middleLine[row])) {
+            break;
+        }
         if(resultSet.middleLine[row] > resultSet.middleLine[row - 2]) {
             ++cnt;
         }
