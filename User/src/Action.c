@@ -109,9 +109,9 @@ int16_t CommonAction() {
         case RightBarrier:
             return IMG_COL / 2 + 22;
         case DummyLeftBarrier:
-            return IMG_COL / 2 - 33;
+            return IMG_COL / 2 - 40;
         case DummyRightBarrier:
-            return IMG_COL / 2 + 33;
+            return IMG_COL / 2 + 40;
     }
     return IMG_COL / 2;
 }

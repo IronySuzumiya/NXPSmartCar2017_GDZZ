@@ -85,11 +85,12 @@ void GetReady() {
         if(leader_car) {
             while(!enabled);
             DelayMs(2000);
-            SendMessage(START);
+            if(!barrierOvertaking) {
+                SendMessage(START);
+            }
         } else {
             while(!enabled) {
-                OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
-                DelayMs(500);
+                if(aroundBarrier) { }
             }
             DelayMs(100);
         }
@@ -145,18 +146,7 @@ void DistanceControl() {
         if(crossRoadDistance > crossRoadDistanceMax) {
             inCrossRoad = false;
             crossRoadDistance = 0;
-            if(!skippingFirstCrossRoad && !afterCrossRoad) {
-                skippingFirstCrossRoad = crossRoadOvertaking && !firstCrossRoadSkipped;
-                afterCrossRoad = crossRoadOvertaking && firstCrossRoadSkipped;
-            }
-        }
-    }
-    if(skippingFirstCrossRoad) {
-        skippingFirstCrossRoadDistance += dist;
-        if(skippingFirstCrossRoadDistance > skippingFirstCrossRoadDistanceMax) {
-            skippingFirstCrossRoad = false;
-            skippingFirstCrossRoadDistance = 0;
-            firstCrossRoadSkipped = true;
+            afterCrossRoad = crossRoadOvertaking && crossRoadOvertakingCnt < 1;
         }
     }
     if(afterCrossRoad) {
@@ -220,7 +210,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(firstCrossRoadSkipped);
+    BuzzleControl(aroundBarrier);
     
     DistanceControl();
     
@@ -303,5 +293,5 @@ static void SwitchAndParamLoad() {
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
-    skippingFirstCrossRoadDistanceMax = 18000;
+    barrierSpeed = 60;
 }

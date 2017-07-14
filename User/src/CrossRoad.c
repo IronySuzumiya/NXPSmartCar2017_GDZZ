@@ -5,10 +5,7 @@
 int32_t crossRoadDistance;
 int32_t crossRoadDistanceMax;
 bool inCrossRoad;
-int32_t skippingFirstCrossRoadDistance;
-int32_t skippingFirstCrossRoadDistanceMax;
-bool skippingFirstCrossRoad;
-bool firstCrossRoadSkipped;
+int16_t crossRoadOvertakingCnt;
 
 bool IsCrossRoad() {
     int16_t cnt = 0;

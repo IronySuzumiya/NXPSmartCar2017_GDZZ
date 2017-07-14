@@ -5,6 +5,7 @@
 #include "Action.h"
 
 int16_t startLineWidth;
+static bool placeholder;
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
@@ -31,22 +32,28 @@ int16_t GetRoadType() {
             if(leader_car) {
                 if(barrierDistance < 7500) {
                     return barrierType;
-                } else if(barrierDistance < 12000) {
+                } else if(barrierDistance < 11000) {
+                    if(!placeholder) {
+                        placeholder = true;
+                        SendMessage(START);
+                    }
                     return barrierType == LeftBarrier ? DummyRightBarrier : DummyLeftBarrier;
                 } else {
                     barrierDistance = 0;
                     aroundBarrier = false;
                     leader_car = !leader_car;
                     beingOvertaken = true;
+                    barrierOvertaking = false;
                 }
             } else {
-                if(barrierDistance < 1200) {
+                if(barrierDistance < 11500) {
                     return barrierType;
-                } else if(barrierDistance > 9000) {
+                } else if(barrierDistance > 18000) {
                     barrierDistance = 0;
                     aroundBarrier = false;
                     leader_car = !leader_car;
                     SendMessage(OVERTAKINGFINISHED);
+                    barrierOvertaking = false;
                 }
             }
         } else {
@@ -66,6 +73,7 @@ int16_t GetRoadType() {
                 afterCrossRoadDistance = 0;
                 leader_car = !leader_car;
                 beingOvertaken = true;
+                ++crossRoadOvertakingCnt;
             }
         } else {
             if(afterCrossRoadDistance > 12000) {
@@ -73,6 +81,7 @@ int16_t GetRoadType() {
                 afterCrossRoadDistance = 0;
                 leader_car = !leader_car;
                 SendMessage(OVERTAKINGFINISHED);
+                ++crossRoadOvertakingCnt;
             }
         }
     }
@@ -83,7 +92,7 @@ int16_t GetRoadType() {
         :*/ !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
+        : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
 

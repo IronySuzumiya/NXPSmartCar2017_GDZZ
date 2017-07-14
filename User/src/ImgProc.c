@@ -144,6 +144,7 @@ void ImgProcSummary() {
             final && leader_car && !finalPursueingFinished ? 0 :
             final && finalPursueingFinished ? 130 :
             accelerate ? speed_control_speed * 1.1 :
+            aroundBarrier ? barrierSpeed :
             inRing || ringEndDelay ? 95 : speed_control_speed
             , !accelerate);
     }
