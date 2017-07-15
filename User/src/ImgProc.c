@@ -111,20 +111,20 @@ void ImgProcSummary() {
         /*if(!firstOvertakingFinished) {
             middle = FirstOvertakingAction();
             doubleCarAction = true;
-        } else */if(!final && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
+        } else */if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
             SendMessage(FINAL);
             final = true;
         } else if(final) {
             FinalDashAction();
         }
-    } else if(startLineEnabled && IsStartLine(startLinePresight)) {
+    } else if(start_line && startLineEnabled && IsStartLine(startLinePresight)) {
         final = true;
         finalPursueingFinished = true;
     } else if(final && finalPursueingFinished && dashDistance > 14000) {
         stop = true;
     }
     
-    if(enabled && !beingOvertaken && !final && IsOutOfRoad()) {
+    if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
         stop = true;
     } else {
         if(doubleCarAction) {

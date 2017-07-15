@@ -26,5 +26,7 @@ extern bool afterCrossRoad;
 extern int32_t afterCrossRoadDistance;
 extern bool barrierOvertaking;
 extern bool crossRoadOvertaking;
+extern bool start_line;
+extern bool out;
 
 #endif

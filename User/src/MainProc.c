@@ -88,8 +88,8 @@ void GetReady() {
     if(double_car) {
         if(leader_car) {
             while(!enabled) {
-                OLEDPrintf(5, 2, "val: %d", GyroRead());
-                DelayMs(500);
+//                OLEDPrintf(5, 2, "val: %d", GyroRead());
+//                DelayMs(500);
             }
             DelayMs(2000);
             if(!barrierOvertaking) {
@@ -304,4 +304,5 @@ static void SwitchAndParamLoad() {
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 80;
+    out = false;
 }

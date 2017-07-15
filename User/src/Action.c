@@ -22,6 +22,8 @@ bool afterCrossRoad;
 int32_t afterCrossRoadDistance;
 bool barrierOvertaking;
 bool crossRoadOvertaking;
+bool start_line;
+bool out;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {

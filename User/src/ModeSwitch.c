@@ -22,15 +22,15 @@ void ModeSelect() {
     uint16_t mode = MODE_SWITCH_READ;
     double_car = !!(mode & 0x01);
     if(double_car) {
-        if((crossRoadOvertaking = !!(mode & 0x02))) {
-            OLEDPrintf(5, 4, "Crs Ovtk Enabled");
+        if((start_line = !!(mode & 0x02))) {
+            OLEDPrintf(5, 4, "Startline Enabled");
         } else {
-            OLEDPrintf(5, 4, "Crs Ovtk Disabled");
+            OLEDPrintf(5, 4, "Startline Disabled");
         }
         if((barrierOvertaking = !!(mode & 0x04))) {
-            OLEDPrintf(5, 5, "Bar Ovtk Enabled");
+            OLEDPrintf(5, 5, "Barr Ovtk Enabled");
         } else {
-            OLEDPrintf(5, 5, "Bar Ovtk Disabled");
+            OLEDPrintf(5, 5, "Barr Ovtk Disabled");
         }
         if((leader_car = !!(mode & 0x08))) {
             OLEDPrintf(5, 6, "Leader");
