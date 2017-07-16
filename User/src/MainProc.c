@@ -224,7 +224,7 @@ void MainProc() {
     DistanceControl();
     
     if(beingOvertaken) {
-        if(++ovtcnt > 1000) {
+        if(++ovtcnt > 420) {
             beingOvertaken = false;
             ovtcnt = 0;
         }
@@ -263,12 +263,12 @@ static void SwitchAndParamLoad() {
     steer_actuator_right = 415;
     steer_actuator_middle = 452;
     steer_actuator_left = 555;
-    
+
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
     direction_control_kpc = 0.000125;
     
-    differential_ratio = 0.034;
+    differential_ratio = 0.04;  //0.034
     
     #elif CAR_NO == 2
     
@@ -285,9 +285,9 @@ static void SwitchAndParamLoad() {
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
-    direction_control_kpc = 0.0001;
+    direction_control_kpc = 0.000125;
     
-    differential_ratio = 0.033;
+    differential_ratio = 0.04;  //0.033
     
     #else
     
@@ -304,8 +304,10 @@ static void SwitchAndParamLoad() {
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
-    speedInRing = 80;
+    speedInRing = 95;
     out = false;
     crossRoadActionEnabled = true;
-    startLineEnableDistance = 0;
+    startLineEnableDistance = 2000;
+    barrierOvertakingDistanceMax = 11800;
+    final_sync = true;
 }

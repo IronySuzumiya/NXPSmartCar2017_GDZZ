@@ -3,7 +3,7 @@
 
 #include "root.h"
 
-#define MODIFIABLE_PARAM_NUM 16
+#define MODIFIABLE_PARAM_NUM 18
 
 void JoystickInit(void);
 

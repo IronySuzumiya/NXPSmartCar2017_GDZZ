@@ -29,5 +29,7 @@ extern bool crossRoadOvertaking;
 extern bool start_line;
 extern bool out;
 extern bool crossRoadActionEnabled;
+extern int32_t barrierOvertakingDistanceMax;
+extern bool final_sync;
 
 #endif

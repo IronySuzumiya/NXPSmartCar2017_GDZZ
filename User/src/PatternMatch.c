@@ -32,7 +32,7 @@ int16_t GetRoadType() {
             if(leader_car) {
                 if(barrierDistance < 7500) {
                     return barrierType;
-                } else if(barrierDistance < 11000) {
+                } else if(barrierDistance < barrierOvertakingDistanceMax) {
                     if(!placeholder) {
                         placeholder = true;
                         SendMessage(START);

@@ -23,17 +23,17 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+    for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
         avgMiddle += middleLine[i];
     }
-    avgMiddle /= 6;
+    avgMiddle /= 10;
     return expectMiddle - avgMiddle;
 }
 
 int16_t DirectionControlPID(int16_t error) {
     static int16_t lastError = 0;
     
-	directionAngle = Min_f(direction_control_kpj + (error * error) * direction_control_kpc, 0.28)
+	directionAngle = Min_f(direction_control_kpj + (error * error) * direction_control_kpc, 0.2) //0.28
         * error + direction_control_kd * (error - lastError);
     
     directionAngle = Limit_f(directionAngle, -14.4, 14.4);

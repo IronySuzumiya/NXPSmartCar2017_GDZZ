@@ -108,14 +108,23 @@ void ImgProcSummary() {
     bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     if(double_car) {
-        /*if(!firstOvertakingFinished) {
-            middle = FirstOvertakingAction();
-            doubleCarAction = true;
-        } else */if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
-            SendMessage(FINAL);
-            final = true;
-        } else if(final) {
-            FinalDashAction();
+        if(final_sync) {
+            if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
+                SendMessage(FINAL);
+                final = true;
+            } else if(final) {
+                FinalDashAction();
+            }
+        } else {
+            if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight)) {
+                finalPursueingFinished = true;
+                final = true;
+            }
+            if(leader_car && dashDistance > 17000) {
+                stop = true;
+            } else if(!leader_car && dashDistance > 13000) {
+                stop = true;
+            }
         }
     } else if(start_line && startLineEnabled && IsStartLine(startLinePresight)) {
         final = true;
@@ -141,11 +150,11 @@ void ImgProcSummary() {
     if(speed_control_on) {
         bool accelerate = IsStraightLine();
         SpeedTargetSet(stop || beingOvertaken ? 0 :
-            final && leader_car && !finalPursueingFinished ? 0 :
+            final_sync && final && leader_car && !finalPursueingFinished ? 0 :
             final && finalPursueingFinished ? 130 :
             accelerate ? speed_control_speed * 1.1 :
             aroundBarrier ? speedAroundBarrier :
-            inRing || ringEndDelay ? 95 : speed_control_speed
+            inRing || ringEndDelay ? speedInRing : speed_control_speed
             , !accelerate);
     }
 }
