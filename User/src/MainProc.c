@@ -20,6 +20,7 @@
 
 bool enabled;
 bool gyro;
+int32_t startLineEnableDistance;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
@@ -140,7 +141,7 @@ void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
 void DistanceControl() {
     int16_t dist = (leftSpeed + rightSpeed) / 2;
     if(!startLineEnabled) {
-        if(wholeDistance < 5000) {
+        if(wholeDistance < startLineEnableDistance) {
             wholeDistance += dist;
         } else {
             startLineEnabled = true;
@@ -218,7 +219,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(false);
+    BuzzleControl(final);
     
     DistanceControl();
     
@@ -298,11 +299,13 @@ static void SwitchAndParamLoad() {
     avg_distance_between_the_two_cars = 120;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
-    startLinePresight = 32;
+    startLinePresight = 20;
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 80;
     out = false;
+    crossRoadActionEnabled = true;
+    startLineEnableDistance = 0;
 }

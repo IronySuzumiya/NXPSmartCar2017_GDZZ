@@ -49,5 +49,6 @@ void MainInit(void);
 
 extern bool enabled;
 extern bool gyro;
+extern int32_t startLineEnableDistance;
 
 #endif

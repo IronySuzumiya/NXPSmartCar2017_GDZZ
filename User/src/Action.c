@@ -24,6 +24,7 @@ bool barrierOvertaking;
 bool crossRoadOvertaking;
 bool start_line;
 bool out;
+bool crossRoadActionEnabled;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
@@ -98,7 +99,9 @@ int16_t CommonAction() {
             #endif
         case CrossRoad:
             inCrossRoad = true;
-            CrossRoadAction();
+            if(crossRoadActionEnabled) {
+                CrossRoadAction();
+            }
             break;
         case LeftCurve:
             LeftCurveAction();

@@ -28,5 +28,6 @@ extern bool barrierOvertaking;
 extern bool crossRoadOvertaking;
 extern bool start_line;
 extern bool out;
+extern bool crossRoadActionEnabled;
 
 #endif

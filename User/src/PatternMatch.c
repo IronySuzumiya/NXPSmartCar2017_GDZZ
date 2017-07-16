@@ -130,17 +130,17 @@ bool IsStartLine(int16_t row) {
     }
     if(patternRowCnt >= 3) {
         int16_t middleAreaCnt = 0;
-        for(int16_t i = 0; i < row; ++i) {
-            if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 10, IMG_COL / 2 + 10)) {
+        for(int16_t i = 0; i < row - 8; ++i) {
+            if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
                 ++middleAreaCnt;
             }
         }
-        for(int16_t i = row + 7; i < IMG_ROW; ++i) {
-            if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 10, IMG_COL / 2 + 10)) {
+        for(int16_t i = row + 7 + 8; i < IMG_ROW; ++i) {
+            if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
                 ++middleAreaCnt;
             }
         }
-        return middleAreaCnt > 30;
+        return middleAreaCnt > 15;
     } else {
         return false;
     }

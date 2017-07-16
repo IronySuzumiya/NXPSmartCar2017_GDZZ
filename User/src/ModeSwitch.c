@@ -39,5 +39,10 @@ void ModeSelect() {
         }
     } else {
         OLEDPrintf(5, 4, "Single Mode");
+        if((start_line = !!(mode & 0x02))) {
+            OLEDPrintf(5, 5, "Startline Enabled");
+        } else {
+            OLEDPrintf(5, 4, "Startline Disabled");
+        }
     }
 }
