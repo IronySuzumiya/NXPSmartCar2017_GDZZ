@@ -122,25 +122,21 @@ bool IsRingEndFromRight() {
 }
 
 void RingActionGoLeft() {
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+    for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
         resultSet.middleLine[i] = 0;
     }
 }
 
 void RingActionGoRight() {
-    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
+    for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
         resultSet.middleLine[i] = IMG_COL - 1;
     }
 }
 
 void RingEndActionFromLeft() {
-//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-//        resultSet.middleLine[i] = 0;
-//    }
+    
 }
 
 void RingEndActionFromRight() {
-//    for(int16_t i = pre_sight - 3; i < pre_sight + 3; ++i) {
-//        resultSet.middleLine[i] = IMG_COL - 1;
-//    }
+    
 }

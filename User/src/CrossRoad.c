@@ -55,7 +55,7 @@ void CrossRoadAction() {
 //        MiddleLineUpdate(row);
 //        startIndex = resultSet.middleLine[row];
 //    }
-    for(int16_t row = pre_sight - 3; row < pre_sight + 3; ++row) {
+    for(int16_t row = pre_sight - 5; row < pre_sight + 5; ++row) {
         resultSet.middleLine[row] = (resultSet.middleLine[5] + middle) / 2;
     }
 }

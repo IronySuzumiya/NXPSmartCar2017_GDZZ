@@ -266,7 +266,7 @@ static void SwitchAndParamLoad() {
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
-    direction_control_kpc = 0.000125;
+    direction_control_kpc = 0.000125; //0.0001
     
     differential_ratio = 0.04;  //0.034
     
@@ -285,7 +285,7 @@ static void SwitchAndParamLoad() {
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.02;
-    direction_control_kpc = 0.000125;
+    direction_control_kpc = 0.000125; //0.0001
     
     differential_ratio = 0.04;  //0.033
     
@@ -304,10 +304,11 @@ static void SwitchAndParamLoad() {
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
-    speedInRing = 95;
+    speedInRing = 85;
     out = false;
     crossRoadActionEnabled = true;
     startLineEnableDistance = 2000;
     barrierOvertakingDistanceMax = 11800;
-    final_sync = true;
+    final_sync = false;
+    dummyBarrierWidth = 52;
 }

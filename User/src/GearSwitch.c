@@ -12,38 +12,38 @@ void GearSelect() {
         #if CAR_NO == 1
         case 0x03:
             speed_control_speed = 95;
-            pre_sight = 20;
+            pre_sight = 20; //15 //18
             break;
         case 0x02:
             speed_control_speed = 105;
-            pre_sight = 22;
+            pre_sight = 22; //19 //22
             break;
         case 0x01:
             speed_control_speed = 110;
-            pre_sight = 25;
+            pre_sight = 24; //21 //23
             break;
         case 0x00:
             speed_control_speed = 115;
-            pre_sight = 27;
+            pre_sight = 26; //22 //24
             break;
         
         #elif CAR_NO == 2
         
         case 0x03:
             speed_control_speed = 95;
-            pre_sight = 15;
+            pre_sight = 17; //15 //17
             break;
         case 0x02:
             speed_control_speed = 105;
-            pre_sight = 19;
+            pre_sight = 19; //19 //22
             break;
         case 0x01:
             speed_control_speed = 110;
-            pre_sight = 23;
+            pre_sight = 21; //21 //23
             break;
         case 0x00:
             speed_control_speed = 115;
-            pre_sight = 24;
+            pre_sight = 22; //22 //24
             break;
         
         #endif

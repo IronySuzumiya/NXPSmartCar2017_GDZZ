@@ -46,7 +46,7 @@ int16_t GetRoadType() {
                     barrierOvertaking = false;
                 }
             } else {
-                if(barrierDistance < 11500) {
+                if(barrierDistance < 10000) {
                     return barrierType;
                 } else if(barrierDistance > 18000) {
                     barrierDistance = 0;

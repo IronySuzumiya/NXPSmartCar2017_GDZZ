@@ -27,6 +27,7 @@ bool out;
 bool crossRoadActionEnabled;
 int32_t barrierOvertakingDistanceMax;
 bool final_sync;
+int16_t dummyBarrierWidth;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
@@ -112,13 +113,13 @@ int16_t CommonAction() {
             RightCurveAction();
             break;
         case LeftBarrier:
-            return IMG_COL / 2 - 25;
+            return IMG_COL / 2 - 20;
         case RightBarrier:
-            return IMG_COL / 2 + 25;
+            return IMG_COL / 2 + 20;
         case DummyLeftBarrier:
-            return IMG_COL / 2 - 45;
+            return IMG_COL / 2 - dummyBarrierWidth;
         case DummyRightBarrier:
-            return IMG_COL / 2 + 45;
+            return IMG_COL / 2 + dummyBarrierWidth;
     }
     return IMG_COL / 2;
 }
