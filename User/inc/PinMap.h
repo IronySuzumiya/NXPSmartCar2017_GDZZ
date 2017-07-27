@@ -20,15 +20,16 @@
 #define  DATACOMM_VISUALSCOPE_CHL   DATACOMM_IMG_TRANS_CHL
 
 //Camera
-#define  CAMERA_HREF_PORT  HW_GPIOB
-#define  CAMERA_HREF_PIN   20
-#define  CAMERA_VSYN_PORT  HW_GPIOC
-#define  CAMERA_VSYN_PIN   1
-#define  CAMERA_DATA_PORT  HW_GPIOC
-#define  CAMERA_DATA_PIN   3
-#define  CAMERA_ODEV_PORT  HW_GPIOC
-#define  CAMERA_ODEV_PIN   0
-#define  CAMERA_DATA_READ  PCin(CAMERA_DATA_PIN)
+#define OV7725_I2C_MAP              I2C1_SCL_PE01_SDA_PE00
+#define OV7725_PCLK_PORT            HW_GPIOC
+#define OV7725_PCLK_PIN             17
+#define OV7725_VSYNC_PORT           HW_GPIOC
+#define OV7725_VSYNC_PIN            19
+#define OV7725_HREF_PORT            HW_GPIOE
+#define OV7725_HREF_PIN             8
+#define OV7725_DATA_CLUSTER_PORT    HW_GPIOD
+#define OV7725_DATA_CLUSTER_OFFSET  0
+#define OV7725_DMA_CHL              HW_DMA_CH2
 
 //Encoder
 #define  ENCODER_LEFT_PORT_FTM_QD            HW_FTM2
