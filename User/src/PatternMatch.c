@@ -3,9 +3,14 @@
 #include "DoubleCar.h"
 #include "MainProc.h"
 #include "Action.h"
+#include "Gyro.h"
+#include "gpio.h"
+#include "SpeedControl.h"
+#include "Motor.h"
 
 int16_t startLineWidth;
 static bool placeholder;
+static float differential_ratio_buf;
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
@@ -84,6 +89,29 @@ int16_t GetRoadType() {
                 ++crossRoadOvertakingCnt;
             }
         }
+    } else if(onRamp) {
+        if(leader_car) {
+            if(rampDistance > 13500) {
+                onRamp = false;
+                rampDistance = 0;
+                differential_ratio = differential_ratio_buf;
+                leader_car = !leader_car;
+            } else if(rampDistance > 12000) {
+                beingOvertaken = true;
+                return DummyRightBarrier;
+            } else if(rampDistance > 7000) {
+                differential_ratio_buf = differential_ratio;
+                differential_ratio = 0;
+                return DummyRightBarrier;
+            }
+        } else {
+            if(rampDistance > 20000) {
+                onRamp = false;
+                rampDistance = 0;
+                leader_car = !leader_car;
+                SendMessage(OVERTAKINGFINISHED);
+            }
+        }
     }
     
 //    int16_t curve = WhichCurve();
@@ -92,6 +120,7 @@ int16_t GetRoadType() {
         :*/ !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
+        : enabled && !inRing && !ringEndDelay && !inCrossRoad && IsRamp() ? Ramp
         : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
@@ -154,4 +183,13 @@ bool IsStraightLine(void) {
         }
     }
     return middleAreaCnt > 38;
+}
+
+bool IsRamp(void) {
+    int32_t gyro = GyroRead();
+    if(gyro > 2820) {
+        return IsStraightLine();
+    } else {
+        return false;
+    }
 }

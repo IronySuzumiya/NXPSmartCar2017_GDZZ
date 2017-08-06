@@ -61,12 +61,6 @@ static struct _param_handle {
 };
 
 static void JoystickConfirmingInt(void);
-#if CAR_NO == 1
-static void JoystickInt(uint32_t pinxArray);
-#elif CAR_NO == 2
-static void JoystickInt1(uint32_t pinxArray);
-static void JoystickInt2(uint32_t pinxArray);
-#endif
 static void ParamShow(void);
 static void ParamFetch(void);
 static void ParamInc(void);
@@ -74,36 +68,19 @@ static void ParamDec(void);
 static void ParamUpdate(void);
 
 void JoystickInit() {
-    #if CAR_NO == 1
+    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_Mode_IPU);
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_Mode_IPU);
+    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_EAST, kGPIO_Mode_IPU);
     GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_Mode_IPU);
-    GPIO_QuickInit(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
     
-    GPIO_CallbackInstall(JOYSTICK_PORT, JoystickInt);
+    GPIO_CallbackInstall(JOYSTICK_PORT, ImgProcVSYN); // it sucks
     
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_IT_RisingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_IT_RisingFallingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_IT_RisingFallingEdge, ENABLE);
     GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_NORTH, kGPIO_IT_RisingEdge, ENABLE);
-    #elif CAR_NO == 2
-    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_SOUTH, kGPIO_Mode_IPU);
-    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_WEST, kGPIO_Mode_IPU);
-    GPIO_QuickInit(JOYSTICK_OLD_PORT, JOYSTICK_MIDDLE, kGPIO_Mode_IPU);
-    
-    GPIO_QuickInit(JOYSTICK_NEW_PORT, JOYSTICK_NORTH, kGPIO_Mode_IPU);
-    GPIO_QuickInit(JOYSTICK_NEW_PORT, JOYSTICK_EAST, kGPIO_Mode_IPU);
-    
-    GPIO_CallbackInstall(JOYSTICK_OLD_PORT, JoystickInt1);
-    GPIO_CallbackInstall(JOYSTICK_NEW_PORT, JoystickInt2);
-    
-    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_SOUTH, kGPIO_IT_RisingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_WEST, kGPIO_IT_RisingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_OLD_PORT, JOYSTICK_MIDDLE, kGPIO_IT_RisingFallingEdge, ENABLE);
-    
-    GPIO_ITDMAConfig(JOYSTICK_NEW_PORT, JOYSTICK_NORTH, kGPIO_IT_RisingEdge, ENABLE);
-    GPIO_ITDMAConfig(JOYSTICK_NEW_PORT, JOYSTICK_EAST, kGPIO_IT_RisingEdge, ENABLE);
-    #endif
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_SOUTH, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_WEST, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_EAST, kGPIO_IT_RisingEdge, ENABLE);
+    GPIO_ITDMAConfig(JOYSTICK_PORT, JOYSTICK_MIDDLE, kGPIO_IT_RisingFallingEdge, ENABLE);
     
     PIT_QuickInit(JOYSTICK_CONFIRMING_TIMER_CHL, JOYSTICK_CONFIRMING_TIME);
     PIT_CallbackInstall(JOYSTICK_CONFIRMING_TIMER_CHL, JoystickConfirmingInt);
@@ -113,55 +90,11 @@ void JoystickInit() {
     ParamShow();
 }
 
-#if CAR_NO == 1
 void JoystickInt(uint32_t pinxArray) {
-    if(pinxArray & (1 << JOYSTICK_SOUTH)) {
-        ParamDec();
-        ParamShow();
-    } else if(pinxArray & (1 << JOYSTICK_WEST)) {
-        if(JOYSTICK_WEST_READ) {
-            if(joystickConfirmingCnt >= 15) {
-                param.index = (param.index + 1) % MODIFIABLE_PARAM_NUM;
-                ParamFetch();
-                ParamShow();
-            } else {
-                if(--param.index < 0) {
-                    param.index = MODIFIABLE_PARAM_NUM - 1;
-                }
-                ParamFetch();
-                ParamShow();
-            }
-            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
-            joystickConfirmingCnt = 0;
-        } else {
-            PIT_ResetCounter(JOYSTICK_CONFIRMING_TIMER_CHL);
-            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, ENABLE);
-        }
-    } else if(pinxArray & (1 << JOYSTICK_MIDDLE)) {
-        if(JOYSTICK_MIDDLE_READ) {
-            if(joystickConfirmingCnt >= 20) {
-                OLEDPrintf(70, 3, "GoGoGo");
-                enabled = true;
-            } else {
-                ParamUpdate();
-                ParamShow();
-                DelayMs(5);
-                OLEDPrintf(70, 3, "OK!");
-            }
-            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
-            joystickConfirmingCnt = 0;
-        } else {
-            PIT_ResetCounter(JOYSTICK_CONFIRMING_TIMER_CHL);
-            PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, ENABLE);
-        }
-    } else if(pinxArray & (1 << JOYSTICK_NORTH)) {
+    if(pinxArray & (1 << JOYSTICK_NORTH)) {
         ParamInc();
         ParamShow();
-    }
-}
-#elif CAR_NO == 2
-void JoystickInt1(uint32_t pinxArray) {
-    if(pinxArray & (1 << JOYSTICK_SOUTH)) {
+    } else if(pinxArray & (1 << JOYSTICK_SOUTH)) {
         ParamDec();
         ParamShow();
     } else if(pinxArray & (1 << JOYSTICK_WEST)) {
@@ -170,6 +103,10 @@ void JoystickInt1(uint32_t pinxArray) {
         }
         ParamFetch();
         ParamShow();
+    } else if(pinxArray & (1 << JOYSTICK_EAST)) {
+        param.index = (param.index + 1) % MODIFIABLE_PARAM_NUM;
+        ParamFetch();
+        ParamShow();
     } else if(pinxArray & (1 << JOYSTICK_MIDDLE)) {
         if(JOYSTICK_MIDDLE_READ) {
             if(joystickConfirmingCnt >= 20) {
@@ -178,7 +115,6 @@ void JoystickInt1(uint32_t pinxArray) {
             } else {
                 ParamUpdate();
                 ParamShow();
-                DelayMs(5);
                 OLEDPrintf(70, 3, "OK!");
             }
             PIT_ITDMAConfig(JOYSTICK_CONFIRMING_TIMER_CHL, kPIT_IT_TOF, DISABLE);
@@ -190,25 +126,12 @@ void JoystickInt1(uint32_t pinxArray) {
     }
 }
 
-void JoystickInt2(uint32_t pinxArray) {
-    if(pinxArray & (1 << JOYSTICK_NORTH)) {
-        ParamInc();
-        ParamShow();
-    } else if(pinxArray & (1 << JOYSTICK_EAST)) {
-        param.index = (param.index + 1) % MODIFIABLE_PARAM_NUM;
-        ParamFetch();
-        ParamShow();
-    }
-}
-#endif
-
 void JoystickConfirmingInt() {
     ++joystickConfirmingCnt;
 }
 
 void ParamShow() {
     OLEDClrRow(3);
-    DelayMs(5);
     switch(param.type[temp.index]) {
         case INT16:
             OLEDPrintf(5, 3, "%s: %d", param.name[temp.index], temp.u.i16);

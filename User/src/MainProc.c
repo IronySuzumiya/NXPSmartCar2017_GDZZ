@@ -90,7 +90,7 @@ void GetReady() {
         if(leader_car) {
             while(!enabled) {
 //                OLEDPrintf(5, 2, "val: %d", GyroRead());
-//                DelayMs(500);
+//                DelayMs(100);
             }
             DelayMs(2000);
             if(!barrierOvertaking) {
@@ -104,7 +104,10 @@ void GetReady() {
             DelayMs(100);
         }
     } else {
-        while(!enabled);
+        while(!enabled) {
+//            OLEDPrintf(5, 2, "val: %d", GyroRead());
+//            DelayMs(100);
+        }
         DelayMs(2000);
     }
 }
@@ -196,6 +199,9 @@ void DistanceControl() {
             leader_car = !leader_car;
         }
     }
+    if(onRamp) {
+        rampDistance += dist;
+    }
 }
 
 void BuzzleControl(bool flag) {
@@ -219,7 +225,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(final);
+    BuzzleControl(onRamp);
     
     DistanceControl();
     
@@ -305,10 +311,10 @@ static void SwitchAndParamLoad() {
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 85;
-    out = false;
+    out = true;
     crossRoadActionEnabled = true;
     startLineEnableDistance = 2000;
     barrierOvertakingDistanceMax = 11800;
     final_sync = false;
-    dummyBarrierWidth = 52;
+    dummyBarrierWidth = 31;
 }

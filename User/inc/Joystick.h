@@ -6,5 +6,6 @@
 #define MODIFIABLE_PARAM_NUM 19
 
 void JoystickInit(void);
+void JoystickInt(uint32_t pinxArray);
 
 #endif

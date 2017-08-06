@@ -20,18 +20,27 @@ typedef struct _PID {
 }
 PID;
 
+typedef uint8_t byte;
+
+#define NUMBER_OF_MODES 16
+
+#define NUMBER_OF_IMG_PROC IMG_ROW_INTV
+
+typedef void (*img_proc_type)(void);
+typedef img_proc_type img_proc_type_array[NUMBER_OF_IMG_PROC];
+
 typedef struct _img_proc_struct {
-    int16_t leftBorder[OV7725_H];
-    int16_t rightBorder[OV7725_H];
-    int16_t middleLine[OV7725_H];
-    bool foundLeftBorder[OV7725_H];
-    bool foundRightBorder[OV7725_H];
-//    int16_t leftSlope[OV7725_H];
-//    int16_t leftZero[OV7725_H];
-//    int16_t rightSlope[OV7725_H];
-//    int16_t rightZero[OV7725_H];
-//    int16_t middleSlope[OV7725_H];
-//    int16_t middleZero[OV7725_H];
+    int16_t leftBorder[IMG_ROW];
+    int16_t rightBorder[IMG_ROW];
+    int16_t middleLine[IMG_ROW];
+    bool foundLeftBorder[IMG_ROW];
+    bool foundRightBorder[IMG_ROW];
+//    int16_t leftSlope[IMG_ROW];
+//    int16_t leftZero[IMG_ROW];
+//    int16_t rightSlope[IMG_ROW];
+//    int16_t rightZero[IMG_ROW];
+//    int16_t middleSlope[IMG_ROW];
+//    int16_t middleZero[IMG_ROW];
 //    uint16_t imgProcFlag;
     int16_t leftBorderNotFoundCnt;
     int16_t rightBorderNotFoundCnt;
@@ -48,19 +57,8 @@ enum _road_type {
     LeftBarrier,
     RightBarrier,
     DummyLeftBarrier,
-    DummyRightBarrier
-};
-
-struct ov7725_reg {
-    uint8_t addr;
-    uint8_t val;
-};
-
-enum ov7725_size {
-    H_80_W_60,
-    H_120_W_160,
-    H_180_W_240,
-    H_240_W_320,
+    DummyRightBarrier,
+    Ramp
 };
 
 #endif

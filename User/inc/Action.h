@@ -32,5 +32,7 @@ extern bool crossRoadActionEnabled;
 extern int32_t barrierOvertakingDistanceMax;
 extern bool final_sync;
 extern int16_t dummyBarrierWidth;
+extern bool onRamp;
+extern int16_t rampDistance;
 
 #endif

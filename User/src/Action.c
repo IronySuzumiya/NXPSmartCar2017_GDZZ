@@ -28,6 +28,8 @@ bool crossRoadActionEnabled;
 int32_t barrierOvertakingDistanceMax;
 bool final_sync;
 int16_t dummyBarrierWidth;
+bool onRamp;
+int16_t rampDistance;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
@@ -120,6 +122,9 @@ int16_t CommonAction() {
             return IMG_COL / 2 - dummyBarrierWidth;
         case DummyRightBarrier:
             return IMG_COL / 2 + dummyBarrierWidth;
+        case Ramp:
+            onRamp = true;
+            break;
     }
     return IMG_COL / 2;
 }
