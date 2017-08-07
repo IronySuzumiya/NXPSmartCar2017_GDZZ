@@ -18,8 +18,6 @@ bool IsRingEndFromLeft(void);
 bool IsRingEndFromRight(void);
 void RingActionGoLeft(void);
 void RingActionGoRight(void);
-void RingEndActionFromLeft(void);
-void RingEndActionFromRight(void);
 
 extern int32_t ringDistance;
 extern bool inRing;

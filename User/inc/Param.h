@@ -54,4 +54,11 @@
 #define  JOYSTICK_CONFIRMING_TIMER_CHL  HW_PIT_CH3
 #define  JOYSTICK_CONFIRMING_TIME       50000
 
+//Gyro
+#if CAR_NO == 1
+#define GYRO_THRESHOLD 3600
+#elif CAR_NO == 2
+#define GYRO_THRESHOLD 2820
+#endif
+
 #endif

@@ -10,7 +10,7 @@ int main() {
     MainInit();
     while(1) {
         #ifdef USE_STAT_TRANS
-            StateTrans(GyroRead(), 0, 3000, 0);
+            StateTrans(GyroRead(), 0, 3120, 0);
             DelayMs(10);
         #endif
         #ifdef USE_IMG_TRANS

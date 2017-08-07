@@ -132,11 +132,3 @@ void RingActionGoRight() {
         resultSet.middleLine[i] = IMG_COL - 1;
     }
 }
-
-void RingEndActionFromLeft() {
-    
-}
-
-void RingEndActionFromRight() {
-    
-}

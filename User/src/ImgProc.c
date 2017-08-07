@@ -17,6 +17,7 @@ byte imgBuf[IMG_ROW][IMG_COL];
 img_proc_struct resultSet;
 int16_t pre_sight;
 int16_t startLinePresight;
+int16_t along;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -89,10 +90,22 @@ void ImgProc0() {
 }
 
 void ImgProc1() {
-    resultSet.foundLeftBorder[imgBufRow] =
-        LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-    resultSet.foundRightBorder[imgBufRow] =
-        RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    if(along == AlongLeftBorder) {
+        resultSet.foundLeftBorder[imgBufRow] =
+            LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 50;
+        ++resultSet.foundLeftBorder[imgBufRow];
+    } else if(along == AlongRightBorder) {
+        resultSet.foundRightBorder[imgBufRow] =
+            RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 50;
+        ++resultSet.foundRightBorder[imgBufRow];
+    } else {
+        resultSet.foundLeftBorder[imgBufRow] =
+            LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        resultSet.foundRightBorder[imgBufRow] =
+            RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    }
 }
 
 void ImgProc2() {
@@ -152,6 +165,7 @@ void ImgProcSummary() {
         bool accelerate = IsStraightLine();
         SpeedTargetSet(stop || beingOvertaken ? 0 :
             final_sync && final && leader_car && !finalPursueingFinished ? 0 :
+            onRamp ? 85 :
             final && finalPursueingFinished ? 130 :
             accelerate ? speed_control_speed * 1.1 :
             aroundBarrier ? speedAroundBarrier :

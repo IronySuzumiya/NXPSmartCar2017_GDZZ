@@ -286,7 +286,7 @@ static void SwitchAndParamLoad() {
     rightPid.kd = 25;
     
     steer_actuator_right = 340;
-    steer_actuator_middle = 410;
+    steer_actuator_middle = 414;
     steer_actuator_left = 480;
     
     direction_control_kd = 0.2;
@@ -311,10 +311,10 @@ static void SwitchAndParamLoad() {
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 85;
-    out = true;
+    out = false;
     crossRoadActionEnabled = true;
     startLineEnableDistance = 2000;
     barrierOvertakingDistanceMax = 11800;
     final_sync = false;
-    dummyBarrierWidth = 31;
+    dummyBarrierWidth = 34;
 }

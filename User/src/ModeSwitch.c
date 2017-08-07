@@ -12,6 +12,8 @@ void ModeSelect() {
     GPIO_QuickInit(MODE_SWITCH_PORT, MODE_SWITCH_PIN2, kGPIO_Mode_IPU);
     GPIO_QuickInit(MODE_SWITCH_PORT, MODE_SWITCH_PIN3, kGPIO_Mode_IPU);
     GPIO_QuickInit(MODE_SWITCH_PORT, MODE_SWITCH_PIN4, kGPIO_Mode_IPU);
+    GPIO_QuickInit(MODE_SWITCH_PORT, MODE_SWITCH_PIN5, kGPIO_Mode_IPU);
+    GPIO_QuickInit(MODE_SWITCH_PORT, MODE_SWITCH_PIN6, kGPIO_Mode_IPU);
     uint16_t mode = MODE_SWITCH_READ;
     double_car = !!(mode & 0x01);
     if(double_car) {
@@ -30,12 +32,22 @@ void ModeSelect() {
         } else {
             OLEDPrintf(5, 6, "Follower");
         }
+        if((out = !!(mode & 0x10))) {
+            OLEDPrintf(5, 7, "Out-stop Enabled");
+        } else {
+            OLEDPrintf(5, 7, "Out-stop Disabled");
+        }
     } else {
         OLEDPrintf(5, 4, "Single Mode");
         if((start_line = !!(mode & 0x02))) {
             OLEDPrintf(5, 5, "Startline Enabled");
         } else {
-            OLEDPrintf(5, 4, "Startline Disabled");
+            OLEDPrintf(5, 5, "Startline Disabled");
+        }
+        if((out = !!(mode & 0x10))) {
+            OLEDPrintf(5, 6, "Out-stop Enabled");
+        } else {
+            OLEDPrintf(5, 6, "Out-stop Disabled");
         }
     }
 }

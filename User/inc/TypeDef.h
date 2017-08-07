@@ -61,4 +61,10 @@ enum _road_type {
     Ramp
 };
 
+enum _along_type {
+    AsUsual,
+    AlongLeftBorder,
+    AlongRightBorder
+};
+
 #endif

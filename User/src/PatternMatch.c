@@ -10,7 +10,6 @@
 
 int16_t startLineWidth;
 static bool placeholder;
-static float differential_ratio_buf;
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
@@ -91,25 +90,24 @@ int16_t GetRoadType() {
         }
     } else if(onRamp) {
         if(leader_car) {
-            if(rampDistance > 13500) {
+            if(rampDistance > 16000) {
+                beingOvertaken = true;
+                leader_car = !leader_car;
                 onRamp = false;
                 rampDistance = 0;
-                differential_ratio = differential_ratio_buf;
-                leader_car = !leader_car;
-            } else if(rampDistance > 12000) {
-                beingOvertaken = true;
                 return DummyRightBarrier;
-            } else if(rampDistance > 7000) {
-                differential_ratio_buf = differential_ratio;
-                differential_ratio = 0;
+            } else if(rampDistance > 11000) {
                 return DummyRightBarrier;
             }
         } else {
-            if(rampDistance > 20000) {
+            if(rampDistance > 25000) {
                 onRamp = false;
                 rampDistance = 0;
                 leader_car = !leader_car;
                 SendMessage(OVERTAKINGFINISHED);
+                along = AsUsual;
+            } else if(rampDistance > 4000) {
+                along = AlongRightBorder;
             }
         }
     }
@@ -120,7 +118,7 @@ int16_t GetRoadType() {
         :*/ !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : enabled && !inRing && !ringEndDelay && !inCrossRoad && IsRamp() ? Ramp
+        : enabled && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
@@ -175,21 +173,16 @@ bool IsStartLine(int16_t row) {
     }
 }
 
-bool IsStraightLine(void) {
+bool IsStraightLine() {
     int16_t middleAreaCnt = 0;
     for(int16_t i = 0; i < IMG_ROW; ++i) {
-        if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 10, IMG_COL / 2 + 10)) {
+        if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 15, IMG_COL / 2 + 15)) {
             ++middleAreaCnt;
         }
     }
     return middleAreaCnt > 38;
 }
 
-bool IsRamp(void) {
-    int32_t gyro = GyroRead();
-    if(gyro > 2820) {
-        return IsStraightLine();
-    } else {
-        return false;
-    }
+bool IsRamp() {
+    return IsStraightLine() && resultSet.rightBorder[48] - resultSet.leftBorder[48] > 90;
 }

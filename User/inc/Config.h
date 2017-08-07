@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define CAR_NO 1
+#define CAR_NO 2
 
 #define xUSE_BMP
 

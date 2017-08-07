@@ -43,18 +43,17 @@ void SpeedTargetSet(int16_t speed, bool diff) {
             speed -= speed_control_dec;
         }
     }
-    
     if(!diff || speed == 0) {
         leftPid.targetValue = rightPid.targetValue = speed;
     } else {
         if(directionAngle > 0) {
-             speed -= reduction_ratio * directionAngle;
-             leftPid.targetValue = speed;
-             rightPid.targetValue = speed * (differential_ratio * directionAngle + 1);
+            speed -= reduction_ratio * directionAngle;
+            leftPid.targetValue = speed;
+            rightPid.targetValue = speed * (beingOvertaken ? 1 : (differential_ratio * directionAngle + 1));
         } else {
-             speed += reduction_ratio * directionAngle;
-             rightPid.targetValue = speed;
-             leftPid.targetValue = speed * (differential_ratio * (-directionAngle) + 1);
+            speed += reduction_ratio * directionAngle;
+            rightPid.targetValue = speed;
+            leftPid.targetValue = speed * (beingOvertaken ? 1 : (differential_ratio * (-directionAngle) + 1));
         }
     }
 }
@@ -65,9 +64,16 @@ int16_t SpeedControlPID(PID *pid) {
     
 	error = pid->targetValue - pid->currentValue;
     
-    pValue = pid->kp * (error - pid->lastError);
-    iValue = pid->ki * error;
-    dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
+    // ugly implementation though
+    if(beingOvertaken) {
+        pValue = 110 * (error - pid->lastError);
+        iValue = 20 * error;
+        dValue = 10 * (error - 2 * pid->lastError + pid->prevError);
+    } else {
+        pValue = pid->kp * (error - pid->lastError);
+        iValue = pid->ki * error;
+        dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
+    }
     pid->prevError = pid->lastError;
     pid->output += pValue + iValue + dValue;
     if(pid->output > 10000) {
