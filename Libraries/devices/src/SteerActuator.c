@@ -2,9 +2,7 @@
 #include "ftm.h"
 
 bool steer_actuator_on;
-int16_t steer_actuator_left;
 int16_t steer_actuator_middle;
-int16_t steer_actuator_right;
 
 void SteerActuatorInit() {
     FTM_PWM_QuickInit(STEER_ACTUATOR_MAP, kPWM_EdgeAligned, 50);

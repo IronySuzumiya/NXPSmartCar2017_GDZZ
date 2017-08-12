@@ -95,20 +95,31 @@ int16_t GetRoadType() {
                 leader_car = !leader_car;
                 onRamp = false;
                 rampDistance = 0;
-                return DummyRightBarrier;
+                SendMessage(RAMPOVERTAKING);
             } else if(rampDistance > 11000) {
-                return DummyRightBarrier;
+                along = AlongLeftBorder;
             }
         } else {
-            if(rampDistance > 25000) {
+            if(rampDistance > 16000) {
+                leader_car = !leader_car;
                 onRamp = false;
                 rampDistance = 0;
-                leader_car = !leader_car;
                 SendMessage(OVERTAKINGFINISHED);
                 along = AsUsual;
-            } else if(rampDistance > 4000) {
+            } else {
                 along = AlongRightBorder;
             }
+        }
+    } else if(rampOvertaking) {
+        int16_t _cnt = 0;
+        for(int16_t row = 30; row < 38; ++row) {
+            if(resultSet.rightBorder[row] - resultSet.leftBorder[row] < 60) {
+                ++_cnt;
+            }
+        }
+        if(_cnt > 3) {
+            rampOvertaking = false;
+            onRamp = true;
         }
     }
     
@@ -118,7 +129,8 @@ int16_t GetRoadType() {
         :*/ !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : (double_car ? leader_car : true)
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : enabled && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
+        : enabled && double_car && leader_car
+            && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
@@ -174,15 +186,23 @@ bool IsStartLine(int16_t row) {
 }
 
 bool IsStraightLine() {
-    int16_t middleAreaCnt = 0;
-    for(int16_t i = 0; i < IMG_ROW; ++i) {
-        if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 15, IMG_COL / 2 + 15)) {
-            ++middleAreaCnt;
+    int16_t middleAreaOffset = 0;
+    if(InRange(resultSet.middleLine[0], 100, 125)) {
+        for(int16_t i = 1; i < IMG_ROW; ++i) {
+            middleAreaOffset +=
+                Abs(resultSet.middleLine[i] - resultSet.middleLine[0]);
         }
+        return InRange(middleAreaOffset, 0, 90);
+    } else {
+        return false;
     }
-    return middleAreaCnt > 38;
 }
 
 bool IsRamp() {
-    return IsStraightLine() && resultSet.rightBorder[48] - resultSet.leftBorder[48] > 90;
+    return IsStraightLine()
+        && resultSet.rightBorder[48] - resultSet.leftBorder[48] > 70
+        && resultSet.leftBorder[48] > 50 && resultSet.rightBorder[48] < 180
+        && !resultSet.leftBorderNotFoundCnt
+        && !resultSet.rightBorderNotFoundCnt
+        && InRange(resultSet.rightBorder[42] - resultSet.leftBorder[42], 80, 120);
 }

@@ -19,6 +19,7 @@ int32_t holdingDistance;
 bool overtaking;
 bool beingOvertaken;
 bool alreadyReceivedOvertakingFinished;
+bool rampOvertaking;
 
 static void UltraSonicRecvInt(uint32_t pinxArray);
 static void UltraSonicTimeOutInt(void);
@@ -74,12 +75,16 @@ void DoubleCarMessageRecv(uint16_t message) {
             } else {
                 beingOvertaken = false;
             }
+            along = AsUsual;
             break;
         case FINAL:
             final = true;
             break;
         case DASH:
             finalPursueingFinished = true;
+            break;
+        case RAMPOVERTAKING:
+            rampOvertaking = true;
             break;
     }
 }

@@ -23,5 +23,6 @@ extern int32_t holdingDistance;
 extern bool overtaking;
 extern bool beingOvertaken;
 extern bool alreadyReceivedOvertakingFinished;
+extern bool rampOvertaking;
 
 #endif

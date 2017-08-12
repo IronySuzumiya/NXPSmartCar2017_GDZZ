@@ -123,9 +123,7 @@ int16_t CommonAction() {
         case DummyRightBarrier:
             return IMG_COL / 2 + dummyBarrierWidth;
         case Ramp:
-            if(double_car) {
-                onRamp = true;
-            }
+            onRamp = true;
             break;
     }
     return IMG_COL / 2;

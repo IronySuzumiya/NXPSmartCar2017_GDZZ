@@ -230,9 +230,10 @@ void MainProc() {
     DistanceControl();
     
     if(beingOvertaken) {
-        if(++ovtcnt > 420) {
+        if(++ovtcnt > 800) {
             beingOvertaken = false;
             ovtcnt = 0;
+            along = AsUsual;
         }
     }
     
@@ -266,12 +267,10 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_right = 415;
-    steer_actuator_middle = 452;
-    steer_actuator_left = 555;
+    steer_actuator_middle = 750;
 
     direction_control_kd = 0.2;
-    direction_control_kpj = 0.02;
+    direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
     differential_ratio = 0.04;  //0.034
@@ -285,12 +284,10 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 12;
     rightPid.kd = 25;
     
-    steer_actuator_right = 340;
-    steer_actuator_middle = 414;
-    steer_actuator_left = 480;
+    steer_actuator_middle = 755;
     
     direction_control_kd = 0.2;
-    direction_control_kpj = 0.02;
+    direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
     differential_ratio = 0.04;  //0.033
@@ -301,7 +298,7 @@ static void SwitchAndParamLoad() {
     
     #endif
     
-    reduction_ratio = 2.6;
+    reduction_ratio = 2.45;
     avg_distance_between_the_two_cars = 120;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
@@ -316,5 +313,5 @@ static void SwitchAndParamLoad() {
     startLineEnableDistance = 2000;
     barrierOvertakingDistanceMax = 11800;
     final_sync = false;
-    dummyBarrierWidth = 34;
+    dummyBarrierWidth = 35;
 }

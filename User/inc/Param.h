@@ -49,6 +49,7 @@
 #define  FINAL                  0x03
 #define  DASH                   0x04
 #define  HOLD                   0x05
+#define  RAMPOVERTAKING         0x06
 
 //Joystick
 #define  JOYSTICK_CONFIRMING_TIMER_CHL  HW_PIT_CH3
