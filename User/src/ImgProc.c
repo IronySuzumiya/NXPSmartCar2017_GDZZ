@@ -120,7 +120,6 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-    bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     bool accelerate;
     if(double_car) {
@@ -153,11 +152,7 @@ void ImgProcSummary() {
         stop = true;
     } else {
         straightLine = IsStraightLine();
-        if(doubleCarAction) {
-            CommonAction();
-        } else {
-            middle = CommonAction();
-        }
+        middle = CommonAction();
     }
     
     if(direction_control_on) {

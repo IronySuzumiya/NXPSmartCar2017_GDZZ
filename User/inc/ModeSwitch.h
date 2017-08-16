@@ -5,4 +5,8 @@
 
 void ModeSelect(void);
 
+extern bool rampOvertakingEnabled;
+extern bool straightLineOvertakingEnabled;
+extern bool barrierOvertakingEnabled;
+
 #endif

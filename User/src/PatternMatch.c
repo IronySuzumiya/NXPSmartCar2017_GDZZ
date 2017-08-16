@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "SpeedControl.h"
 #include "Motor.h"
+#include "ModeSwitch.h"
 
 int16_t startLineWidth;
 static bool placeholder;
@@ -32,42 +33,48 @@ int16_t GetRoadType() {
             return Ring;
         }
     } else if(aroundBarrier) {
-        if(leader_car) {
-            if(barrierDistance < 5500) {
-                if(!placeholder) {
-                    placeholder = true;
-                    SendMessage(BARIOVERTAKING);
+        if(barrierOvertakingEnabled) {
+            if(leader_car) {
+                if(barrierDistance < 5500) {
+                    if(!placeholder) {
+                        placeholder = true;
+                        SendMessage(BARIOVERTAKING);
+                    }
+                    along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
+                } else if(barrierDistance < 12000) {
+                    along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
+                } else {
+                    barrierDistance = 0;
+                    aroundBarrier = false;
+                    leader_car = !leader_car;
+                    beingOvertaken = true;
+                    placeholder = false;
                 }
+            } else if(barrierOvertaking) {
+                if(barrierDistance < 17000) {
+                    along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
+                } else if(barrierDistance < 20000) {
+                    along = AsUsual;
+                } else {
+                    barrierDistance = 0;
+                    aroundBarrier = false;
+                    leader_car = !leader_car;
+                    SendMessage(OVERTAKINGFINISHED);
+                    barrierOvertaking = false;
+                }
+            } else if(barrierDistance < 5500) {
                 along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
-            } else if(barrierDistance < 12000) {
-                along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
             } else {
                 barrierDistance = 0;
                 aroundBarrier = false;
-                leader_car = !leader_car;
-                beingOvertaken = true;
-                placeholder = false;
-            }
-        } else if(barrierOvertaking) {
-            if(barrierDistance < 17000) {
-                along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
-            } else if(barrierDistance < 20000) {
                 along = AsUsual;
-            } else {
-                barrierDistance = 0;
-                aroundBarrier = false;
-                leader_car = !leader_car;
-                SendMessage(OVERTAKINGFINISHED);
-                barrierOvertaking = false;
             }
+        } else if(barrierDistance < 5500) {
+            along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
         } else {
-            if(barrierDistance < 5500) {
-                along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
-            } else {
-                barrierDistance = 0;
-                aroundBarrier = false;
-                along = AsUsual;
-            }
+            barrierDistance = 0;
+            aroundBarrier = false;
+            along = AsUsual;
         }
     } else if(afterCrossRoad) {
         if(leader_car) {
@@ -123,11 +130,11 @@ int16_t GetRoadType() {
             rampOvertaking = false;
             onRamp = true;
         }
-    } else if(false && leader_car && straightLine && !inStraightLine
+    } else if(straightLineOvertakingEnabled && leader_car && straightLine && !inStraightLine
             && !resultSet.leftBorderNotFoundCnt
             && !resultSet.rightBorderNotFoundCnt) {
         inStraightLine = true;
-    } else if(false && inStraightLine) {
+    } else if(inStraightLine) {
         if(leader_car) {
             if(straightLineDistance < 6000) {
                 along = AlongLeftBorder;
@@ -150,7 +157,7 @@ int16_t GetRoadType() {
                 along = AlongRightBorder;
             }
         }
-    } else if(false && straightLineOvertaking) {
+    } else if(straightLineOvertaking) {
         int16_t _cnt = 0;
         for(int16_t row = 30; row < 38; ++row) {
             if(resultSet.rightBorder[row] - resultSet.leftBorder[row] < 95) {
@@ -166,7 +173,7 @@ int16_t GetRoadType() {
     return !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : ((double_car && leader_car) || (!double_car))
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : double_car && leader_car
+        : rampOvertakingEnabled && double_car && leader_car
             && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;

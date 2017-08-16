@@ -4,6 +4,12 @@
 #include "ImgProc.h"
 #include "ImgUtility.h"
 #include "gpio.h"
+#include "stdio.h"
+#include "string.h"
+
+bool rampOvertakingEnabled;
+bool straightLineOvertakingEnabled;
+bool barrierOvertakingEnabled;
 
 #pragma diag_suppress 1293
 
@@ -17,37 +23,22 @@ void ModeSelect() {
     uint16_t mode = MODE_SWITCH_READ;
     double_car = !!(mode & 0x01);
     if(double_car) {
-        if((start_line = !!(mode & 0x02))) {
-            OLEDPrintf(5, 4, "Startline Enabled");
-        } else {
-            OLEDPrintf(5, 4, "Startline Disabled");
-        }
-        if((barrierOvertaking = !!(mode & 0x04))) {
-            OLEDPrintf(5, 5, "Barr Ovtk Enabled");
-        } else {
-            OLEDPrintf(5, 5, "Barr Ovtk Disabled");
-        }
-        if((leader_car = !!(mode & 0x08))) {
-            OLEDPrintf(5, 6, "Leader");
-        } else {
-            OLEDPrintf(5, 6, "Follower");
-        }
-        if((out = !!(mode & 0x10))) {
-            OLEDPrintf(5, 7, "Out-stop Enabled");
-        } else {
-            OLEDPrintf(5, 7, "Out-stop Disabled");
-        }
+        start_line = !!(mode & 0x02);
+        OLEDPrintf(5, 3, "%s %s ", "double", (start_line ? "start" : "xstart"));
+        
+        rampOvertakingEnabled = !!(mode & 0x04);
+        straightLineOvertakingEnabled = !!(mode & 0x08);
+        OLEDPrintf(5, 4, "%s %s ",
+            (rampOvertakingEnabled ? "ramp" : "xramp"),
+            (straightLineOvertakingEnabled ? "straight" : "xstraight"));
+        
+        barrierOvertakingEnabled = !!(mode & 0x10);
+        leader_car = !!(mode & 0x20);
+        OLEDPrintf(5, 5, "%s %s ",
+            (barrierOvertakingEnabled ? "barrier" : "xbarrier"),
+            (leader_car ? "leader" : "follower"));
     } else {
-        OLEDPrintf(5, 4, "Single Mode");
-        if((start_line = !!(mode & 0x02))) {
-            OLEDPrintf(5, 5, "Startline Enabled");
-        } else {
-            OLEDPrintf(5, 5, "Startline Disabled");
-        }
-        if((out = !!(mode & 0x10))) {
-            OLEDPrintf(5, 6, "Out-stop Enabled");
-        } else {
-            OLEDPrintf(5, 6, "Out-stop Disabled");
-        }
+        start_line = !!(mode & 0x02);
+        OLEDPrintf(5, 3, "%s %s ", "single", (start_line ? "start" : "xstart"));
     }
 }
