@@ -30,6 +30,8 @@ bool final_sync;
 int16_t dummyBarrierWidth;
 bool onRamp;
 int16_t rampDistance;
+bool inStraightLine;
+int16_t straightLineDistance;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {

@@ -24,7 +24,7 @@ extern inline float Max_f(float a, float b) {
 }
 
 extern inline bool OpstSign(int16_t a, int16_t b) {
-    return a * b < 0;
+    return (a ^ b) & 0x8000;
 }
 
 extern inline bool InRange(int16_t value, int16_t lbound, int16_t hbound) {
@@ -48,7 +48,6 @@ void OLEDClrRow(uint8_t row);
 void MainInit(void);
 
 extern bool enabled;
-extern bool gyro;
 extern int32_t startLineEnableDistance;
 
 #endif

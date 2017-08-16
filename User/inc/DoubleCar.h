@@ -24,5 +24,6 @@ extern bool overtaking;
 extern bool beingOvertaken;
 extern bool alreadyReceivedOvertakingFinished;
 extern bool rampOvertaking;
+extern bool straightLineOvertaking;
 
 #endif

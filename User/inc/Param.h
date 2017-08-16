@@ -50,6 +50,8 @@
 #define  DASH                   0x04
 #define  HOLD                   0x05
 #define  RAMPOVERTAKING         0x06
+#define  STRAOVERTAKING         0x07
+#define  BARIOVERTAKING         0x08
 
 //Joystick
 #define  JOYSTICK_CONFIRMING_TIMER_CHL  HW_PIT_CH3

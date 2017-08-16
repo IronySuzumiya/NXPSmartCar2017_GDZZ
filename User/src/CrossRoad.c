@@ -15,8 +15,8 @@ bool IsCrossRoad() {
         }
     }
     for(int16_t i = 20; i < 45; ++i) {
-        if(resultSet.middleLine[i] > IMG_COL - 60
-            || resultSet.middleLine[i] < 60) {
+        if(resultSet.middleLine[i] > IMG_COL - 50
+            || resultSet.middleLine[i] < 50) {
             return false;
         }
     }

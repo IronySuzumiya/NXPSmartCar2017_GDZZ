@@ -19,7 +19,6 @@
 #include "Gyro.h"
 
 bool enabled;
-bool gyro;
 int32_t startLineEnableDistance;
 
 static void NVICInit(void);
@@ -89,13 +88,10 @@ void GetReady() {
     if(double_car) {
         if(leader_car) {
             while(!enabled) {
-//                OLEDPrintf(5, 2, "val: %d", GyroRead());
-//                DelayMs(100);
+                
             }
             DelayMs(2000);
-            if(!barrierOvertaking) {
-                SendMessage(START);
-            }
+            SendMessage(START);
         } else {
             while(!enabled) {
                 OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
@@ -105,8 +101,7 @@ void GetReady() {
         }
     } else {
         while(!enabled) {
-//            OLEDPrintf(5, 2, "val: %d", GyroRead());
-//            DelayMs(100);
+            
         }
         DelayMs(2000);
     }
@@ -202,6 +197,9 @@ void DistanceControl() {
     if(onRamp) {
         rampDistance += dist;
     }
+    if(inStraightLine) {
+        straightLineDistance += dist;
+    }
 }
 
 void BuzzleControl(bool flag) {
@@ -225,7 +223,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(onRamp);
+    BuzzleControl(leader_car && inRing);
     
     DistanceControl();
     
@@ -267,7 +265,7 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 750;
+    steer_actuator_middle = 752;
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
@@ -284,13 +282,13 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 12;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 755;
+    steer_actuator_middle = 750;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.04;  //0.033
+    differential_ratio = 0.042;  //0.033
     
     #else
     
@@ -298,11 +296,11 @@ static void SwitchAndParamLoad() {
     
     #endif
     
-    reduction_ratio = 2.45;
+    reduction_ratio = 2.55;
     avg_distance_between_the_two_cars = 120;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
-    startLinePresight = 20;
+    startLinePresight = 15;
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;

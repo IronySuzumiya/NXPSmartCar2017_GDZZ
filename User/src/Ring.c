@@ -20,7 +20,7 @@ bool IsRing() {
         if(IsBlack(row, cursor)) {
             break;
         }
-        if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > 200) {
+        if(resultSet.rightBorder[row] - resultSet.leftBorder[row] > 170) {
             ++_cnt;
         }
     }
@@ -28,7 +28,7 @@ bool IsRing() {
         return false;
     }
     bool hasRightOffset = false;
-    for(int16_t col = cursor; col < Min(cursor + 15, IMG_COL); ++col) {
+    for(int16_t col = cursor; col < Min(cursor + 20, IMG_COL); ++col) {
         if(IsBlack(row - 1, col)) {
             hasRightOffset = true;
             cursor = col;
@@ -39,7 +39,7 @@ bool IsRing() {
         }
     }
     if(!hasRightOffset) {
-        for(int16_t col = cursor; col > Max(cursor - 15, -1); --col) {
+        for(int16_t col = cursor; col > Max(cursor - 20, -1); --col) {
             if(IsBlack(row - 1, col)) {
                 cursor = col;
                 --row;
@@ -90,9 +90,17 @@ bool IsRing() {
         maxWidth = Max(right - left, maxWidth);
         cursor = (left + right) / 2;
     }
-    
-    return leftMost < 80 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
-        &&  maxWidth > 70 && maxWidth - minWidth > 40;
+#if CAR_NO == 1
+    return leftMost < 85 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
+        && maxWidth > 65 && maxWidth - minWidth > 35
+        && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
+        && InRange(resultSet.middleLine[8], 112 - 20, 112 + 20);
+#elif CAR_NO == 2
+    return leftMost < 85 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 7
+        && maxWidth > 65 && maxWidth - minWidth > 35
+        && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
+        && InRange(resultSet.middleLine[8], 112 - 20, 112 + 20);
+#endif
 }
 
 bool IsRingEndFromLeft() {

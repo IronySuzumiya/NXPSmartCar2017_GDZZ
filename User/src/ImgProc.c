@@ -18,6 +18,7 @@ img_proc_struct resultSet;
 int16_t pre_sight;
 int16_t startLinePresight;
 int16_t along;
+bool straightLine;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -98,7 +99,7 @@ void ImgProc1() {
     } else if(along == AlongRightBorder) {
         resultSet.foundRightBorder[imgBufRow] =
             RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 50;
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 60;
         ++resultSet.foundRightBorder[imgBufRow];
     } else {
         resultSet.foundLeftBorder[imgBufRow] =
@@ -121,6 +122,7 @@ void ImgProc3() {
 void ImgProcSummary() {
     bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
+    bool accelerate;
     if(double_car) {
         if(final_sync) {
             if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
@@ -150,6 +152,7 @@ void ImgProcSummary() {
     if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
         stop = true;
     } else {
+        straightLine = IsStraightLine();
         if(doubleCarAction) {
             CommonAction();
         } else {
@@ -162,13 +165,15 @@ void ImgProcSummary() {
     }
     
     if(speed_control_on) {
-        bool accelerate = IsStraightLine();
+        accelerate = straightLine;
         SpeedTargetSet(stop || beingOvertaken ? 0 :
             final_sync && final && leader_car && !finalPursueingFinished ? 0 :
-            onRamp ? 85 :
+            holding ? 80 :
+            leader_car && (onRamp || inStraightLine) ? 65 :
+            !leader_car && (onRamp || inStraightLine) ? 90 :
             final && finalPursueingFinished ? 130 :
             accelerate ? speed_control_speed * 1.1 :
-            aroundBarrier ? speedAroundBarrier :
+            aroundBarrier || barrierOvertaking ? 65 :
             inRing || ringEndDelay ? speedInRing : speed_control_speed
             , !accelerate);
     }

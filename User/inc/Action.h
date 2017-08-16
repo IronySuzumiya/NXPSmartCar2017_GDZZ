@@ -34,5 +34,7 @@ extern bool final_sync;
 extern int16_t dummyBarrierWidth;
 extern bool onRamp;
 extern int16_t rampDistance;
+extern bool inStraightLine;
+extern int16_t straightLineDistance;
 
 #endif
