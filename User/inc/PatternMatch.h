@@ -8,6 +8,10 @@
 #include "Curve.h"
 #include "Barrier.h"
 
+struct _pattern_match {
+    uint32_t stat_flag;
+};
+
 int16_t GetRoadType(void);
 bool IsOutOfRoad(void);
 bool IsStartLine(int16_t row);

@@ -7,118 +7,96 @@
 #include "DoubleCar.h"
 #include "ModeSwitch.h"
 #include "Joystick.h"
+#include "Camera.h"
 
-#ifdef USE_BMP
-byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
-#else
-byte imgBuf[IMG_ROW][IMG_COL];
-#endif
+static void ImgProcHREF(struct _imgproc *self);
+static void ImgProcVSYN(struct _imgproc *self);
+static void ImgProc0(struct _imgproc *self);
+static void ImgProc1(struct _imgproc *self);
+static void ImgProc2(struct _imgproc *self);
+static void ImgProc3(struct _imgproc *self);
+static void ImgProcGlobal(struct _imgproc *self);
 
-img_proc_struct resultSet;
-int16_t pre_sight;
-int16_t startLinePresight;
-int16_t along;
+static void LeftBorderScanFrom(struct _imgproc *self);
+static void RightBorderScanFrom(struct _imgproc *self);
+static void MiddleLineUpdate(struct _imgproc *self);
 
-static uint8_t imgBufRow = 0;
-static uint8_t imgRealRow = 0;
-static int16_t searchForBordersStartIndex = IMG_COL / 2;
+struct _imgproc_resultset imgproc_resultset;
 
-static void ImgProc0(void);
-static void ImgProc1(void);
-static void ImgProc2(void);
-static void ImgProc3(void);
-static void ImgProcSummary(void);
-
-static img_proc_type_array imgProc = { ImgProc0, ImgProc1, ImgProc2 ,ImgProc3 };
-
-void ImgProcInit(void) {
-    GPIO_QuickInit(CAMERA_HREF_PORT, CAMERA_HREF_PIN, kGPIO_Mode_IPU);
-    GPIO_QuickInit(CAMERA_VSYN_PORT, CAMERA_VSYN_PIN, kGPIO_Mode_IPU);
-    GPIO_CallbackInstall(CAMERA_HREF_PORT, ImgProcHREF);
-    GPIO_CallbackInstall(CAMERA_VSYN_PORT, ImgProcVSYN);
-    GPIO_ITDMAConfig(CAMERA_HREF_PORT, CAMERA_HREF_PIN, kGPIO_IT_RisingEdge, ENABLE);
-    GPIO_ITDMAConfig(CAMERA_VSYN_PORT, CAMERA_VSYN_PIN, kGPIO_IT_RisingEdge, ENABLE);
+struct _imgproc imgproc = {
+    &camera,
+    ImgProcHREF,
+    ImgProcVSYN,
+    { ImgProc0, ImgProc1, ImgProc2 ,ImgProc3 },
+    ImgProcGlobal,
+    LeftBorderScanFrom,
+    RightBorderScanFrom,
+    MiddleLineUpdate,
+    0,
+    0,
+    IMG_COL / 2,
+    Along_Middle,
+    &imgproc_resultset,
     
-    GPIO_QuickInit(CAMERA_DATA_PORT, CAMERA_DATA_PIN, kGPIO_Mode_IPU);
-	GPIO_QuickInit(CAMERA_ODEV_PORT, CAMERA_ODEV_PIN, kGPIO_Mode_IPU);
-}
+    IMG_READ_DELAY,
+    50,
+    50
+};
 
-void ImgProcHREF(uint32_t pinxArray) {
-    if(pinxArray & (1 << CAMERA_HREF_PIN)) {
-        if(imgBufRow < IMG_ROW && imgRealRow > IMG_ABDN_ROW)
-        {
-            imgProc[imgRealRow % IMG_ROW_INTV]();
-        }
-        ++imgRealRow;
+void ImgProcHREF(struct _imgproc *self) {
+    if(self->img_buffer_row < IMG_ROW && self->img_real_row > IMG_ABDN_ROW)
+    {
+        self->localproc_array[self->img_real_row % IMG_ROW_INTV](self);
     }
+    ++self->img_real_row;
 }
 
-void ImgProcVSYN(uint32_t pinxArray) {
-    if(pinxArray & (1 << CAMERA_VSYN_PIN)) {
-        ImgProcSummary();
-        imgRealRow = 0;
-        imgBufRow = 0;
-        resultSet.leftBorderNotFoundCnt = 0;
-        resultSet.rightBorderNotFoundCnt = 0;
-        searchForBordersStartIndex = IMG_COL / 2;
-    } else {
-        JoystickInt(pinxArray);
-    }
+void ImgProcVSYN(struct _imgproc *self) {
+    self->globalproc(self);
+    self->img_real_row = 0;
+    self->img_buffer_row = 0;
+    self->resultset->leftBorderNotFoundCnt = 0;
+    self->resultset->rightBorderNotFoundCnt = 0;
+    self->scan_border_start_from = IMG_COL / 2;
 }
 
-void ImgProc0() {
+void ImgProc0(struct _imgproc *self) {
     int16_t i;
-    for(i = 0; i <= IMG_READ_DELAY; ++i) { } //ignore those pixels near the border
-    #ifdef USE_BMP
-        static byte tmpBuf[IMG_COL]; //cache
-        for(i = IMG_COL - 1; i >= 0; --i) {
-            tmpBuf[i] = CAMERA_DATA_READ;
-            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
-            __ASM("nop");__ASM("nop");__ASM("nop");__ASM("nop");
-        }
-        for(i = IMG_COL - 1; i >= 0; --i) {
-            if(tmpBuf[i])
-                SetImgBufAsBitMap(imgBufRow, i);
-            else
-                ClrImgBufAsBitMap(imgBufRow, i);
-        }
-    #else
-        for(i = IMG_COL - 1; i >= 0; --i) {
-            imgBuf[imgBufRow][i] = CAMERA_DATA_READ;
-        }
-    #endif
-}
-
-void ImgProc1() {
-    if(along == AlongLeftBorder) {
-        resultSet.foundLeftBorder[imgBufRow] =
-            LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 50;
-        ++resultSet.foundLeftBorder[imgBufRow];
-    } else if(along == AlongRightBorder) {
-        resultSet.foundRightBorder[imgBufRow] =
-            RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 50;
-        ++resultSet.foundRightBorder[imgBufRow];
-    } else {
-        resultSet.foundLeftBorder[imgBufRow] =
-            LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.foundRightBorder[imgBufRow] =
-            RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+    for(i = 0; i <= self->img_hoffset; ++i) { } //ignore those pixels near the border
+    for(i = IMG_COL - 1; i >= 0; --i) {
+        self->camera->img_buffer[self->img_buffer_row][i] = CAMERA_DATA_READ;
     }
 }
 
-void ImgProc2() {
-    MiddleLineUpdate(imgBufRow);
-    searchForBordersStartIndex = resultSet.middleLine[imgBufRow];
+void ImgProc1(struct _imgproc *self) {
+    if(self->along == Along_LeftBorder) {
+        self->scan_left_border(self);
+        self->resultset->rightBorder[self->img_buffer_row] =
+            self->resultset->leftBorder[self->img_buffer_row] + self->along_left_offset;
+        ++self->resultset->foundLeftBorder[self->img_buffer_row];
+        
+    } else if(self->along == AlongRightBorder) {
+        self->scan_right_border(self);
+        self->resultset->leftBorder[self->img_buffer_row] =
+            self->resultset->rightBorder[self->img_buffer_row] - self->along_right_offset;
+        ++self->resultset->foundRightBorder[self->img_buffer_row];
+        
+    } else {
+        self->scan_left_border(self);
+        self->scan_right_border(self);
+    }
 }
 
-void ImgProc3() {
-    CurveSlopeUpdate(imgBufRow);
-    ++imgBufRow;
+void ImgProc2(struct _imgproc *self) {
+    self->update_middle(self);
+    self->scan_border_start_from = self->resultset->middleLine[self->img_buffer_row];
 }
 
-void ImgProcSummary() {
+void ImgProc3(struct _imgproc *self) {
+    ++self->img_buffer_row;
+}
+
+void ImgProcGlobal(struct _imgproc *self) {
     bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     if(double_car) {
@@ -158,7 +136,7 @@ void ImgProcSummary() {
     }
     
     if(direction_control_on) {
-        DirectionControlProc(resultSet.middleLine, middle);
+        DirectionControlProc(self->resultset->middleLine, middle);
     }
     
     if(speed_control_on) {
@@ -172,4 +150,35 @@ void ImgProcSummary() {
             inRing || ringEndDelay ? speedInRing : speed_control_speed
             , !accelerate);
     }
+}
+
+void LeftBorderScanFrom(struct _imgproc *self) {
+    for(int16_t j = self->scan_border_start_from; j >= 0; --j) {
+        if(IsBlack(self->img_buffer_row, j)) {
+            self->resultset->leftBorder[self->img_buffer_row] = j;
+            self->resultset->foundLeftBorder[self->img_buffer_row] = true;
+            return;
+        }
+    }
+    self->resultset->leftBorder[self->img_buffer_row] = -1;
+    ++self->resultset->leftBorderNotFoundCnt;
+    self->resultset->foundLeftBorder[self->img_buffer_row] = false;
+}
+
+void RightBorderScanFrom(struct _imgproc *self) {
+    for(int16_t j = self->scan_border_start_from; j < IMG_COL; ++j) {
+        if(IsBlack(self->img_buffer_row, j)) {
+            self->resultset->rightBorder[self->img_buffer_row] = j;
+            self->resultset->foundRightBorder[self->img_buffer_row] = true;
+            return;
+        }
+    }
+    self->resultset->rightBorder[self->img_buffer_row] = IMG_COL;
+    ++self->resultset->rightBorderNotFoundCnt;
+    self->resultset->foundRightBorder[self->img_buffer_row] = false;
+}
+
+void MiddleLineUpdate(struct _imgproc *self) {
+    self->resultset->middleLine[self->img_buffer_row] =
+        (self->resultset->leftBorder[self->img_buffer_row] + self->resultset->rightBorder[self->img_buffer_row]) / 2;
 }

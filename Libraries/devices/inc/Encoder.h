@@ -3,10 +3,15 @@
 
 #include "root.h"
 
-void EncoderInit(void);
-void EncoderGet(int16_t* left, int16_t* right);
-void EncoderClear(void);
+struct _encoder {
+    void (*init)(struct _encoder *self);
+    void (*get_value)(struct _encoder *self);
+    void (*clr_value)(void);
+    int16_t left_value;
+    int16_t right_value;
+    bool work;
+};
 
-extern bool encoder_on;
+extern struct _encoder encoder;
 
 #endif

@@ -3,6 +3,30 @@
 
 #include "root.h"
 
+struct _facility {
+    struct _nvic {
+        void (*init)(void);
+    } nvic;
+    struct _buzzle {
+        void (*init)(void);
+        void (*on)(void);
+        void (*off)(void);
+    } buzzle;
+    struct _timer {
+        void (*init)(struct _timer *self);
+        void (*change_stat)(bool option);
+        uint32_t period;
+        void (*callback)(void);
+    } timer;
+};
+
+struct _ui {
+    struct _oled {
+        void (*init)(struct _oled *self);
+        const char *title;
+    } oled;
+};
+
 extern inline int16_t Abs(int16_t input) {
     return input >= 0 ? input : -input;
 }
@@ -48,7 +72,6 @@ void OLEDClrRow(uint8_t row);
 void MainInit(void);
 
 extern bool enabled;
-extern bool gyro;
 extern int32_t startLineEnableDistance;
 
 #endif

@@ -3,41 +3,42 @@
 
 #include "root.h"
 
-void ImgProcInit(void);
+struct _imgproc_resultset {
+    int16_t leftBorder[IMG_ROW];
+    int16_t rightBorder[IMG_ROW];
+    int16_t middleLine[IMG_ROW];
+    bool foundLeftBorder[IMG_ROW];
+    bool foundRightBorder[IMG_ROW];
+    int16_t leftBorderNotFoundCnt;
+    int16_t rightBorderNotFoundCnt;
+};
 
-#ifdef USE_BMP
+struct _imgproc;
+typedef void (*_imgproc_func)(struct _imgproc *);
 
-extern inline void SetImgBufAsBitMap(int16_t row, int16_t col) {
-    imgBuf[row][col >> SHIFT] |= (1 << (col & MASK));
-}
+struct _imgproc {
+    struct _camera *camera;
+    _imgproc_func callback_href;
+    _imgproc_func callback_vsyn;
+    _imgproc_func localproc_array[IMG_ROW_INTV];
+    _imgproc_func globalproc;
+    _imgproc_func scan_left_border;
+    _imgproc_func scan_right_border;
+    _imgproc_func update_middle;
+    uint8_t img_buffer_row;
+    uint8_t img_real_row;
+    int16_t scan_border_start_from;
+    enum { Along_Middle, Along_LeftBorder, Along_RightBorder } along;
+    struct _imgproc_resultset *resultset;
+    
+    int16_t img_hoffset;
+    int16_t along_left_offset;
+    int16_t along_right_offset;
+};
 
-extern inline void ClrImgBufAsBitMap(int16_t row, int16_t col) {
-    imgBuf[row][col >> SHIFT] &= ~(1 << (col & MASK));
-}
+#define IsWhite(row, col) (!camera.img_buffer[(row)][(col)])
+#define IsBlack(row, col) (!IsWhite((row), (col)))
 
-extern inline bool TstImgBufAsBitMap(int16_t row, int16_t col) {
-    return imgBuf[row][col >> SHIFT] & (1 << (col & MASK));
-}
-
-extern byte imgBuf[IMG_ROW][1 + IMG_COL / 8];
-
-#else
-
-#define TstImgBufAsBitMap(row, col) (imgBuf[row][col])
-
-extern byte imgBuf[IMG_ROW][IMG_COL];
-
-#endif
-
-#define IsWhite(row, col) (!TstImgBufAsBitMap(row, col))
-#define IsBlack(row, col) (TstImgBufAsBitMap(row, col))
-
-extern img_proc_struct resultSet;
-extern int16_t pre_sight;
-extern int16_t startLinePresight;
-extern int16_t along;
-
-void ImgProcHREF(uint32_t pinxArray);
-void ImgProcVSYN(uint32_t pinxArray);
+extern struct _imgproc imgproc;
 
 #endif

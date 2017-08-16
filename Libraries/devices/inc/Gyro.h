@@ -3,7 +3,12 @@
 
 #include "root.h"
 
-void GyroInit(void);
-int32_t GyroRead(void);
+struct _gyro {
+    void (*init)(struct _gyro *self);
+    int32_t (*get_value)(void);
+    bool work;
+};
+
+extern struct _gyro gyro;
 
 #endif

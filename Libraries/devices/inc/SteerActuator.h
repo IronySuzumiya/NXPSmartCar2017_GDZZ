@@ -3,11 +3,13 @@
 
 #include "root.h"
 
-void SteerActuatorInit(void);
-void SteerActuatorReset(void);
-void SteerActuatorOut(int16_t out);
+struct _steer {
+    void (*init)(struct _steer *self);
+    void (*change_duty)(int16_t out);
+    int16_t middle_duty;
+    bool work;
+};
 
-extern bool steer_actuator_on;
-extern int16_t steer_actuator_middle;
+extern struct _steer steer;
 
 #endif

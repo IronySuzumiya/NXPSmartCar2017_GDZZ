@@ -18,26 +18,59 @@
 #include "Joystick.h"
 #include "Gyro.h"
 
-bool enabled;
-bool gyro;
-int32_t startLineEnableDistance;
-
 static void NVICInit(void);
+
 static void BuzzleInit(void);
-static void TimerInit(void);
-static void OLEDInit(void);
+static inline void BuzzleOn() {
+    BUZZLE_ON;
+}
+static inline void BuzzleOff() {
+    BUZZLE_OFF;
+}
+
+static void TimerInit(struct _timer *self);
+static void TimerChangeStat(bool enable_or_disable);
+static const uint32_t timerPeriod = 5000;
+static void MainProc(void);
+
+static void OLEDInit(struct _oled *self);
+static const char OLEDTitle[] = "Super AI desu!";
+
 static void DistanceControl(void);
 static void BuzzleControl(bool);
-static void MainProc(void);
+
 static void SwitchAndParamLoad(void);
 static void GetReady(void);
+
+struct _facility facility = {
+    { NVICInit },
+    { BuzzleInit, BuzzleOn, BuzzleOff },
+    { TimerInit, TimerChangeStat, timerPeriod, MainProc },
+};
+
+struct _ui ui = {
+    { OLEDInit, OLEDTitle }
+};
+
+struct {
+    bool enabled;
+}
+global_flag;
+
+bool enabled;
+int32_t startLineEnableDistance;
 
 void MainInit() {
     DelayInit();
     
     SwitchAndParamLoad();
     
-    OLEDInit();
+    facility.buzzle.init();
+    facility.nvic.init();
+    facility.timer.init(&facility.timer);
+    facility.timer.change_stat(DISABLE);
+    
+    ui.oled.init(&ui.oled);
     
     ModeSelect();
     
@@ -55,10 +88,6 @@ void MainInit() {
     
     DataCommInit();
     
-    BuzzleInit();
-    
-    NVICInit();
-    
     ImgProcInit();
     
     if(double_car) {
@@ -66,8 +95,6 @@ void MainInit() {
     }
     
     GetReady();
-    
-    TimerInit();
 }
 
 void NVICInit() {
@@ -116,15 +143,18 @@ void BuzzleInit() {
     GPIO_QuickInit(BUZZLE_PORT, BUZZLE_PIN, kGPIO_Mode_OPP);
 }
 
-void TimerInit() {
-    PIT_QuickInit(PIT_CHL, PIT_PRD);
-    PIT_CallbackInstall(PIT_CHL, MainProc);
-    PIT_ITDMAConfig(PIT_CHL, kPIT_IT_TOF, ENABLE);
+void TimerInit(struct _timer *self) {
+    PIT_QuickInit(PIT_CHL, self->period);
+    PIT_CallbackInstall(PIT_CHL, self->callback);
 }
 
-void OLEDInit() {
+void TimerChangeStat(bool option) {
+    PIT_ITDMAConfig(PIT_CHL, kPIT_IT_TOF, option);
+}
+
+void OLEDInit(struct _oled *self) {
     OLED_Init();
-    OLEDPrintf(0, 0, "Nadeko-AI");
+    OLEDPrintf(0, 0, (char *)self->title);
 }
 
 void OLEDClrRow(uint8_t row) {

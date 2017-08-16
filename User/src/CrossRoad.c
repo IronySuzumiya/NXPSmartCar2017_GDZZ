@@ -50,8 +50,8 @@ void CrossRoadAction() {
 //    resultSet.rightBorder[IMG_ROW - 4] = right;
 //    int16_t startIndex = resultSet.middleLine[IMG_ROW - 4] = (left + right) / 2;
 //    for(int16_t row = IMG_ROW - 5; row > IMG_ROW - 10; --row) {
-//        LeftBorderSearchFrom(row, startIndex);
-//        RightBorderSearchFrom(row, startIndex);
+//        LeftBorderScanFrom(row, startIndex);
+//        RightBorderScanFrom(row, startIndex);
 //        MiddleLineUpdate(row);
 //        startIndex = resultSet.middleLine[row];
 //    }

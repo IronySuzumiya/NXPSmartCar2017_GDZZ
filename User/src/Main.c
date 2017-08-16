@@ -9,13 +9,16 @@
 int main() {
     MainInit();
     while(1) {
-        #ifdef USE_STAT_TRANS
+        if(trans_stat) {
             StateTrans(GyroRead(), 0, 3120, 0);
-            DelayMs(10);
-        #endif
-        #ifdef USE_IMG_TRANS
+        }
+        if(trans_img) {
             ImgTrans(&resultSet);
+        }
+        if(trans_img) {
             DelayMs(50);
-        #endif
+        } else if(trans_stat) {
+            DelayMs(10);
+        }
     }
 }
