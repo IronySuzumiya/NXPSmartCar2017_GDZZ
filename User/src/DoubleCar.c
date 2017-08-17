@@ -21,6 +21,14 @@ bool beingOvertaken;
 bool alreadyReceivedOvertakingFinished;
 bool rampOvertaking;
 bool straightLineOvertaking;
+int16_t ringOvertakingCnt;
+int16_t rampOvertakingCnt;
+int16_t straightLineOvertakingCnt;
+int16_t barrierOvertakingCnt;
+int16_t ringOvertakingCntMax;
+int16_t rampOvertakingCntMax;
+int16_t straightLineOvertakingCntMax;
+int16_t barrierOvertakingCntMax;
 
 static void UltraSonicRecvInt(uint32_t pinxArray);
 static void UltraSonicTimeOutInt(void);

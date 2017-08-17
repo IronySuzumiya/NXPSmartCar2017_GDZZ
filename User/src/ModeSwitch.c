@@ -24,21 +24,21 @@ void ModeSelect() {
     double_car = !!(mode & 0x01);
     if(double_car) {
         start_line = !!(mode & 0x02);
-        OLEDPrintf(5, 3, "%s %s ", "double", (start_line ? "start" : "xstart"));
+        OLEDPrintf(5, 4, "%s %s ", "double", (start_line ? "start" : "xstart"));
         
         rampOvertakingEnabled = !!(mode & 0x04);
         straightLineOvertakingEnabled = !!(mode & 0x08);
-        OLEDPrintf(5, 4, "%s %s ",
+        OLEDPrintf(5, 5, "%s %s ",
             (rampOvertakingEnabled ? "ramp" : "xramp"),
             (straightLineOvertakingEnabled ? "straight" : "xstraight"));
         
         barrierOvertakingEnabled = !!(mode & 0x10);
         leader_car = !!(mode & 0x20);
-        OLEDPrintf(5, 5, "%s %s ",
+        OLEDPrintf(5, 6, "%s %s ",
             (barrierOvertakingEnabled ? "barrier" : "xbarrier"),
             (leader_car ? "leader" : "follower"));
     } else {
         start_line = !!(mode & 0x02);
-        OLEDPrintf(5, 3, "%s %s ", "single", (start_line ? "start" : "xstart"));
+        OLEDPrintf(5, 4, "%s %s ", "single", (start_line ? "start" : "xstart"));
     }
 }

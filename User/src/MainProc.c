@@ -312,4 +312,9 @@ static void SwitchAndParamLoad() {
     barrierOvertakingDistanceMax = 11800;
     final_sync = false;
     dummyBarrierWidth = 35;
+    
+    ringOvertakingCntMax = 6;
+    rampOvertakingCntMax = 2;
+    straightLineOvertakingCntMax = 2;
+    barrierOvertakingCntMax = 2;
 }

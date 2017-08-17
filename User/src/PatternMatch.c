@@ -33,7 +33,7 @@ int16_t GetRoadType() {
             return Ring;
         }
     } else if(aroundBarrier) {
-        if(barrierOvertakingEnabled) {
+        if(barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
             if(leader_car) {
                 if(barrierDistance < 5500) {
                     if(!placeholder) {
@@ -49,6 +49,7 @@ int16_t GetRoadType() {
                     leader_car = !leader_car;
                     beingOvertaken = true;
                     placeholder = false;
+                    ++barrierOvertakingCnt;
                 }
             } else if(barrierOvertaking) {
                 if(barrierDistance < 17000) {
@@ -61,6 +62,7 @@ int16_t GetRoadType() {
                     leader_car = !leader_car;
                     SendMessage(OVERTAKINGFINISHED);
                     barrierOvertaking = false;
+                    ++barrierOvertakingCnt;
                 }
             } else if(barrierDistance < 5500) {
                 along = (barrierType == LeftBarrier ? AlongRightBorder : AlongLeftBorder);
@@ -104,6 +106,7 @@ int16_t GetRoadType() {
                 onRamp = false;
                 rampDistance = 0;
                 SendMessage(RAMPOVERTAKING);
+                ++rampOvertakingCnt;
             } else if(rampDistance > 10000) {
                 along = AlongLeftBorder;
             }
@@ -113,6 +116,7 @@ int16_t GetRoadType() {
                 onRamp = false;
                 rampDistance = 0;
                 SendMessage(OVERTAKINGFINISHED);
+                ++rampOvertakingCnt;
             } else if(rampDistance > 11000) {
                 along = AsUsual;
             } else {
@@ -130,7 +134,11 @@ int16_t GetRoadType() {
             rampOvertaking = false;
             onRamp = true;
         }
-    } else if(straightLineOvertakingEnabled && leader_car && straightLine && !inStraightLine
+    } else if(straightLineOvertakingEnabled
+            && straightLineOvertakingCnt < straightLineOvertakingCntMax
+            && leader_car
+            && straightLine
+            && !inStraightLine
             && !resultSet.leftBorderNotFoundCnt
             && !resultSet.rightBorderNotFoundCnt) {
         inStraightLine = true;
@@ -144,6 +152,7 @@ int16_t GetRoadType() {
                 inStraightLine = false;
                 straightLineDistance = 0;
                 SendMessage(STRAOVERTAKING);
+                ++straightLineOvertakingCnt;
             }
         } else {
             if(straightLineDistance > 16000) {
@@ -151,6 +160,7 @@ int16_t GetRoadType() {
                 inStraightLine = false;
                 straightLineDistance = 0;
                 SendMessage(OVERTAKINGFINISHED);
+                ++straightLineOvertakingCnt;
             } else if(straightLineDistance > 12000) {
                 along = AsUsual;
             } else {
@@ -173,9 +183,9 @@ int16_t GetRoadType() {
     return !inRing && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : ((double_car && leader_car) || (!double_car))
             && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : rampOvertakingEnabled && double_car && leader_car
+        : rampOvertakingEnabled && double_car && leader_car && rampOvertakingCnt < rampOvertakingCntMax
             && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
-        : !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
+        : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
 

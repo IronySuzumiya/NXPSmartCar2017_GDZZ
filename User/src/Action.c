@@ -89,12 +89,14 @@ int16_t CommonAction() {
             if(double_car && !overtaking) {
                 if(leader_car) {
                     leader_car = !leader_car;
+                    ++ringOvertakingCnt;
                     if(alreadyReceivedOvertakingFinished) {
                         alreadyReceivedOvertakingFinished = false;
                     } else {
                         beingOvertaken = true;
                     }
                 } else {
+                    ++ringOvertakingCnt;
                     sendOvertakingFinishedMsgLater = true;
                 }
                 overtaking = true;
