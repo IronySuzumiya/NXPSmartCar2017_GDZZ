@@ -10,6 +10,7 @@
 bool rampOvertakingEnabled;
 bool straightLineOvertakingEnabled;
 bool barrierOvertakingEnabled;
+bool barrierDoubleOvertakingEnabled;
 
 #pragma diag_suppress 1293
 

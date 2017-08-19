@@ -3,6 +3,7 @@
 #include "ImgProc.h"
 #include "uart.h"
 #include "MainProc.h"
+#include "Action.h"
 
 bool direction_control_on;
 float directionAngle;
@@ -23,8 +24,14 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
-        avgMiddle += middleLine[i];
+    if(!final) {
+        for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
+            avgMiddle += middleLine[i];
+        }
+    } else {
+        for(int16_t i = 30 ; i < 40; ++i) {
+            avgMiddle += middleLine[i];
+        }
     }
     avgMiddle /= 10;
     return expectMiddle - avgMiddle;

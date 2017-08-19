@@ -26,15 +26,13 @@ bool crossRoadOvertaking;
 bool start_line;
 bool out;
 bool crossRoadActionEnabled;
-int32_t barrierOvertakingDistanceMax;
-bool final_sync;
-int16_t dummyBarrierWidth;
 bool onRamp;
 int16_t rampDistance;
 bool inStraightLine;
 int16_t straightLineDistance;
 int32_t preRingEndDistance;
 bool preRingEnd;
+bool hugeRing;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
@@ -76,8 +74,9 @@ void FinalDashAction() {
 
 int16_t CommonAction() {
     switch(GetRoadType()) {
+        case HugeRing:
+            hugeRing = true;
         case Ring:
-            BUZZLE_ON;
             if(double_car) {
                 if(leader_car && !inRing) {
                     SendMessage(HOLD);
@@ -105,9 +104,9 @@ int16_t CommonAction() {
                 overtaking = true;
             }
             #if CAR_NO == 1
-           return IMG_COL / 2 -32;
+            return IMG_COL / 2 - 32;
             #elif CAR_NO == 2
-            return IMG_COL / 2 +26;
+            return IMG_COL / 2 + 26;
             #endif
         case CrossRoad:
             inCrossRoad = true;
@@ -126,23 +125,11 @@ int16_t CommonAction() {
         case RightBarrier:
             return IMG_COL / 2 + 20;
         case DummyLeftBarrier:
-            return IMG_COL / 2 - dummyBarrierWidth;
+            return IMG_COL / 2 - 35;
         case DummyRightBarrier:
-            return IMG_COL / 2 + dummyBarrierWidth;
+            return IMG_COL / 2 + 35;
         case Ramp:
             onRamp = true;
-            break;
-        case HugeRing:
-              if(double_car) {
-                if(leader_car && !inRing) {
-                    SendMessage(HOLD);
-                } else if(holding) {
-                    holding = false;
-                    holdingDistance = 0;
-                }
-            }
-            inRing = true;
-            RingAction();
             break;
     }
     return IMG_COL / 2;

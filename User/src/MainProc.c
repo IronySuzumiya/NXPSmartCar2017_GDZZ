@@ -19,7 +19,6 @@
 #include "Gyro.h"
 
 bool enabled;
-int32_t startLineEnableDistance;
 extern int32_t preRingEndDistance;
 extern bool preRingEnd;
 
@@ -141,7 +140,7 @@ void OLEDPrintf(uint8_t x, uint8_t y, char *str, ...) {
 void DistanceControl() {
     int16_t dist = (leftSpeed + rightSpeed) / 2;
     if(!startLineEnabled) {
-        if(wholeDistance < startLineEnableDistance) {
+        if(wholeDistance < 2000) {
             wholeDistance += dist;
         } else {
             startLineEnabled = true;
@@ -204,7 +203,7 @@ void DistanceControl() {
     }
     if(preRingEnd){
         preRingEndDistance += dist;
-        if(preRingEndDistance > 5000) {
+        if(preRingEndDistance > 8000) {
             preRingEnd = false;
             preRingEndDistance = 0;
         }
@@ -232,7 +231,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(leader_car && inRing);
+    BuzzleControl(final || inRing || ringEndDelay);
     
     DistanceControl();
     
@@ -309,18 +308,14 @@ static void SwitchAndParamLoad() {
     avg_distance_between_the_two_cars = 130;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
-    startLinePresight = 15;
+    startLinePresight = 30;
     startLineWidth = 124;
-    sendOvertakingFinishedMsgLaterDistanceMax = 7000;
+    sendOvertakingFinishedMsgLaterDistanceMax = 9000;
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 95;
     out = true;
     crossRoadActionEnabled = true;
-    startLineEnableDistance = 2000;
-    barrierOvertakingDistanceMax = 11800;
-    final_sync = false;
-    dummyBarrierWidth = 35;
     
     ringOvertakingCntMax = 6;
     rampOvertakingCntMax = 1;

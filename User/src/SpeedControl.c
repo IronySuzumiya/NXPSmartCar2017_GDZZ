@@ -35,9 +35,7 @@ void SpeedControlProc(int16_t leftSpeed, int16_t rightSpeed) {
 
 void SpeedTargetSet(int16_t speed, bool diff) {
     if(double_car && !leader_car && speed != 0) {
-        if(holding) {
-            speed -= speed_control_dec;
-        } else if(TOO_FAR || (final && !finalPursueingFinished)) {
+        if(TOO_FAR) {
             speed += speed_control_acc;
         } else if(TOO_CLOSE) {
             speed -= speed_control_dec;

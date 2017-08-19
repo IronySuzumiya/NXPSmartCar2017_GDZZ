@@ -29,14 +29,12 @@ extern bool crossRoadOvertaking;
 extern bool start_line;
 extern bool out;
 extern bool crossRoadActionEnabled;
-extern int32_t barrierOvertakingDistanceMax;
-extern bool final_sync;
-extern int16_t dummyBarrierWidth;
 extern bool onRamp;
 extern int16_t rampDistance;
 extern bool inStraightLine;
 extern int16_t straightLineDistance;
 extern bool preRingEnd;
 extern int32_t preRingEndDistance;
+extern bool hugeRing;
 
 #endif

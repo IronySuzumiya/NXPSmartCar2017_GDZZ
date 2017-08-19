@@ -25,74 +25,111 @@ int16_t GetRoadType() {
         if(ringDistance > 50000) {
             inRing = false;
             ringDistance = 0;
-        } else if(ringDistance > 4000 && IsRingEnd()) {
+        } else if(ringDistance > 4400 && IsRingEnd()) {
+            hugeRing = false;
             inRing = false;
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(ringDistance > 500 && ringDistance < 1500) {
+        } else if(hugeRing ? (ringDistance < 2000) : (ringDistance > 200 && ringDistance < 1500)) {
             return Ring;
         }
     } else if(aroundBarrier) {
         if(barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
-            if(leader_car) {
-                if(barrierDistance < 5500) {
-                    if(!placeholder) {
-                        placeholder = true;
-                        SendMessage(BARIOVERTAKING);
-                    }
-                    lastAlong = along;
-                    along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                } else if(barrierDistance < 6500) {
-                    placeholder = false;
-                    lastAlong = along;
-                    along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
-                } else if(barrierDistance < 11000) {
-                    lastAlong = along;
-                    along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
-                } else if(barrierDistance < 16000) {
-                    if(!placeholder) {
-                        beingOvertaken = true;
-                        placeholder = true;
-                    } else {
+            if(!barrierDoubleOvertakingEnabled) {
+                if(leader_car) {
+                    if(barrierDistance < 5500) {
+                        if(!placeholder) {
+                            placeholder = true;
+                            SendMessage(BARIOVERTAKING);
+                        }
+                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                    } else if(barrierDistance < 6500) {
+                        placeholder = false;
+                        lastAlong = along;
+                        along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
+                    } else if(barrierDistance < 11000) {
                         lastAlong = along;
                         along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                    } else {
+                        barrierDistance = 0;
+                        aroundBarrier = false;
+                        leader_car = !leader_car;
+                        beingOvertaken = true;
+                        placeholder = false;
+                        ++barrierOvertakingCnt;
                     }
-                } else if(barrierDistance < 19000) {
-                    lastAlong = along;
-                    along = AsUsual;
-                } else {
-                    barrierDistance = 0;
-                    aroundBarrier = false;
-                    placeholder = false;
-                    SendMessage(OVERTAKINGFINISHED);
-                    ++barrierOvertakingCnt;
+                    goto end;
+                } else if(barrierOvertaking) {
+                    if(barrierDistance < 16000) {
+                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                    } else if(barrierDistance < 20000) {
+                        along = AsUsual;
+                    } else {
+                        barrierDistance = 0;
+                        aroundBarrier = false;
+                        leader_car = !leader_car;
+                        SendMessage(OVERTAKINGFINISHED);
+                        barrierOvertaking = false;
+                        ++barrierOvertakingCnt;
+                    }
+                    goto end;
                 }
-            } else if(barrierOvertaking) {
-                if(barrierDistance < 16000) {
-                    lastAlong = along;
-                    along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                } else if(!placeholder) {
-                    placeholder = true;
-                    SendMessage(OVERTAKINGFINISHED);
-                    beingOvertaken = true;
-                } else {
-                    barrierDistance = 0;
-                    aroundBarrier = false;
-                    barrierOvertaking = false;
-                    placeholder = false;
-                    ++barrierOvertakingCnt;
-                }
-            } else if(barrierDistance < 5500) {
-                lastAlong = along;
-                along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
             } else {
-                barrierDistance = 0;
-                aroundBarrier = false;
-                lastAlong = along;
-                along = AsUsual;
+                if(leader_car) {
+                    if(barrierDistance < 5500) {
+                        if(!placeholder) {
+                            placeholder = true;
+                            SendMessage(BARIOVERTAKING);
+                        }
+                        lastAlong = along;
+                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                    } else if(barrierDistance < 6500) {
+                        placeholder = false;
+                        lastAlong = along;
+                        along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
+                    } else if(barrierDistance < 11000) {
+                        lastAlong = along;
+                        along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                    } else if(barrierDistance < 16000) {
+                        if(!placeholder) {
+                            beingOvertaken = true;
+                            placeholder = true;
+                        } else {
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                        }
+                    } else if(barrierDistance < 19500) {
+                        lastAlong = along;
+                        along = AsUsual;
+                    } else {
+                        barrierDistance = 0;
+                        aroundBarrier = false;
+                        placeholder = false;
+                        SendMessage(OVERTAKINGFINISHED);
+                        ++barrierOvertakingCnt;
+                    }
+                    goto end;
+                } else if(barrierOvertaking) {
+                    if(barrierDistance < 15000) {
+                        lastAlong = along;
+                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                    } else if(!placeholder) {
+                        placeholder = true;
+                        SendMessage(OVERTAKINGFINISHED);
+                        beingOvertaken = true;
+                    } else {
+                        barrierDistance = 0;
+                        aroundBarrier = false;
+                        barrierOvertaking = false;
+                        placeholder = false;
+                        ++barrierOvertakingCnt;
+                    }
+                    goto end;
+                }
             }
-        } else if(barrierDistance < 5500) {
+        }
+        if(barrierDistance < 5500) {
             lastAlong = along;
             along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
         } else {
@@ -212,13 +249,14 @@ int16_t GetRoadType() {
         }
     }
     
+end:
     return !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
 //        : ((double_car && leader_car) || (!double_car))
 //            && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : rampOvertakingEnabled && double_car && leader_car
             && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
-        : enabled && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
+        : enabled && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
 

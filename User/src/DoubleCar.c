@@ -94,7 +94,7 @@ void DoubleCarMessageRecv(uint16_t message) {
             finalPursueingFinished = true;
             break;
         case HOLD:
-            holding = 0;
+            holding = true;
             break;
         case RAMPOVERTAKING:
             rampOvertaking = true;

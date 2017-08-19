@@ -130,44 +130,38 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
-    bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     bool accelerate;
-    if(double_car) {
-        if(final_sync) {
-            if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
-                SendMessage(FINAL);
-                final = true;
-            } else if(final) {
-                FinalDashAction();
-            }
-        } else {
-            if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight)) {
-                finalPursueingFinished = true;
-                final = true;
-            }
-            if(leader_car && dashDistance > 17000) {
-                stop = true;
-            } else if(!leader_car && dashDistance > 13000) {
-                stop = true;
-            }
-        }
-    } else if(start_line && startLineEnabled && IsStartLine(startLinePresight)) {
+    if(!final && double_car && start_line && startLineEnabled && IsStartLine(startLinePresight) && leader_car) {
+        final = true;
+        SendMessage(FINAL);
+    } else if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight)) {
         final = true;
         finalPursueingFinished = true;
     } else if(final && finalPursueingFinished && dashDistance > 14000) {
         stop = true;
     }
       
-      if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
+    if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
         stop = true;
+    } else if(double_car && final && !finalPursueingFinished) {
+        if(leader_car) {
+            if(finalDistance < 800) {
+                lastAlong = along;
+                along = AlongLeftBorder;
+            } else if(finalDistance < 5400) {
+                lastAlong = along;
+                along = AlongLeftRoad;
+            } else {
+                beingOvertaken = true;
+                finalPursueingFinished = true;
+            }
+        } else {
+            
+        }
     } else {
         straightLine = IsStraightLine();
-        if(doubleCarAction) {
-            CommonAction();
-        } else {
-            middle = CommonAction();
-        }
+        middle = CommonAction();
     }
     
     if(direction_control_on) {
@@ -176,15 +170,19 @@ void ImgProcSummary() {
     
     if(speed_control_on) {
         accelerate = straightLine;
-        SpeedTargetSet(stop || beingOvertaken ? 0 :
-            final_sync && final && leader_car && !finalPursueingFinished ? 0 :
+        SpeedTargetSet(
+            stop || beingOvertaken ? 0 :
             holding ? 80 :
+            double_car && leader_car && final ? 30 :
             leader_car && (onRamp || inStraightLine) ? 65 :
             !leader_car && (onRamp || inStraightLine) ? 90 :
             final && finalPursueingFinished ? 130 :
             accelerate ? speed_control_speed * 1.1 :
-            aroundBarrier || barrierOvertaking ? 65 :
+            barrierOvertaking && barrierDoubleOvertakingEnabled ? 65 :
+            barrierOvertaking && !barrierDoubleOvertakingEnabled && leader_car ? 65 :
+            barrierOvertaking && !barrierDoubleOvertakingEnabled && !leader_car ? 90 :
             inRing || ringEndDelay ? speedInRing : speed_control_speed
-            , !(accelerate || beingOvertaken || stop));
+            , !(accelerate || beingOvertaken || stop)
+        );
     }
 }
