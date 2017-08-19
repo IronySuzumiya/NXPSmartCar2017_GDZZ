@@ -20,6 +20,8 @@
 
 bool enabled;
 int32_t startLineEnableDistance;
+extern int32_t preRingEndDistance;
+extern bool preRingEnd;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
@@ -95,7 +97,7 @@ void GetReady() {
         } else {
             while(!enabled) {
                 OLEDPrintf(5, 2, "D: %.3f", distanceBetweenTheTwoCars);
-                DelayMs(500);
+                DelayMs(100);
             }
             DelayMs(100);
         }
@@ -200,6 +202,13 @@ void DistanceControl() {
     if(inStraightLine) {
         straightLineDistance += dist;
     }
+    if(preRingEnd){
+        preRingEndDistance += dist;
+        if(preRingEndDistance > 5000) {
+            preRingEnd = false;
+            preRingEndDistance = 0;
+        }
+    }
 }
 
 void BuzzleControl(bool flag) {
@@ -227,13 +236,13 @@ void MainProc() {
     
     DistanceControl();
     
-    if(beingOvertaken) {
-        if(++ovtcnt > 800) {
-            beingOvertaken = false;
-            ovtcnt = 0;
-            along = AsUsual;
-        }
-    }
+//    if(beingOvertaken) {
+//        if(++ovtcnt > 800) {
+//            beingOvertaken = false;
+//            ovtcnt = 0;
+//            along = AsUsual;
+//        }
+//    }
     
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
@@ -265,13 +274,13 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 752;
+    steer_actuator_middle = 753;
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.04;  //0.034
+    differential_ratio = 0.036;  //0.034
     
     #elif CAR_NO == 2
     
@@ -297,7 +306,7 @@ static void SwitchAndParamLoad() {
     #endif
     
     reduction_ratio = 2.55;
-    avg_distance_between_the_two_cars = 120;
+    avg_distance_between_the_two_cars = 130;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
     startLinePresight = 15;
@@ -305,8 +314,8 @@ static void SwitchAndParamLoad() {
     sendOvertakingFinishedMsgLaterDistanceMax = 7000;
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
-    speedInRing = 85;
-    out = false;
+    speedInRing = 95;
+    out = true;
     crossRoadActionEnabled = true;
     startLineEnableDistance = 2000;
     barrierOvertakingDistanceMax = 11800;
@@ -314,7 +323,7 @@ static void SwitchAndParamLoad() {
     dummyBarrierWidth = 35;
     
     ringOvertakingCntMax = 6;
-    rampOvertakingCntMax = 2;
-    straightLineOvertakingCntMax = 2;
-    barrierOvertakingCntMax = 2;
+    rampOvertakingCntMax = 1;
+    straightLineOvertakingCntMax = 6;
+    barrierOvertakingCntMax = 1;
 }

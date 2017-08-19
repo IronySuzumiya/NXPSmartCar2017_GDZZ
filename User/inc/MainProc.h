@@ -50,4 +50,7 @@ void MainInit(void);
 extern bool enabled;
 extern int32_t startLineEnableDistance;
 
+extern bool trans_stat;
+extern bool trans_img;
+
 #endif

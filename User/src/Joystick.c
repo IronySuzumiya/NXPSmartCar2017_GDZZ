@@ -44,7 +44,7 @@ static struct _param_handle {
       "dirkpc",      "dirkd",      "barrspeed",
       "ringspeed",   "out",        "crsraction",
       "sttlnedist",  "barovtkdst", "finalsync",
-      "dummybarwid", "ringcnt",    "rampcnt",
+      "dummybarwid" "ringcnt",    "rampcnt",
       "strlncnt",    "barrcnt" },
     { &reduction_ratio,                 &differential_ratio,           &avg_distance_between_the_two_cars,
       &diff_distance_max,               &speed_control_speed,          &pre_sight,

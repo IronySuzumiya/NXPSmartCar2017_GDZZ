@@ -21,6 +21,7 @@ bool beingOvertaken;
 bool alreadyReceivedOvertakingFinished;
 bool rampOvertaking;
 bool straightLineOvertaking;
+
 int16_t ringOvertakingCnt;
 int16_t rampOvertakingCnt;
 int16_t straightLineOvertakingCnt;

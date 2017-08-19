@@ -35,6 +35,7 @@ extern byte imgBuf[IMG_ROW][IMG_COL];
 extern img_proc_struct resultSet;
 extern int16_t pre_sight;
 extern int16_t startLinePresight;
+extern int16_t lastAlong;
 extern int16_t along;
 extern bool straightLine;
 

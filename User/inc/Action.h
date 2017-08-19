@@ -36,5 +36,7 @@ extern bool onRamp;
 extern int16_t rampDistance;
 extern bool inStraightLine;
 extern int16_t straightLineDistance;
+extern bool preRingEnd;
+extern int32_t preRingEndDistance;
 
 #endif

@@ -50,6 +50,7 @@ img_proc_struct;
 enum _road_type {
     Unknown,
     Ring,
+    HugeRing,
     RingEnd,
     LeftCurve,
     RightCurve,
@@ -64,7 +65,9 @@ enum _road_type {
 enum _along_type {
     AsUsual,
     AlongLeftBorder,
-    AlongRightBorder
+    AlongRightBorder,
+    AlongLeftRoad,
+    AlongRightRoad
 };
 
 #endif

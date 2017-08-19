@@ -14,6 +14,7 @@
 #endif
 
 bool IsRing(void);
+bool IsHugeRing(void);
 bool IsRingEndFromLeft(void);
 bool IsRingEndFromRight(void);
 void RingActionGoLeft(void);

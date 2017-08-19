@@ -25,6 +25,7 @@ extern bool beingOvertaken;
 extern bool alreadyReceivedOvertakingFinished;
 extern bool rampOvertaking;
 extern bool straightLineOvertaking;
+
 extern int16_t ringOvertakingCnt;
 extern int16_t rampOvertakingCnt;
 extern int16_t straightLineOvertakingCnt;

@@ -49,11 +49,11 @@ void SpeedTargetSet(int16_t speed, bool diff) {
         if(directionAngle > 0) {
             speed -= reduction_ratio * directionAngle;
             leftPid.targetValue = speed;
-            rightPid.targetValue = speed * (beingOvertaken ? 1 : (differential_ratio * directionAngle + 1));
+            rightPid.targetValue = speed * (differential_ratio * directionAngle + 1);
         } else {
             speed += reduction_ratio * directionAngle;
             rightPid.targetValue = speed;
-            leftPid.targetValue = speed * (beingOvertaken ? 1 : (differential_ratio * (-directionAngle) + 1));
+            leftPid.targetValue = speed * (differential_ratio * (-directionAngle) + 1);
         }
     }
 }

@@ -17,6 +17,7 @@ byte imgBuf[IMG_ROW][IMG_COL];
 img_proc_struct resultSet;
 int16_t pre_sight;
 int16_t startLinePresight;
+int16_t lastAlong;
 int16_t along;
 bool straightLine;
 
@@ -46,8 +47,7 @@ void ImgProcInit(void) {
 
 void ImgProcHREF(uint32_t pinxArray) {
     if(pinxArray & (1 << CAMERA_HREF_PIN)) {
-        if(imgBufRow < IMG_ROW && imgRealRow > IMG_ABDN_ROW)
-        {
+        if(imgBufRow < IMG_ROW && imgRealRow > IMG_ABDN_ROW) {
             imgProc[imgRealRow % IMG_ROW_INTV]();
         }
         ++imgRealRow;
@@ -94,9 +94,19 @@ void ImgProc1() {
     if(along == AlongLeftBorder) {
         resultSet.foundLeftBorder[imgBufRow] =
             LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 50;
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] - 40;
         ++resultSet.foundLeftBorder[imgBufRow];
     } else if(along == AlongRightBorder) {
+        resultSet.foundRightBorder[imgBufRow] =
+            RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] + 30;
+        ++resultSet.foundRightBorder[imgBufRow];
+    } else if(along == AlongLeftRoad) {
+        resultSet.foundLeftBorder[imgBufRow] =
+            LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 50;
+        ++resultSet.foundLeftBorder[imgBufRow];
+    } else if(along == AlongRightRoad) {
         resultSet.foundRightBorder[imgBufRow] =
             RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
         resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 60;
@@ -120,6 +130,7 @@ void ImgProc3() {
 }
 
 void ImgProcSummary() {
+    bool doubleCarAction = false;
     int16_t middle = IMG_COL / 2;
     bool accelerate;
     if(double_car) {
@@ -147,12 +158,16 @@ void ImgProcSummary() {
     } else if(final && finalPursueingFinished && dashDistance > 14000) {
         stop = true;
     }
-    
-    if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
+      
+      if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
         stop = true;
     } else {
         straightLine = IsStraightLine();
-        middle = CommonAction();
+        if(doubleCarAction) {
+            CommonAction();
+        } else {
+            middle = CommonAction();
+        }
     }
     
     if(direction_control_on) {
@@ -170,6 +185,6 @@ void ImgProcSummary() {
             accelerate ? speed_control_speed * 1.1 :
             aroundBarrier || barrierOvertaking ? 65 :
             inRing || ringEndDelay ? speedInRing : speed_control_speed
-            , !accelerate);
+            , !(accelerate || beingOvertaken || stop));
     }
 }

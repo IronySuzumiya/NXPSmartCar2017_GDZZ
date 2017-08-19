@@ -4,6 +4,7 @@
 #include "ImgUtility.h"
 #include "gpio.h"
 #include "MainProc.h"
+#include "ImgProc.h"
 
 int32_t startDistance;
 bool final;
@@ -32,6 +33,8 @@ bool onRamp;
 int16_t rampDistance;
 bool inStraightLine;
 int16_t straightLineDistance;
+int32_t preRingEndDistance;
+bool preRingEnd;
 
 int16_t FirstOvertakingAction() {
     if(leader_car) {
@@ -74,6 +77,7 @@ void FinalDashAction() {
 int16_t CommonAction() {
     switch(GetRoadType()) {
         case Ring:
+            BUZZLE_ON;
             if(double_car) {
                 if(leader_car && !inRing) {
                     SendMessage(HOLD);
@@ -86,25 +90,24 @@ int16_t CommonAction() {
             RingAction();
             break;
         case RingEnd:
+             preRingEnd = true;
             if(double_car && !overtaking) {
                 if(leader_car) {
                     leader_car = !leader_car;
-                    ++ringOvertakingCnt;
                     if(alreadyReceivedOvertakingFinished) {
                         alreadyReceivedOvertakingFinished = false;
                     } else {
                         beingOvertaken = true;
                     }
                 } else {
-                    ++ringOvertakingCnt;
                     sendOvertakingFinishedMsgLater = true;
                 }
                 overtaking = true;
             }
             #if CAR_NO == 1
-            return IMG_COL / 2 - 22;
+           return IMG_COL / 2 -32;
             #elif CAR_NO == 2
-            return IMG_COL / 2 + 22;
+            return IMG_COL / 2 +26;
             #endif
         case CrossRoad:
             inCrossRoad = true;
@@ -128,6 +131,18 @@ int16_t CommonAction() {
             return IMG_COL / 2 + dummyBarrierWidth;
         case Ramp:
             onRamp = true;
+            break;
+        case HugeRing:
+              if(double_car) {
+                if(leader_car && !inRing) {
+                    SendMessage(HOLD);
+                } else if(holding) {
+                    holding = false;
+                    holdingDistance = 0;
+                }
+            }
+            inRing = true;
+            RingAction();
             break;
     }
     return IMG_COL / 2;
