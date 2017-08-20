@@ -197,10 +197,10 @@ void ImgProcSummary() {
             double_car && !leader_car && finalPursueingFinished ? 120 :
             double_car && !leader_car && waitForFinalPursueing ? 30 :
             leader_car && (onRamp || inStraightLine) ? 65 :
-            !leader_car && (onRamp || inStraightLine) ? 90 :
+            !leader_car && (onRamp || inStraightLine) ? 85 :
             barrierOvertaking && barrierDoubleOvertakingEnabled ? 65 :
             barrierOvertaking && !barrierDoubleOvertakingEnabled && leader_car ? 65 :
-            barrierOvertaking && !barrierDoubleOvertakingEnabled && !leader_car ? 90 :
+            barrierOvertaking && !barrierDoubleOvertakingEnabled && !leader_car ? 85 :
             inRing || ringEndDelay ? speedInRing :
             accelerate ? speed_control_speed * 1.1 :
             speed_control_speed,

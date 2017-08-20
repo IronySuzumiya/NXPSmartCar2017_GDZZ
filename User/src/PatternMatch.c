@@ -223,8 +223,8 @@ int16_t GetRoadType() {
                 leader_car = !leader_car;
                 inStraightLine = false;
                 straightLineDistance = 0;
-                SendMessage(STRAOVERTAKING);
                 ++straightLineOvertakingCnt;
+                SendMessage(STRAOVERTAKING);
             }
         } else {
             if(straightLineDistance > 18000) {
@@ -290,7 +290,7 @@ bool IsStartLine(int16_t row) {
     for(int16_t i = row; i < row + 7; ++i) {
         for(int16_t j = IMG_COL / 2 - startLineWidth / 2; j < IMG_COL / 2 + startLineWidth / 2; ++j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
-                if(++toggleCnt >= 8) {
+                if(++toggleCnt >= 10) {
                     toggleCnt = 0;
                     ++patternRowCnt;
                 }
@@ -317,14 +317,14 @@ bool IsStartLine(int16_t row) {
 
 bool IsStraightLine() {
     int16_t middleAreaOffset = 0;
-    if(InRange(resultSet.middleLine[1], 90, 135)
+    if(InRange(resultSet.middleLine[1], 95, 130)
         && !resultSet.leftBorderNotFoundCnt
         && !resultSet.rightBorderNotFoundCnt) {
         for(int16_t i = 2; i < IMG_ROW; ++i) {
             middleAreaOffset +=
                 Abs(resultSet.middleLine[i] - resultSet.middleLine[1]);
         }
-        return InRange(middleAreaOffset, 0, 160);
+        return InRange(middleAreaOffset, 0, 90);
     } else {
         return false;
     }
