@@ -8,6 +8,7 @@
 
 int32_t startDistance;
 bool final;
+bool waitForFinalPursueing;
 bool finalPursueingFinished;
 int32_t finalDistance;
 int32_t wholeDistance;
@@ -77,19 +78,32 @@ int16_t CommonAction() {
         case HugeRing:
             hugeRing = true;
         case Ring:
-            if(double_car) {
-                if(leader_car && !inRing) {
-                    SendMessage(HOLD);
-                } else if(holding) {
-                    holding = false;
-                    holdingDistance = 0;
+//            if(double_car) {
+//                if(leader_car && !inRing) {
+//                    SendMessage(HOLD);
+//                } else if(!leader_car && holding) {
+//                    holding = false;
+//                    holdingDistance = 0;
+//                }
+//            }
+            inRing = true;
+            if(ringOrder & (1 << ringOvertakingCnt)) {
+                if(leader_car) {
+                    RingActionGoRight();
+                } else {
+                    RingActionGoLeft();
+                }
+            } else {
+                if(leader_car) {
+                    RingActionGoLeft();
+                } else {
+                    RingActionGoRight();
                 }
             }
-            inRing = true;
-            RingAction();
+            BUZZLE_ON;
             break;
         case RingEnd:
-             preRingEnd = true;
+            preRingEnd = true;
             if(double_car && !overtaking) {
                 if(leader_car) {
                     leader_car = !leader_car;
@@ -103,11 +117,20 @@ int16_t CommonAction() {
                 }
                 overtaking = true;
             }
-            #if CAR_NO == 1
-            return IMG_COL / 2 - 32;
-            #elif CAR_NO == 2
-            return IMG_COL / 2 + 26;
-            #endif
+            BUZZLE_ON;
+            if(ringOrder & (1 << ringOvertakingCnt)) {
+                if(last_leader_car) {
+                    return IMG_COL / 2 - 32;
+                } else {
+                    return IMG_COL / 2 + 26;
+                }
+            } else {
+                if(last_leader_car) {
+                    return IMG_COL / 2 + 26;
+                } else {
+                    return IMG_COL / 2 - 32;
+                }
+            }
         case CrossRoad:
             inCrossRoad = true;
             if(crossRoadActionEnabled) {

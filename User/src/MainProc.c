@@ -19,8 +19,6 @@
 #include "Gyro.h"
 
 bool enabled;
-extern int32_t preRingEndDistance;
-extern bool preRingEnd;
 
 static void NVICInit(void);
 static void BuzzleInit(void);
@@ -174,7 +172,7 @@ void DistanceControl() {
     }
     if(holding) {
         holdingDistance += dist;
-        if(holdingDistance > 4000) {
+        if(holdingDistance > 10000) {
             holding = false;
             holdingDistance = 0;
         }
@@ -206,6 +204,7 @@ void DistanceControl() {
         if(preRingEndDistance > 8000) {
             preRingEnd = false;
             preRingEndDistance = 0;
+            ++ringOvertakingCnt;
         }
     }
 }
@@ -231,7 +230,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(final || inRing || ringEndDelay);
+    BuzzleControl(final);
     
     DistanceControl();
     
@@ -279,7 +278,7 @@ static void SwitchAndParamLoad() {
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.036;  //0.034
+    differential_ratio = 0.04;  //0.034
     
     #elif CAR_NO == 2
     
@@ -321,4 +320,6 @@ static void SwitchAndParamLoad() {
     rampOvertakingCntMax = 1;
     straightLineOvertakingCntMax = 6;
     barrierOvertakingCntMax = 1;
+    
+    ringOrder = 0x5;
 }

@@ -25,7 +25,7 @@ static struct _temp_handle {
 
 static struct _param_handle {
     int16_t index;
-    enum { INT16, INT32, FLOAT, BOOL } type[MODIFIABLE_PARAM_NUM];
+    enum { INT16, INT32, FLOAT, BOOL, ORDER } type[MODIFIABLE_PARAM_NUM];
     char *name[MODIFIABLE_PARAM_NUM];
     void *(ref[MODIFIABLE_PARAM_NUM]);
     float div[MODIFIABLE_PARAM_NUM];
@@ -35,22 +35,22 @@ static struct _param_handle {
       INT32, INT16, INT16,
       INT16, BOOL,  BOOL,
       INT16, INT16, INT16,
-      INT16, BOOL },
+      INT16, BOOL,  ORDER },
     { "reduction",   "speeddiff",  "avgdistance",
       "diffdistmax", "speed",      "presight",
       "ringspeed",   "out",        "crsraction",
       "ringcnt",     "rampcnt",    "strlncnt",
-      "barrcnt",     "barrdouble" },
-    { &reduction_ratio,         &differential_ratio,            &avg_distance_between_the_two_cars,
-      &diff_distance_max,       &speed_control_speed,           &pre_sight,
-      &speedInRing,             &out,                           &crossRoadActionEnabled,
-      &ringOvertakingCntMax,    &rampOvertakingCntMax,          &straightLineOvertakingCntMax,
-      &barrierOvertakingCntMax, &barrierDoubleOvertakingEnabled },
+      "barrcnt",     "barrdouble", "ringorder" },
+    { &reduction_ratio,         &differential_ratio,             &avg_distance_between_the_two_cars,
+      &diff_distance_max,       &speed_control_speed,            &pre_sight,
+      &speedInRing,             &out,                            &crossRoadActionEnabled,
+      &ringOvertakingCntMax,    &rampOvertakingCntMax,           &straightLineOvertakingCntMax,
+      &barrierOvertakingCntMax, &barrierDoubleOvertakingEnabled, &ringOrder },
     { 0.02, 0.0002, 1,
       1,    1,      1,
       1,    1,      1,
       1,    1,      1,
-      1,    1 }
+      1,    1,      1 }
 };
 
 static void JoystickConfirmingInt(void);
@@ -138,6 +138,8 @@ void ParamShow() {
         case BOOL:
             OLEDPrintf(5, 3, "%s: %s", param.name[temp.index], temp.u.b ? "true" : "false");
             break;
+        case ORDER:
+            OLEDPrintf(5, 3, "%s: %x", param.name[temp.index], temp.u.i16);
     }
 }
 
@@ -156,6 +158,9 @@ void ParamFetch() {
         case BOOL:
             temp.u.b = *(bool *)(param.ref[param.index]);
             break;
+        case ORDER:
+            temp.u.i16 = *(int16_t *)(param.ref[param.index]);
+            break;
     }
 }
 
@@ -172,6 +177,9 @@ void ParamInc() {
             break;
         case BOOL:
             temp.u.b = !temp.u.b;
+            break;
+        case ORDER:
+            temp.u.i16 += param.div[temp.index];
             break;
     }
 }
@@ -190,6 +198,9 @@ void ParamDec() {
         case BOOL:
             temp.u.b = !temp.u.b;
             break;
+        case ORDER:
+            temp.u.i16 -= param.div[temp.index];
+            break;
     }
 }
 
@@ -206,6 +217,9 @@ void ParamUpdate() {
             break;
         case BOOL:
             *(bool *)(param.ref[temp.index]) = temp.u.b;
+            break;
+        case ORDER:
+            *(int16_t *)(param.ref[temp.index]) = temp.u.i16;
             break;
     }
 }

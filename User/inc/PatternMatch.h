@@ -15,5 +15,6 @@ bool IsStraightLine(void);
 bool IsRamp(void);
 
 extern int16_t startLineWidth;
+extern bool last_leader_car;
 
 #endif

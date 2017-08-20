@@ -3,15 +3,15 @@
 
 #include "root.h"
 
-#if CAR_NO == 1
-#define IsRingEnd IsRingEndFromRight
-#define RingAction RingActionGoRight
-#define RingEndAction RingEndActionFromRight
-#elif CAR_NO == 2
-#define IsRingEnd IsRingEndFromLeft
-#define RingAction RingActionGoLeft
-#define RingEndAction RingEndActionFromLeft
-#endif
+//#if CAR_NO == 1
+//#define IsRingEnd IsRingEndFromRight
+//#define RingAction RingActionGoRight
+//#define RingEndAction RingEndActionFromRight
+//#elif CAR_NO == 2
+//#define IsRingEnd IsRingEndFromLeft
+//#define RingAction RingActionGoLeft
+//#define RingEndAction RingEndActionFromLeft
+//#endif
 
 bool IsRing(void);
 bool IsHugeRing(void);
@@ -23,5 +23,6 @@ void RingActionGoRight(void);
 extern int32_t ringDistance;
 extern bool inRing;
 extern bool ringEndDelay;
+extern int16_t ringOrder;
 
 #endif

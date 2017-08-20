@@ -7,6 +7,7 @@
 int32_t ringDistance;
 bool inRing;
 bool ringEndDelay;
+int16_t ringOrder;
 
 bool IsRing() {
     int16_t cursor = 0;
@@ -102,37 +103,28 @@ bool IsRing() {
         maxWidth = Max(right - left, maxWidth);
         cursor = (left + right) / 2;
     }
-#if CAR_NO == 1
     return leftMost < 85 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 10
         && maxWidth > 65 && maxWidth - minWidth > 35
-        && maxWidth<185  &&  minWidth >5
+        && maxWidth < 185 && minWidth > 5
         && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
         && InRange(resultSet.middleLine[10], 112 - 20, 112 + 20);
-#elif CAR_NO == 2
-    return leftMost < 85 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 10
-        && maxWidth > 65 && maxWidth - minWidth > 35
-        && maxWidth<185 &&  minWidth >5
-        && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
-        && InRange(resultSet.middleLine[10], 112 - 20, 112 + 20);
-#endif
 }
 
 bool IsHugeRing() {
-    int16_t cnt_0=0;
-    int16_t cnt_1=0;
-    int16_t cnt_2=0;
-    for(int16_t i = 20; i < 30; ++i){
+    int16_t cnt_0 = 0;
+    int16_t cnt_1 = 0;
+    int16_t cnt_2 = 0;
+    for(int16_t i = 15; i < 30; ++i){
         if(resultSet.rightBorder[i] - resultSet.leftBorder[i] > 220)
             ++cnt_0;
     }
     if(cnt_0 < 6)
         return false;
-    for(int16_t row=IMG_ROW - 1; row > 40; --row){
-        cnt_1=0;
-        for(int16_t j=30;j<190;j++){
-            if(IsWhite(row, j)) {
+    for(int16_t row = IMG_ROW - 1; row > 40; --row){
+        cnt_1 = 0;
+        for(int16_t j = 30; j < 190; ++j){
+            if(IsWhite(row, j))
                 ++cnt_1;
-            }
         }
         if(cnt_1 > 5)
             ++cnt_2;
@@ -152,7 +144,7 @@ bool IsRingEndFromLeft() {
             ++cnt;
         }
     }
-    return cnt >= 5;
+    return cnt >= 4;
 }
 
 bool IsRingEndFromRight() {
@@ -165,7 +157,7 @@ bool IsRingEndFromRight() {
             ++cnt;
         }
     }
-    return cnt >= 5;
+    return cnt >= 4;
 }
 
 void RingActionGoLeft() {

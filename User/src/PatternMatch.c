@@ -12,26 +12,31 @@
 static bool placeholder;
 
 int16_t startLineWidth;
+bool last_leader_car;
 
 int16_t GetRoadType() {
     if(ringEndDelay) {
         if(ringDistance < 3200) {
             return RingEnd;
         } else {
+            hugeRing = false;
             ringEndDelay = false;
             ringDistance = 0;
         }
     } else if(inRing) {
         if(ringDistance > 50000) {
+            hugeRing = false;
             inRing = false;
             ringDistance = 0;
-        } else if(ringDistance > 4400 && IsRingEnd()) {
-            hugeRing = false;
+        } else if((hugeRing ? ringDistance > 8000 : ringDistance > 5000)
+            && (ringOrder & (1 << ringOvertakingCnt) ? (leader_car ? IsRingEndFromRight() : IsRingEndFromLeft()) :
+            (leader_car ? IsRingEndFromLeft() : IsRingEndFromRight()))) {
+            last_leader_car = leader_car;
             inRing = false;
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(hugeRing ? (ringDistance < 2000) : (ringDistance > 200 && ringDistance < 1500)) {
+        } else if(hugeRing ? ringDistance < 2000 : ringDistance < 1500) {
             return Ring;
         }
     } else if(aroundBarrier) {
@@ -198,12 +203,12 @@ int16_t GetRoadType() {
             onRamp = true;
         }
     } else if(straightLineOvertakingEnabled
-            && straightLineOvertakingCnt < straightLineOvertakingCntMax
-            && leader_car
-            && straightLine
-            && !inStraightLine
-            && !resultSet.leftBorderNotFoundCnt
-            && !resultSet.rightBorderNotFoundCnt) {
+        && straightLineOvertakingCnt < straightLineOvertakingCntMax
+        && leader_car
+        && straightLine
+        && !inStraightLine
+        && !resultSet.leftBorderNotFoundCnt
+        && !resultSet.rightBorderNotFoundCnt) {
         inStraightLine = true;
     } else if(inStraightLine) {
         if(leader_car) {
@@ -250,11 +255,11 @@ int16_t GetRoadType() {
     }
     
 end:
-    return !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
+    return enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
-//        : ((double_car && leader_car) || (!double_car))
+//        : enabled && ((double_car && leader_car) || (!double_car))
 //            && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : rampOvertakingEnabled && double_car && leader_car
+        : enabled && rampOvertakingEnabled && double_car && leader_car
             && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : enabled && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
