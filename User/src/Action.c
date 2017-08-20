@@ -100,10 +100,9 @@ int16_t CommonAction() {
                     RingActionGoRight();
                 }
             }
-            BUZZLE_ON;
+           // BUZZLE_ON;
             break;
         case RingEnd:
-            preRingEnd = true;
             if(double_car && !overtaking) {
                 if(leader_car) {
                     leader_car = !leader_car;

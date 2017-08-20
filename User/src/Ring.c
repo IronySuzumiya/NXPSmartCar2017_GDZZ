@@ -14,16 +14,17 @@ bool IsRing() {
     int16_t row;
     int16_t _cnt = 0;
     
+    if(!InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
+        || !InRange(resultSet.middleLine[10], 112 - 20, 112 + 20)) {
+        return false;
+    }
+    
     for(int16_t i = 0; i < 5; ++i) {
         cursor += resultSet.middleLine[i];
     }
     cursor /= 5;
     
-    #if CAR_NO == 1
-    for(row = 5; row < 37; ++row) {
-    #elif CAR_NO == 2
-    for(row = 5; row < 39; ++row) {
-    #endif
+    for(row = 5; row < 40; ++row) {
         if(IsBlack(row, cursor)) {
             break;
         }
@@ -32,16 +33,13 @@ bool IsRing() {
         }
     }
     
-    #if CAR_NO == 1
-    if(_cnt < 8 || row == 37) {
-    #elif CAR_NO == 2
-    if(_cnt < 8 || row == 39) {
-    #endif
+    if(_cnt < 8 || row == 40) {
         return false;
     }
     
     bool hasRightOffset = false;
-    for(int16_t col = cursor; col < Min(cursor + 20, IMG_COL); ++col) {
+    int16_t m1 = Min(cursor + 20, IMG_COL);
+    for(int16_t col = cursor; col < m1; ++col) {
         if(IsBlack(row - 1, col)) {
             hasRightOffset = true;
             cursor = col;
@@ -52,7 +50,8 @@ bool IsRing() {
         }
     }
     if(!hasRightOffset) {
-        for(int16_t col = cursor; col > Max(cursor - 20, -1); --col) {
+        int16_t m2 = Max(cursor - 20, -1);
+        for(int16_t col = cursor; col > m2; --col) {
             if(IsBlack(row - 1, col)) {
                 cursor = col;
                 --row;
@@ -85,9 +84,9 @@ bool IsRing() {
         }
         for(; IsBlack(row, left) && left > 0; --left) { }
         for(; IsBlack(row, right) && right < IMG_COL - 1; ++right) { }
-        if(IsBlack(row, left) && IsBlack(row, right)) {
-            return false;
-        }
+//        if(IsBlack(row, left) && IsBlack(row, right)) {
+//            return false;
+//        }
         if(leftMost > left) {
             leftMost = left;
             ++cnt[0];
@@ -105,17 +104,20 @@ bool IsRing() {
     }
     return leftMost < 85 && cnt[0] > 3 && cnt[1] > 3 && cnt[0] < 10
         && maxWidth > 65 && maxWidth - minWidth > 35
-        && maxWidth < 185 && minWidth > 5
-        && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
-        && InRange(resultSet.middleLine[10], 112 - 20, 112 + 20);
+       // && maxWidth < 195 && minWidth > 5
+    ;
 }
 
 bool IsHugeRing() {
     int16_t cnt_0 = 0;
     int16_t cnt_1 = 0;
     int16_t cnt_2 = 0;
-    for(int16_t i = 15; i < 30; ++i){
-        if(resultSet.rightBorder[i] - resultSet.leftBorder[i] > 220)
+    if(!InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
+        || !InRange(resultSet.middleLine[8], 112 - 20, 112 + 20)) {
+        return false;
+    }
+    for(int16_t i = 15; i < 35; ++i){
+        if(resultSet.rightBorder[i] - resultSet.leftBorder[i] > 200)
             ++cnt_0;
     }
     if(cnt_0 < 6)
@@ -129,9 +131,7 @@ bool IsHugeRing() {
         if(cnt_1 > 5)
             ++cnt_2;
     }
-    return cnt_2 < 1
-        && InRange(resultSet.middleLine[5], 112 - 20, 112 + 20)
-        && InRange(resultSet.middleLine[8], 112 - 20, 112 + 20);
+    return cnt_2 < 2;
 }
 
 bool IsRingEndFromLeft() {

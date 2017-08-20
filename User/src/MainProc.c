@@ -201,7 +201,7 @@ void DistanceControl() {
     }
     if(preRingEnd){
         preRingEndDistance += dist;
-        if(preRingEndDistance > 8000) {
+        if(preRingEndDistance > 3000) {
             preRingEnd = false;
             preRingEndDistance = 0;
             ++ringOvertakingCnt;

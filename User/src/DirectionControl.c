@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "MainProc.h"
 #include "Action.h"
+#include "DoubleCar.h"
 
 bool direction_control_on;
 float directionAngle;
@@ -24,12 +25,14 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    if(!final) {
-        for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
+    if(final &&
+        (double_car ? ((leader_car && finalDistance < 4000) || (!leader_car && finalDistance < 8000)) :
+        finalDistance < 4000)) {
+        for(int16_t i = 35; i < 45; ++i) {
             avgMiddle += middleLine[i];
         }
     } else {
-        for(int16_t i = 30 ; i < 40; ++i) {
+        for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
             avgMiddle += middleLine[i];
         }
     }

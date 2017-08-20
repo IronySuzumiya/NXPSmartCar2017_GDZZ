@@ -31,7 +31,7 @@ void GearSelect() {
         
         case 0x03:
             speed_control_speed = 95;
-            pre_sight = 21; //15 //17
+            pre_sight = 20; //15 //17
             break;
         case 0x02:
             speed_control_speed = 105;

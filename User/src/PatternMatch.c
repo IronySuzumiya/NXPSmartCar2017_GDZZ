@@ -22,13 +22,14 @@ int16_t GetRoadType() {
             hugeRing = false;
             ringEndDelay = false;
             ringDistance = 0;
+            preRingEnd = true;
         }
     } else if(inRing) {
         if(ringDistance > 50000) {
             hugeRing = false;
             inRing = false;
             ringDistance = 0;
-        } else if((hugeRing ? ringDistance > 8000 : ringDistance > 5000)
+        } else if((hugeRing ? ringDistance > 15000 : ringDistance > 5000)
             && (ringOrder & (1 << ringOvertakingCnt) ? (leader_car ? IsRingEndFromRight() : IsRingEndFromLeft()) :
             (leader_car ? IsRingEndFromLeft() : IsRingEndFromRight()))) {
             last_leader_car = leader_car;
@@ -36,7 +37,7 @@ int16_t GetRoadType() {
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(hugeRing ? ringDistance < 2000 : ringDistance < 1500) {
+        } else if(hugeRing ? ringDistance < 2300 : ringDistance < 2000) {
             return Ring;
         }
     } else if(aroundBarrier) {
@@ -321,6 +322,9 @@ bool IsStraightLine() {
         && !resultSet.leftBorderNotFoundCnt
         && !resultSet.rightBorderNotFoundCnt) {
         for(int16_t i = 2; i < IMG_ROW; ++i) {
+            if(IsBlack(i, resultSet.middleLine[i])) {
+                return false;
+            }
             middleAreaOffset +=
                 Abs(resultSet.middleLine[i] - resultSet.middleLine[1]);
         }
