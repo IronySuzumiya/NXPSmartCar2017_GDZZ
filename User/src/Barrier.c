@@ -11,7 +11,7 @@ int16_t WhichBarrier() {
     int16_t outRow;
     int16_t row;
     int16_t _barrierType;
-    for(row = 10; row < 35 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
+    for(row = 10; row < 30 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
     if(!InRange(resultSet.middleLine[row - 2], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
         return Unknown;
     }
@@ -21,7 +21,8 @@ int16_t WhichBarrier() {
     inRow = row;
     row += 2;
     for(; row < IMG_ROW && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 10; ++row) { }
-    if((resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
+    if((row - inRow < 8)
+        || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
         || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] < 0 && _barrierType == RightBarrier)) {
         return Unknown;
     }

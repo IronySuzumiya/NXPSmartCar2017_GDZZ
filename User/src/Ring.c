@@ -9,7 +9,7 @@ bool inRing;
 bool ringEndDelay;
 int16_t ringOrder;
 
-static int16_t IsRingInternal();
+static int16_t IsRingInternal(void);
 
 bool IsRing() {
     int16_t maxWidth = IsRingInternal();

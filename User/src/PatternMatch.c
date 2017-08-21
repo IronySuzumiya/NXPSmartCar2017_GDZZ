@@ -29,7 +29,7 @@ int16_t GetRoadType() {
             hugeRing = false;
             inRing = false;
             ringDistance = 0;
-        } else if((hugeRing ? ringDistance > 11000 : ringDistance > 4000)
+        } else if((hugeRing ? ringDistance > 9000 : ringDistance > 4000)
             && (ringOrder & (1 << ringOvertakingCnt) ? (leader_car ? IsRingEndFromRight() : IsRingEndFromLeft()) :
             (leader_car ? IsRingEndFromLeft() : IsRingEndFromRight()))) {
             last_leader_car = leader_car;
@@ -37,97 +37,123 @@ int16_t GetRoadType() {
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(hugeRing ? (ringDistance < 2100) : (ringDistance > 200 && ringDistance < 1800)) {
+        } else if(hugeRing ? (ringDistance < 2100) : (ringDistance > 450 && ringDistance < 1800)) {
             return Ring;
         }
     } else if(aroundBarrier) {
-        if(double_car && barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
-            if(!barrierDoubleOvertakingEnabled) {
-                if(leader_car) {
-                    if(barrierDistance < 5500) {
-                        if(!placeholder) {
-                            placeholder = true;
-                            SendMessage(BARIOVERTAKING);
+        if(double_car) {
+            if(barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
+                if(!barrierDoubleOvertakingEnabled) {
+                    if(leader_car) {
+                        if(barrierDistance < 5500) {
+                            if(!placeholder) {
+                                placeholder = true;
+                                SendMessage(BARIOVERTAKING);
+                            }
+                            along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                        } else if(barrierDistance < 6500) {
+                            placeholder = false;
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
+                        } else if(barrierDistance < 11000) {
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                        } else {
+                            barrierDistance = 0;
+                            aroundBarrier = false;
+                            leader_car = !leader_car;
+                            beingOvertaken = true;
+                            placeholder = false;
+                            ++barrierOvertakingCnt;
                         }
-                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                    } else if(barrierDistance < 6500) {
-                        placeholder = false;
-                        lastAlong = along;
-                        along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
-                    } else if(barrierDistance < 11000) {
-                        lastAlong = along;
-                        along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                    } else if(barrierOvertaking) {
+                        if(barrierDistance < 16000) {
+                            along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                        } else if(barrierDistance < 20000) {
+                            along = AsUsual;
+                        } else {
+                            barrierDistance = 0;
+                            aroundBarrier = false;
+                            leader_car = !leader_car;
+                            SendMessage(OVERTAKINGFINISHED);
+                            barrierOvertaking = false;
+                            ++barrierOvertakingCnt;
+                        }
                     } else {
                         barrierDistance = 0;
                         aroundBarrier = false;
-                        leader_car = !leader_car;
-                        beingOvertaken = true;
-                        placeholder = false;
-                        ++barrierOvertakingCnt;
                     }
-                } else if(barrierOvertaking) {
-                    if(barrierDistance < 16000) {
-                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                    } else if(barrierDistance < 20000) {
-                        along = AsUsual;
+                } else {
+                    if(leader_car) {
+                        if(barrierDistance < 5500) {
+                            if(!placeholder) {
+                                placeholder = true;
+                                SendMessage(BARIOVERTAKING);
+                            }
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                        } else if(barrierDistance < 6500) {
+                            placeholder = false;
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
+                        } else if(barrierDistance < 11000) {
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                        } else if(barrierDistance < 16000) {
+                            if(!placeholder) {
+                                beingOvertaken = true;
+                                placeholder = true;
+                            } else {
+                                lastAlong = along;
+                                along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                            }
+                        } else if(barrierDistance < 19500) {
+                            lastAlong = along;
+                            along = AsUsual;
+                        } else {
+                            barrierDistance = 0;
+                            aroundBarrier = false;
+                            placeholder = false;
+                            SendMessage(OVERTAKINGFINISHED);
+                            ++barrierOvertakingCnt;
+                        }
+                    } else if(barrierOvertaking) {
+                        if(barrierDistance < 15000) {
+                            lastAlong = along;
+                            along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
+                        } else if(!placeholder) {
+                            placeholder = true;
+                            SendMessage(OVERTAKINGFINISHED);
+                            beingOvertaken = true;
+                        } else {
+                            barrierDistance = 0;
+                            aroundBarrier = false;
+                            barrierOvertaking = false;
+                            placeholder = false;
+                            ++barrierOvertakingCnt;
+                        }
                     } else {
                         barrierDistance = 0;
                         aroundBarrier = false;
-                        leader_car = !leader_car;
-                        SendMessage(OVERTAKINGFINISHED);
-                        barrierOvertaking = false;
-                        ++barrierOvertakingCnt;
                     }
                 }
             } else {
-                if(leader_car) {
+                if(leader_car || barrierOvertaking) {
                     if(barrierDistance < 5500) {
-                        if(!placeholder) {
-                            placeholder = true;
-                            SendMessage(BARIOVERTAKING);
-                        }
                         lastAlong = along;
                         along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                    } else if(barrierDistance < 6500) {
-                        placeholder = false;
-                        lastAlong = along;
-                        along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
-                    } else if(barrierDistance < 11000) {
-                        lastAlong = along;
-                        along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
-                    } else if(barrierDistance < 16000) {
-                        if(!placeholder) {
-                            beingOvertaken = true;
-                            placeholder = true;
-                        } else {
-                            lastAlong = along;
-                            along = (barrierType == LeftBarrier ? AlongLeftRoad : AlongRightRoad);
+                    } else {
+                        if(leader_car) {
+                            SendMessage(OVERTAKINGFINISHED);
                         }
-                    } else if(barrierDistance < 19500) {
+                        barrierDistance = 0;
+                        aroundBarrier = false;
                         lastAlong = along;
                         along = AsUsual;
-                    } else {
-                        barrierDistance = 0;
-                        aroundBarrier = false;
-                        placeholder = false;
-                        SendMessage(OVERTAKINGFINISHED);
-                        ++barrierOvertakingCnt;
                     }
-                } else if(barrierOvertaking) {
-                    if(barrierDistance < 15000) {
-                        lastAlong = along;
-                        along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                    } else if(!placeholder) {
-                        placeholder = true;
-                        SendMessage(OVERTAKINGFINISHED);
-                        beingOvertaken = true;
-                    } else {
-                        barrierDistance = 0;
-                        aroundBarrier = false;
-                        barrierOvertaking = false;
-                        placeholder = false;
-                        ++barrierOvertakingCnt;
-                    }
+                } else {
+                    barrierDistance = 0;
+                    aroundBarrier = false;
                 }
             }
         } else if(barrierDistance < 5500) {
@@ -160,32 +186,37 @@ int16_t GetRoadType() {
             }
         }
     } else if(onRamp) {
-        if(leader_car) {
-            if(rampDistance > 16000) {
-                beingOvertaken = true;
-                leader_car = !leader_car;
-                onRamp = false;
-                rampDistance = 0;
-                SendMessage(RAMPOVERTAKING);
-                ++rampOvertakingCnt;
-            } else if(rampDistance > 10000) {
-                lastAlong = along;
-                along = AlongLeftRoad;
+        if(double_car && rampOvertakingEnabled && rampOvertakingCnt < rampOvertakingCntMax) {
+            if(leader_car) {
+                if(rampDistance > 16000) {
+                    beingOvertaken = true;
+                    leader_car = !leader_car;
+                    onRamp = false;
+                    rampDistance = 0;
+                    SendMessage(RAMPOVERTAKING);
+                    ++rampOvertakingCnt;
+                } else if(rampDistance > 10000) {
+                    lastAlong = along;
+                    along = AlongLeftRoad;
+                }
+            } else {
+                if(rampDistance > 14500) {
+                    leader_car = !leader_car;
+                    onRamp = false;
+                    rampDistance = 0;
+                    SendMessage(OVERTAKINGFINISHED);
+                    ++rampOvertakingCnt;
+                } else if(rampDistance > 11000) {
+                    lastAlong = along;
+                    along = AsUsual;
+                } else {
+                    lastAlong = along;
+                    along = AlongRightRoad;
+                }
             }
         } else {
-            if(rampDistance > 14500) {
-                leader_car = !leader_car;
-                onRamp = false;
-                rampDistance = 0;
-                SendMessage(OVERTAKINGFINISHED);
-                ++rampOvertakingCnt;
-            } else if(rampDistance > 11000) {
-                lastAlong = along;
-                along = AsUsual;
-            } else {
-                lastAlong = along;
-                along = AlongRightRoad;
-            }
+            onRamp = false;
+            rampDistance = 0;
         }
     } else if(rampOvertaking) {
         int16_t _cnt = 0;
@@ -254,9 +285,8 @@ int16_t GetRoadType() {
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
 //        : enabled && ((double_car && leader_car) || (!double_car))
 //            && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
-        : enabled && rampOvertakingEnabled && double_car && leader_car
-            && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
-        : enabled && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
+        : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
+        : enabled && (!double_car || leader_car) && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
         : Unknown;
 }
 
@@ -282,12 +312,17 @@ bool IsOutOfRoad() {
 bool IsStartLine(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
-    for(int16_t i = row; i < row + 7; ++i) {
-        for(int16_t j = IMG_COL / 2 - startLineWidth / 2; j < IMG_COL / 2 + startLineWidth / 2; ++j) {
+    if(IsBlack(row + 10, resultSet.middleLine[row + 10])) {
+        return false;
+    }
+    int16_t width = resultSet.rightBorder[row + 10] - resultSet.leftBorder[row + 10] + 35;
+    for(int16_t i = row; i < row + 6; ++i) {
+        for(int16_t j = IMG_COL / 2 - width / 2; j < IMG_COL / 2 + width / 2; ++j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
                 if(++toggleCnt >= 10) {
                     toggleCnt = 0;
                     ++patternRowCnt;
+                    break;
                 }
             }
         }

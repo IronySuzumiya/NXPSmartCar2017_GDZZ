@@ -134,7 +134,7 @@ void ImgProc3() {
 void ImgProcSummary() {
     int16_t middle = IMG_COL / 2;
     bool accelerate;
-    if(!final && start_line && startLineEnabled && IsStartLine(startLinePresight)) {
+    if(!final && start_line && startLineEnabled && !onRamp && IsStartLine(startLinePresight)) {
         if(double_car) {
             if(leader_car) {
                 final = true;
@@ -144,8 +144,8 @@ void ImgProcSummary() {
             final = true;
             finalPursueingFinished = true;
         }
-    } else if(final && finalPursueingFinished && dashDistance > 14000) {
-        stop = true;
+    } else if(final && finalPursueingFinished) {
+        stop = (!double_car || leader_car) ? (dashDistance > 14000) : (dashDistance > 17000);
     }
       
     if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
@@ -201,7 +201,7 @@ void ImgProcSummary() {
             barrierOvertaking && barrierDoubleOvertakingEnabled ? 65 :
             barrierOvertaking && !barrierDoubleOvertakingEnabled && leader_car ? 65 :
             barrierOvertaking && !barrierDoubleOvertakingEnabled && !leader_car ? 85 :
-            inRing || ringEndDelay ? speedInRing :
+            inRing || ringEndDelay ? ((!double_car || !leader_car) ? 95 : 85) :
             accelerate ? speed_control_speed * 1.1 :
             speed_control_speed,
             !(accelerate || beingOvertaken || stop)

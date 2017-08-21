@@ -221,7 +221,7 @@ void BuzzleControl(bool flag) {
 }
 
 void MainProc() {
-    static int16_t ovtcnt = 0;
+//    static int16_t ovtcnt = 0;
     
     if(encoder_on) {
         EncoderGet(&leftSpeed, &rightSpeed);
@@ -272,13 +272,13 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 753;
+    steer_actuator_middle = 754;
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.04;  //0.034
+    differential_ratio = 0.042;  //0.034
     
     #elif CAR_NO == 2
     
@@ -304,10 +304,10 @@ static void SwitchAndParamLoad() {
     #endif
     
     reduction_ratio = 2.55;
-    avg_distance_between_the_two_cars = 130;
+    avg_distance_between_the_two_cars = 110;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
-    startLinePresight = 30;
+    startLinePresight = 32;
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 9000;
     overtakingDistanceMax = 5000;
