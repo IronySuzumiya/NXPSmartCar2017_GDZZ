@@ -29,7 +29,7 @@ int16_t GetRoadType() {
             hugeRing = false;
             inRing = false;
             ringDistance = 0;
-        } else if((hugeRing ? ringDistance > 15000 : ringDistance > 5000)
+        } else if((hugeRing ? ringDistance > 11000 : ringDistance > 4000)
             && (ringOrder & (1 << ringOvertakingCnt) ? (leader_car ? IsRingEndFromRight() : IsRingEndFromLeft()) :
             (leader_car ? IsRingEndFromLeft() : IsRingEndFromRight()))) {
             last_leader_car = leader_car;
@@ -37,11 +37,11 @@ int16_t GetRoadType() {
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(hugeRing ? ringDistance < 2300 : ringDistance < 2000) {
+        } else if(hugeRing ? (ringDistance < 2100) : (ringDistance > 200 && ringDistance < 1800)) {
             return Ring;
         }
     } else if(aroundBarrier) {
-        if(barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
+        if(double_car && barrierOvertakingEnabled && barrierOvertakingCnt < barrierOvertakingCntMax) {
             if(!barrierDoubleOvertakingEnabled) {
                 if(leader_car) {
                     if(barrierDistance < 5500) {
@@ -65,7 +65,6 @@ int16_t GetRoadType() {
                         placeholder = false;
                         ++barrierOvertakingCnt;
                     }
-                    goto end;
                 } else if(barrierOvertaking) {
                     if(barrierDistance < 16000) {
                         along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
@@ -79,7 +78,6 @@ int16_t GetRoadType() {
                         barrierOvertaking = false;
                         ++barrierOvertakingCnt;
                     }
-                    goto end;
                 }
             } else {
                 if(leader_car) {
@@ -115,7 +113,6 @@ int16_t GetRoadType() {
                         SendMessage(OVERTAKINGFINISHED);
                         ++barrierOvertakingCnt;
                     }
-                    goto end;
                 } else if(barrierOvertaking) {
                     if(barrierDistance < 15000) {
                         lastAlong = along;
@@ -131,11 +128,9 @@ int16_t GetRoadType() {
                         placeholder = false;
                         ++barrierOvertakingCnt;
                     }
-                    goto end;
                 }
             }
-        }
-        if(barrierDistance < 5500) {
+        } else if(barrierDistance < 5500) {
             lastAlong = along;
             along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
         } else {
@@ -255,7 +250,6 @@ int16_t GetRoadType() {
         }
     }
     
-end:
     return enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
 //        : enabled && ((double_car && leader_car) || (!double_car))

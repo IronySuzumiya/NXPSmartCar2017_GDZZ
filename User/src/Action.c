@@ -77,6 +77,7 @@ int16_t CommonAction() {
     switch(GetRoadType()) {
         case HugeRing:
             hugeRing = true;
+            BUZZLE_ON;
         case Ring:
 //            if(double_car) {
 //                if(leader_car && !inRing) {
@@ -100,7 +101,7 @@ int16_t CommonAction() {
                     RingActionGoRight();
                 }
             }
-           // BUZZLE_ON;
+//            BUZZLE_ON;
             break;
         case RingEnd:
             if(double_car && !overtaking) {
