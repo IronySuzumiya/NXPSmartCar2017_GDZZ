@@ -63,21 +63,25 @@ int16_t SpeedControlPID(PID *pid) {
 	error = pid->targetValue - pid->currentValue;
     
     // ugly implementation though
-    if(beingOvertaken) {
-        pValue = 110 * (error - pid->lastError);
-        iValue = 20 * error;
-        dValue = 10 * (error - 2 * pid->lastError + pid->prevError);
+    if(beingOvertaken || stop) {
+        if(error < -3 || error > 3) {
+            pValue = 110 * (error - pid->lastError);
+            iValue = 20 * error;
+            dValue = 10 * (error - 2 * pid->lastError + pid->prevError);
+        } else {
+            pValue = iValue = dValue = 0;
+        }
     } else {
         pValue = pid->kp * (error - pid->lastError);
         iValue = pid->ki * error;
         dValue = pid->kd * (error - 2 * pid->lastError + pid->prevError);
     }
-    pid->prevError = pid->lastError;
     pid->output += pValue + iValue + dValue;
     if(pid->output > 10000) {
         pid->output = 10000;
     }
     
+    pid->prevError = pid->lastError;
 	pid->lastError = error;
     
 	return (int16_t)pid->output;

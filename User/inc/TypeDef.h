@@ -59,7 +59,8 @@ enum _road_type {
     RightBarrier,
     DummyLeftBarrier,
     DummyRightBarrier,
-    Ramp
+    Ramp,
+    Startline
 };
 
 enum _along_type {

@@ -280,13 +280,15 @@ int16_t GetRoadType() {
             inStraightLine = true;
         }
     }
+    int16_t temp;
     
     return enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
 //        : enabled && ((double_car && leader_car) || (!double_car))
 //            && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
-        : enabled && (!double_car || leader_car) && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad ? WhichBarrier()
+        : enabled && (!double_car || leader_car) && !beingOvertaken && !inRing && !ringEndDelay && !inCrossRoad && (temp = WhichBarrier()) != Unknown ? temp
+        : !final && start_line && startLineEnabled && !onRamp && IsStartLine(startLinePresight) ? Startline
         : Unknown;
 }
 
@@ -312,11 +314,11 @@ bool IsOutOfRoad() {
 bool IsStartLine(int16_t row) {
     int16_t toggleCnt = 0;
     int16_t patternRowCnt = 0;
-    if(IsBlack(row + 10, resultSet.middleLine[row + 10])) {
+    if(IsBlack(row + 12, resultSet.middleLine[row + 12])) {
         return false;
     }
-    int16_t width = resultSet.rightBorder[row + 10] - resultSet.leftBorder[row + 10] + 35;
-    for(int16_t i = row; i < row + 6; ++i) {
+    int16_t width = resultSet.rightBorder[row + 12] - resultSet.leftBorder[row + 12] + 45;
+    for(int16_t i = row; i < row + 10; ++i) {
         for(int16_t j = IMG_COL / 2 - width / 2; j < IMG_COL / 2 + width / 2; ++j) {
             if(TstImgBufAsBitMap(i, j) != TstImgBufAsBitMap(i, j+1)) {
                 if(++toggleCnt >= 10) {
@@ -329,12 +331,18 @@ bool IsStartLine(int16_t row) {
     }
     if(patternRowCnt >= 3) {
         int16_t middleAreaCnt = 0;
-        for(int16_t i = 0; i < row - 8; ++i) {
+        for(int16_t i = 0; i < row - 4; ++i) {
+            if(IsBlack(i, resultSet.middleLine[i])) {
+                return false;
+            }
             if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
                 ++middleAreaCnt;
             }
         }
-        for(int16_t i = row + 7 + 8; i < IMG_ROW; ++i) {
+        for(int16_t i = row + 10 + 4; i < IMG_ROW; ++i) {
+            if(IsBlack(i, resultSet.middleLine[i])) {
+                return false;
+            }
             if(InRange(resultSet.middleLine[i], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
                 ++middleAreaCnt;
             }
@@ -360,6 +368,18 @@ bool IsStraightLine() {
         return InRange(middleAreaOffset, 0, 90);
     } else {
         return false;
+    }
+}
+
+void StartlineAction() {
+    if(double_car) {
+        if(leader_car) {
+            final = true;
+            SendMessage(FINAL);
+        }
+    } else {
+        final = true;
+        finalPursueingFinished = true;
     }
 }
 

@@ -134,29 +134,16 @@ void ImgProc3() {
 void ImgProcSummary() {
     int16_t middle = IMG_COL / 2;
     bool accelerate;
-    if(!final && start_line && startLineEnabled && !onRamp && IsStartLine(startLinePresight)) {
-        if(double_car) {
-            if(leader_car) {
-                final = true;
-                SendMessage(FINAL);
-            }
-        } else {
-            final = true;
-            finalPursueingFinished = true;
-        }
-    } else if(final && finalPursueingFinished) {
-        stop = (!double_car || leader_car) ? (dashDistance > 14000) : (dashDistance > 17000);
-    }
-      
     if(out && enabled && !beingOvertaken && !final && IsOutOfRoad()) {
         stop = true;
     } else if(final) {
+        if(finalPursueingFinished) {
+            stop = (!double_car || leader_car) ? (dashDistance > 14000) : (dashDistance > 17000);
+        }
         if(double_car) {
             if(leader_car) {
                 if(!waitForFinalPursueing && !finalPursueingFinished) {
                     waitForFinalPursueing = true;
-                } else if(waitForFinalPursueing && !finalPursueingFinished) {
-                    
                 } else if(finalPursueingFinished) {
                     if(!placeholder) {
                         SendMessage(DASH);
@@ -169,14 +156,8 @@ void ImgProcSummary() {
                         waitForFinalPursueing = true;
                         SendMessage(DASH);
                     }
-                } else if(waitForFinalPursueing && !finalPursueingFinished) {
-                    
-                } else if(finalPursueingFinished) {
-                    
                 }
             }
-        } else {
-            
         }
     } else {
         straightLine = IsStraightLine();

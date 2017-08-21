@@ -12,6 +12,7 @@ int16_t GetRoadType(void);
 bool IsOutOfRoad(void);
 bool IsStartLine(int16_t row);
 bool IsStraightLine(void);
+void StartlineAction(void);
 bool IsRamp(void);
 
 extern int16_t startLineWidth;

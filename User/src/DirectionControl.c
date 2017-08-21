@@ -25,9 +25,7 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    if(final &&
-        (double_car ? ((leader_car && finalDistance < 4000) || (!leader_car && finalDistance < 8000)) :
-        finalDistance < 4000)) {
+    if(final && (!double_car || leader_car) && finalDistance < 4000) {
         for(int16_t i = 35; i < 45; ++i) {
             avgMiddle += middleLine[i];
         }

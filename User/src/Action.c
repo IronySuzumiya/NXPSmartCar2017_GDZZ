@@ -154,6 +154,9 @@ int16_t CommonAction() {
         case Ramp:
             onRamp = true;
             break;
+        case Startline:
+            StartlineAction();
+            break;
     }
     return IMG_COL / 2;
 }
