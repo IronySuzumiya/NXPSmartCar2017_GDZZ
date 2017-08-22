@@ -12,6 +12,8 @@ float direction_control_kd;
 float direction_control_kpj;
 float direction_control_kpc;
 
+bool dirlocked;
+
 static int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle);
 static int16_t DirectionControlPID(int16_t dirError);
 
@@ -25,15 +27,15 @@ void DirectionControlProc(int16_t* middleLine, int16_t expectMiddle) {
 
 int16_t DirectionErrorGet(int16_t* middleLine, int16_t expectMiddle) {
     float avgMiddle = 0;
-    if(final && (!double_car || leader_car) && finalDistance < 4000) {
-        for(int16_t i = 35; i < 45; ++i) {
-            avgMiddle += middleLine[i];
-        }
-    } else {
+//    if(final && (!double_car || leader_car) && finalDistance < 4000) {
+//        for(int16_t i = 35; i < 45; ++i) {
+//            avgMiddle += middleLine[i];
+//        }
+//    } else {
         for(int16_t i = pre_sight - 5; i < pre_sight + 5; ++i) {
             avgMiddle += middleLine[i];
         }
-    }
+//    }
     avgMiddle /= 10;
     return expectMiddle - avgMiddle;
 }
@@ -47,6 +49,9 @@ int16_t DirectionControlPID(int16_t error) {
     directionAngle = Limit_f(directionAngle, -14.4, 14.4);
     
     lastError = error;
-    
-    return directionAngle * 5.556 + steer_actuator_middle;
+    if(dirlocked) {
+        return steer_actuator_middle;
+    } else {
+        return directionAngle * 5.556 + steer_actuator_middle;
+    }
 }

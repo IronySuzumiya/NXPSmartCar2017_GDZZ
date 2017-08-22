@@ -96,22 +96,38 @@ void ImgProc1() {
     if(along == AlongLeftBorder) {
         resultSet.foundLeftBorder[imgBufRow] =
             LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        #if CAR_NO == 1
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] - 30;
+        #elif CAR_NO == 2
         resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] - 40;
+        #endif
         ++resultSet.foundLeftBorder[imgBufRow];
     } else if(along == AlongRightBorder) {
         resultSet.foundRightBorder[imgBufRow] =
             RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] + 30;
+        #if CAR_NO == 1
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] + 50;
+        #elif CAR_NO == 2
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] + 40;
+        #endif
         ++resultSet.foundRightBorder[imgBufRow];
     } else if(along == AlongLeftRoad) {
         resultSet.foundLeftBorder[imgBufRow] =
             LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
-        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 50;
+        #if CAR_NO == 1
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 70;
+        #elif CAR_NO == 2
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 60;
+        #endif
         ++resultSet.foundLeftBorder[imgBufRow];
     } else if(along == AlongRightRoad) {
         resultSet.foundRightBorder[imgBufRow] =
             RightBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
+        #if CAR_NO == 1
+        resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 50;
+        #elif CAR_NO == 2
         resultSet.leftBorder[imgBufRow] = resultSet.rightBorder[imgBufRow] - 60;
+        #endif
         ++resultSet.foundRightBorder[imgBufRow];
     } else {
         resultSet.foundLeftBorder[imgBufRow] =
@@ -138,7 +154,7 @@ void ImgProcSummary() {
         stop = true;
     } else if(final) {
         if(finalPursueingFinished) {
-            stop = (!double_car || leader_car) ? (dashDistance > 14000) : (dashDistance > 17000);
+            stop = (!double_car || leader_car) ? (dashDistance > 11000) : (dashDistance > 14000);
         }
         if(double_car) {
             if(leader_car) {
@@ -152,7 +168,7 @@ void ImgProcSummary() {
                 }
             } else {
                 if(!waitForFinalPursueing && !finalPursueingFinished) {
-                    if(distanceBetweenTheTwoCars < 100) {
+                    if(distanceBetweenTheTwoCars < 70) {
                         waitForFinalPursueing = true;
                         SendMessage(DASH);
                     }
@@ -173,16 +189,17 @@ void ImgProcSummary() {
         SpeedTargetSet(
             stop || beingOvertaken ? 0 :
 //            holding ? 75 :
-            double_car && leader_car && finalPursueingFinished ? 120 :
+            double_car && leader_car && finalPursueingFinished ? 60 :
             double_car && leader_car && waitForFinalPursueing ? 0 :
-            double_car && !leader_car && finalPursueingFinished ? 120 :
+            double_car && !leader_car && finalPursueingFinished ? 60 :
             double_car && !leader_car && waitForFinalPursueing ? 30 :
-            leader_car && (onRamp || inStraightLine) ? 65 :
-            !leader_car && (onRamp || inStraightLine) ? 85 :
+            double_car && inStraightLine ? 65 :
+            double_car && onRamp && rampOvertakingEnabled && rampOvertakingCnt < rampOvertakingCntMax ? 65 :
             barrierOvertaking && barrierDoubleOvertakingEnabled ? 65 :
             barrierOvertaking && !barrierDoubleOvertakingEnabled && leader_car ? 65 :
             barrierOvertaking && !barrierDoubleOvertakingEnabled && !leader_car ? 85 :
-            inRing || ringEndDelay ? ((!double_car || !leader_car) ? 95 : 85) :
+            ringEndDelay ? ((!double_car || !leader_car) ? 85 : 75) :
+            inRing ? ((!double_car || !leader_car) ? 95 : 85) :
             accelerate ? speed_control_speed * 1.1 :
             speed_control_speed,
             !(accelerate || beingOvertaken || stop)

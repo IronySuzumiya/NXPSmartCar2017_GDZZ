@@ -230,7 +230,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(final);
+    BuzzleControl(final || aroundBarrier);
     
     DistanceControl();
     
@@ -272,7 +272,7 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 749;
+    steer_actuator_middle = 742;
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
@@ -307,7 +307,7 @@ static void SwitchAndParamLoad() {
     avg_distance_between_the_two_cars = 110;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
-    startLinePresight = 25;
+    startLinePresight = 15;
     startLineWidth = 124;
     sendOvertakingFinishedMsgLaterDistanceMax = 9000;
     overtakingDistanceMax = 5000;

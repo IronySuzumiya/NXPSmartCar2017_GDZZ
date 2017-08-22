@@ -36,25 +36,25 @@ static struct _param_handle {
       INT16, BOOL,  BOOL,
       INT16, INT16, INT16,
       INT16, BOOL,  ORDER,
-      BOOL,  BOOL },
+      BOOL,  BOOL,  BOOL },
     { "reduction",   "speeddiff",  "avgdistance",
       "diffdistmax", "speed",      "presight",
       "ringspeed",   "out",        "crsraction",
       "ringcnt",     "rampcnt",    "strlncnt",
       "barrcnt",     "barrdouble", "ringorder",
-      "transimg",    "transstat" },
+      "transimg",    "transstat",  "dirlock" },
     { &reduction_ratio,         &differential_ratio,             &avg_distance_between_the_two_cars,
       &diff_distance_max,       &speed_control_speed,            &pre_sight,
       &speedInRing,             &out,                            &crossRoadActionEnabled,
       &ringOvertakingCntMax,    &rampOvertakingCntMax,           &straightLineOvertakingCntMax,
       &barrierOvertakingCntMax, &barrierDoubleOvertakingEnabled, &ringOrder,
-      &trans_img,               &trans_stat },
+      &trans_img,               &trans_stat,                     &dirlocked },
     { 0.02, 0.0002, 1,
       1,    1,      1,
       1,    1,      1,
       1,    1,      1,
       1,    1,      1,
-      1,    1 }
+      1,    1,      1 }
 };
 
 static void JoystickConfirmingInt(void);

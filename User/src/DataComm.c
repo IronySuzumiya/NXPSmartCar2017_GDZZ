@@ -2,6 +2,7 @@
 #include "DoubleCar.h"
 #include "ImgProc.h"
 #include "uart.h"
+#include "PatternMatch.h"
 
 static void ImgTransInRange(img_proc_struct* resultSetPtr, int16_t startIndex, int16_t endIndex);
 static void ImgTransAtPreSight(img_proc_struct* resultSetPtr);
@@ -84,23 +85,31 @@ void ImgTrans(img_proc_struct* resultSetPtr) {
 void ImgTransInRange(img_proc_struct* resultSetPtr, int16_t startIndex, int16_t endIndex) {
 	for(int16_t i = startIndex - 1; i >= endIndex; i--) {
 		for(int16_t j = 0; j < IMG_COL; j++) {
-            #if defined(HIGHLIGHT_MIDDLE_LINE) || defined(HIGHLIGHT_BORDER_LINE)
-            #ifdef HIGHLIGHT_MIDDLE_LINE
+//            #if defined(HIGHLIGHT_MIDDLE_LINE) || defined(HIGHLIGHT_BORDER_LINE)
+//            #ifdef HIGHLIGHT_MIDDLE_LINE
+//            if(j == resultSetPtr->middleLine[i]) {
+//                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x7f);
+//            } else
+//            #endif
+//            #ifdef HIGHLIGHT_BORDER_LINE
+//            if(j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]) {
+//                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x3f);
+//            } else
+//            #endif
+//            {
+//            #endif
+//                UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IsBlack(i, j) ? IMG_BLACK : IMG_WHITE);
+//            #if defined(HIGHLIGHT_MIDDLE_LINE) || defined(HIGHLIGHT_BORDER_LINE)
+//            }
+//            #endif
             if(j == resultSetPtr->middleLine[i]) {
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x7f);
-            } else
-            #endif
-            #ifdef HIGHLIGHT_BORDER_LINE
-            if(j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]) {
+            } else if(j == resultSetPtr->leftBorder[i] || j == resultSetPtr->rightBorder[i]
+                || j == IMG_COL / 2 - width__ / 2 || j == IMG_COL / 2 + width__ / 2) {
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, 0x3f);
-            } else
-            #endif
-            {
-            #endif
+            } else {
                 UART_WriteByte(DATACOMM_IMG_TRANS_CHL, IsBlack(i, j) ? IMG_BLACK : IMG_WHITE);
-            #if defined(HIGHLIGHT_MIDDLE_LINE) || defined(HIGHLIGHT_BORDER_LINE)
             }
-            #endif
 		}
 	}
 }

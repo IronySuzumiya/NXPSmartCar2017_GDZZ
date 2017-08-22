@@ -11,4 +11,6 @@ extern float direction_control_kd;
 extern float direction_control_kpj;
 extern float direction_control_kpc;
 
+extern bool dirlocked;
+
 #endif

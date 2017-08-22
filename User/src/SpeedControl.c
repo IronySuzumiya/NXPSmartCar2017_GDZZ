@@ -62,8 +62,7 @@ int16_t SpeedControlPID(PID *pid) {
     
 	error = pid->targetValue - pid->currentValue;
     
-    // ugly implementation though
-    if(beingOvertaken || stop) {
+    if(beingOvertaken || stop || (double_car && leader_car && waitForFinalPursueing)) {
         if(error < -3 || error > 3) {
             pValue = 110 * (error - pid->lastError);
             iValue = 20 * error;

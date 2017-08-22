@@ -17,5 +17,6 @@ bool IsRamp(void);
 
 extern int16_t startLineWidth;
 extern bool last_leader_car;
+extern int16_t width__;
 
 #endif

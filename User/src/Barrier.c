@@ -11,6 +11,9 @@ int16_t WhichBarrier() {
     int16_t outRow;
     int16_t row;
     int16_t _barrierType;
+    if(resultSet.leftBorderNotFoundCnt || resultSet.rightBorderNotFoundCnt) {
+        return false;
+    }
     for(row = 10; row < 30 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
     if(!InRange(resultSet.middleLine[row - 2], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {
         return Unknown;
@@ -21,14 +24,16 @@ int16_t WhichBarrier() {
     inRow = row;
     row += 2;
     for(; row < IMG_ROW && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 10; ++row) { }
-    if((row - inRow < 8)
-        || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
+    if((resultSet.middleLine[row] - resultSet.middleLine[row - 2] > 0 && _barrierType == LeftBarrier)
         || (resultSet.middleLine[row] - resultSet.middleLine[row - 2] < 0 && _barrierType == RightBarrier)) {
         return Unknown;
     }
     outRow = row;
-    if(outRow - inRow > 5 && row < IMG_ROW && resultSet.middleLine[row] > IMG_COL / 2 - 20
-        && resultSet.middleLine[row] < IMG_COL / 2 + 20) {
+    if(outRow - inRow > 8 && outRow < IMG_ROW
+        && resultSet.middleLine[row] > IMG_COL / 2 - 20
+        && resultSet.middleLine[row] < IMG_COL / 2 + 20
+        && IsWhite(row, resultSet.middleLine[row])
+        && resultSet.rightBorder[row] - resultSet.leftBorder[row] > 70) {
         int16_t cnt = 0;
         int16_t rowCnt = 0;
         if(_barrierType == LeftBarrier) {
