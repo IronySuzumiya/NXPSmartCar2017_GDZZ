@@ -272,7 +272,7 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 15;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 742;
+    steer_actuator_middle = 725;
 
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
@@ -289,7 +289,7 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 12;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 750;
+    steer_actuator_middle = 753;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;

@@ -115,7 +115,7 @@ void ImgProc1() {
         resultSet.foundLeftBorder[imgBufRow] =
             LeftBorderSearchFrom(imgBufRow, searchForBordersStartIndex);
         #if CAR_NO == 1
-        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 70;
+        resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 60;
         #elif CAR_NO == 2
         resultSet.rightBorder[imgBufRow] = resultSet.leftBorder[imgBufRow] + 60;
         #endif
@@ -168,7 +168,7 @@ void ImgProcSummary() {
                 }
             } else {
                 if(!waitForFinalPursueing && !finalPursueingFinished) {
-                    if(distanceBetweenTheTwoCars < 70) {
+                    if(distanceBetweenTheTwoCars < 50) {
                         waitForFinalPursueing = true;
                         SendMessage(DASH);
                     }
@@ -191,7 +191,7 @@ void ImgProcSummary() {
 //            holding ? 75 :
             double_car && leader_car && finalPursueingFinished ? 60 :
             double_car && leader_car && waitForFinalPursueing ? 0 :
-            double_car && !leader_car && finalPursueingFinished ? 60 :
+            double_car && !leader_car && finalPursueingFinished ? 65 :
             double_car && !leader_car && waitForFinalPursueing ? 30 :
             double_car && inStraightLine ? 65 :
             double_car && onRamp && rampOvertakingEnabled && rampOvertakingCnt < rampOvertakingCntMax ? 65 :

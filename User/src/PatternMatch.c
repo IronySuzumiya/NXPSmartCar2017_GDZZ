@@ -53,7 +53,13 @@ int16_t GetRoadType() {
                                 SendMessage(BARIOVERTAKING);
                             }
                             along = (barrierType == LeftBarrier ? AlongRightRoad : AlongLeftRoad);
-                        } else if(barrierDistance < 6500) {
+                        } else if(
+                            #if CAR_NO == 1
+                                barrierDistance < 7000
+                            #elif CAR_NO == 2
+                                barrierDistance < 7200
+                            #endif
+                            ) {
                             placeholder = false;
                             lastAlong = along;
                             along = (barrierType == LeftBarrier ? AlongLeftBorder : AlongRightBorder);
