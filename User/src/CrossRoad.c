@@ -14,13 +14,17 @@ bool IsCrossRoad() {
             ++cnt;
         }
     }
-    for(int16_t i = 20; i < 45; ++i) {
-        if(resultSet.middleLine[i] > IMG_COL - 50
-            || resultSet.middleLine[i] < 50) {
-            return false;
+    if(cnt > 9) {
+        cnt = 0;
+        for(int16_t i = 0; i < 40; ++i) {
+            if(IsBlack(i, resultSet.middleLine[i])) {
+                ++cnt;
+            }
         }
+        return cnt < 5;
+    } else {
+        return false;
     }
-    return cnt > 9;
 }
 
 void CrossRoadAction() {

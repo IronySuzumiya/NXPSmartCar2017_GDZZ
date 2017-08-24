@@ -230,7 +230,7 @@ void MainProc() {
         leftSpeed = rightSpeed = 0;
     }
     
-    BuzzleControl(final || aroundBarrier);
+    BuzzleControl(final);
     
     DistanceControl();
     
@@ -278,7 +278,7 @@ static void SwitchAndParamLoad() {
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.042;  //0.034
+    differential_ratio = 0.04;  //0.034
     
     #elif CAR_NO == 2
     
@@ -289,13 +289,13 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 12;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 753;
+    steer_actuator_middle = 752;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
     direction_control_kpc = 0.000125; //0.0001
     
-    differential_ratio = 0.042;  //0.033
+    differential_ratio = 0.04;  //0.033
     
     #else
     
@@ -303,7 +303,7 @@ static void SwitchAndParamLoad() {
     
     #endif
     
-    reduction_ratio = 2.55;
+    reduction_ratio = 2.65;
     avg_distance_between_the_two_cars = 110;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
@@ -313,7 +313,7 @@ static void SwitchAndParamLoad() {
     overtakingDistanceMax = 5000;
     speedAroundBarrier = 60;
     speedInRing = 95;
-    out = true;
+    out = false;
     crossRoadActionEnabled = true;
     
     ringOvertakingCntMax = 6;

@@ -38,7 +38,7 @@ int16_t GetRoadType() {
             ringDistance = 0;
             ringEndDelay = true;
             return RingEnd;
-        } else if(hugeRing ? (ringDistance < 2100) : (ringDistance > 450 && ringDistance < 1800)) {
+        } else if(hugeRing ? (ringDistance < 2100) : (ringDistance > 0 && ringDistance < 1800)) {
             return Ring;
         }
     } else if(aroundBarrier) {
@@ -305,7 +305,7 @@ int16_t GetRoadType() {
     
     return enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
         : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
-//        : enabled && ((double_car && leader_car) || (!double_car)) && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
+        : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : enabled && (!double_car || leader_car || barrierOvertaking) && !beingOvertaken && !onRamp && !inRing && !ringEndDelay && !inCrossRoad && (temp = WhichBarrier()) != Unknown ? temp
         : !final && start_line && startLineEnabled && (!double_car || leader_car) && !onRamp && IsStartLine(startLinePresight) ? Startline

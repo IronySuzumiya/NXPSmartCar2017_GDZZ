@@ -12,7 +12,7 @@ int16_t WhichBarrier() {
     int16_t row;
     int16_t _barrierType;
     if(resultSet.leftBorderNotFoundCnt || resultSet.rightBorderNotFoundCnt) {
-        return false;
+        return Unknown;
     }
     for(row = 10; row < 30 && Abs(resultSet.middleLine[row] - resultSet.middleLine[row - 2]) <= 16; ++row) { }
     if(!InRange(resultSet.middleLine[row - 2], IMG_COL / 2 - 30, IMG_COL / 2 + 30)) {

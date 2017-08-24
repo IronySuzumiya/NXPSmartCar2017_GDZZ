@@ -132,10 +132,11 @@ int16_t CommonAction() {
                 }
             }
         case CrossRoad:
-            inCrossRoad = true;
-            if(crossRoadActionEnabled) {
-                CrossRoadAction();
-            }
+            BUZZLE_ON;
+//            inCrossRoad = true;
+//            if(crossRoadActionEnabled) {
+//                CrossRoadAction();
+//            }
             break;
         case LeftCurve:
             LeftCurveAction();
