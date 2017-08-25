@@ -20,6 +20,11 @@ int16_t startLinePresight;
 int16_t lastAlong;
 int16_t along;
 bool straightLine;
+int16_t finalDashDistanceLeader;
+int16_t finalDashDistanceFollower;
+int16_t finalMinDistance;
+int16_t finalDashSpeedLeader;
+int16_t finalDashSpeedFollower;
 
 static uint8_t imgBufRow = 0;
 static uint8_t imgRealRow = 0;
@@ -154,7 +159,7 @@ void ImgProcSummary() {
         stop = true;
     } else if(final) {
         if(finalPursueingFinished) {
-            stop = (!double_car || leader_car) ? (dashDistance > 11000) : (dashDistance > 14000);
+            stop = (!double_car || leader_car) ? (dashDistance > finalDashDistanceLeader) : (dashDistance > finalDashDistanceFollower);
         }
         if(double_car) {
             if(leader_car) {
@@ -168,7 +173,7 @@ void ImgProcSummary() {
                 }
             } else {
                 if(!waitForFinalPursueing && !finalPursueingFinished) {
-                    if(distanceBetweenTheTwoCars < 50) {
+                    if(distanceBetweenTheTwoCars < finalMinDistance) {
                         waitForFinalPursueing = true;
                         SendMessage(DASH);
                     }
@@ -189,9 +194,9 @@ void ImgProcSummary() {
         SpeedTargetSet(
             stop || beingOvertaken ? 0 :
 //            holding ? 75 :
-            double_car && leader_car && finalPursueingFinished ? 60 :
+            double_car && leader_car && finalPursueingFinished ? finalDashSpeedLeader :
             double_car && leader_car && waitForFinalPursueing ? 0 :
-            double_car && !leader_car && finalPursueingFinished ? 65 :
+            double_car && !leader_car && finalPursueingFinished ? finalDashSpeedFollower :
             double_car && !leader_car && waitForFinalPursueing ? 30 :
             double_car && inStraightLine ? 65 :
             double_car && onRamp && rampOvertakingEnabled && rampOvertakingCnt < rampOvertakingCntMax ? 65 :

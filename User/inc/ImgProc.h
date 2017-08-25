@@ -38,6 +38,11 @@ extern int16_t startLinePresight;
 extern int16_t lastAlong;
 extern int16_t along;
 extern bool straightLine;
+extern int16_t finalDashDistanceLeader;
+extern int16_t finalDashDistanceFollower;
+extern int16_t finalMinDistance;
+extern int16_t finalDashSpeedLeader;
+extern int16_t finalDashSpeedFollower;
 
 void ImgProcHREF(uint32_t pinxArray);
 void ImgProcVSYN(uint32_t pinxArray);

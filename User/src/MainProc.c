@@ -221,7 +221,8 @@ void BuzzleControl(bool flag) {
 }
 
 void MainProc() {
-//    static int16_t ovtcnt = 0;
+    static int16_t ovtcnt = 0;
+    static int16_t fnlcnt = 0;
     
     if(encoder_on) {
         EncoderGet(&leftSpeed, &rightSpeed);
@@ -234,13 +235,18 @@ void MainProc() {
     
     DistanceControl();
     
-//    if(beingOvertaken) {
-//        if(++ovtcnt > 800) {
-//            beingOvertaken = false;
-//            ovtcnt = 0;
-//            along = AsUsual;
-//        }
-//    }
+    if(beingOvertaken) {
+        if(++ovtcnt > 1000) {
+            beingOvertaken = false;
+            ovtcnt = 0;
+            along = AsUsual;
+        }
+    }
+    if(waitForFinalPursueing) {
+        if(++fnlcnt > 800) {
+            finalPursueingFinished = true;
+        }
+    }
     
     if(speed_control_on) {
         SpeedControlProc(leftSpeed, rightSpeed);
@@ -257,7 +263,7 @@ static void SwitchAndParamLoad() {
     speed_control_speed = 90;
     speed_control_sum_err_max = 2000;
     
-    speed_control_acc = 5;
+    speed_control_acc = 8;
     speed_control_dec = 10;
     
     leftPid.targetValue = speed_control_speed;
@@ -289,7 +295,7 @@ static void SwitchAndParamLoad() {
     rightPid.ki = 12;
     rightPid.kd = 25;
     
-    steer_actuator_middle = 752;
+    steer_actuator_middle = 753;
     
     direction_control_kd = 0.2;
     direction_control_kpj = 0.04;
@@ -304,7 +310,7 @@ static void SwitchAndParamLoad() {
     #endif
     
     reduction_ratio = 2.65;
-    avg_distance_between_the_two_cars = 110;
+    avg_distance_between_the_two_cars = 120;
     diff_distance_max = 7;
     crossRoadDistanceMax = 2000;
     startLinePresight = 15;
@@ -322,4 +328,10 @@ static void SwitchAndParamLoad() {
     barrierOvertakingCntMax = 1;
     
     ringOrder = 0x5;
+    
+    finalDashDistanceLeader = 11000;
+    finalDashDistanceFollower = 16000;
+    finalMinDistance = 60;
+    finalDashSpeedLeader = 85;
+    finalDashSpeedFollower = 90;
 }
