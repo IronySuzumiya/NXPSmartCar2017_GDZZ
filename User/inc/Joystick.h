@@ -3,7 +3,7 @@
 
 #include "root.h"
 
-#define MODIFIABLE_PARAM_NUM 22
+#define MODIFIABLE_PARAM_NUM (sizeof(group) / sizeof(group[0]))
 
 void JoystickInit(void);
 void JoystickInt(uint32_t pinxArray);

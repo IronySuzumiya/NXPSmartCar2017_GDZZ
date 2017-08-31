@@ -303,8 +303,8 @@ int16_t GetRoadType() {
     }
     int16_t temp;
     
-    return /*enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
-        : */enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
+    return enabled && !inRing && !preRingEnd && !ringEndDelay && !inCrossRoad && IsRing() ? Ring
+        : enabled && !inRing &&!preRingEnd &&!ringEndDelay && !inCrossRoad && IsHugeRing() ? HugeRing
         : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && IsCrossRoad() ? CrossRoad
         : enabled && (!double_car || leader_car) && !inRing && !ringEndDelay && !inCrossRoad && !onRamp && IsRamp() ? Ramp
         : enabled && (!double_car || leader_car || barrierOvertaking) && !beingOvertaken && !onRamp && !inRing && !ringEndDelay && !inCrossRoad && (temp = WhichBarrier()) != Unknown ? temp

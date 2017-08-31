@@ -23,46 +23,42 @@ static struct _temp_handle {
     0, 0
 };
 
+static struct _group {
+    enum { INT16, INT32, FLOAT, BOOL, ORDER } type;
+    char *name;
+    void *ref;
+    float div;
+} group[] = {
+    { FLOAT, "reduction", &reduction_ratio, 0.02 },
+    { FLOAT, "speeddiff", &differential_ratio, 0.0002 },
+    { INT32, "avgdistance", &avg_distance_between_the_two_cars, 1 },
+    { INT32, "diffdistmax", &diff_distance_max, 1 },
+    { INT16, "speed", &speed_control_speed, 1 },
+    { INT16, "presight", &pre_sight, 1 },
+    { INT16, "ringspeed", &speedInRing, 1 },
+    { BOOL, "out", &out, 1 },
+    { INT16, "ringcnt", &ringOvertakingCntMax, 1 },
+    { INT16, "rampcnt", &rampOvertakingCntMax, 1 },
+    { INT16, "strlncnt", &straightLineOvertakingCntMax, 1 },
+    { INT16, "barrcnt", &barrierOvertakingCntMax, 1 },
+    { BOOL, "barrdouble", &barrierDoubleOvertakingEnabled, 1 },
+    { ORDER, "ringorder", &ringOrder, 1 },
+    { BOOL, "transimg", &trans_img, 1 },
+    { BOOL, "transstat", &trans_stat, 1 },
+    { BOOL, "dirlock", &dirlocked, 1 },
+    { INT16, "dshdstlead", &finalDashDistanceLeader, 100 },
+    { INT16, "dshdstfolw", &finalDashDistanceFollower, 100 },
+    { INT16, "finaldist", &finalMinDistance, 1 },
+    { INT16, "dshspdlead", &finalDashSpeedLeader, 1 },
+    { INT16, "dshspdfolw", &finalDashSpeedFollower, 1 },
+};
+
 static struct _param_handle {
     int16_t index;
-    enum { INT16, INT32, FLOAT, BOOL, ORDER } type[MODIFIABLE_PARAM_NUM];
-    char *name[MODIFIABLE_PARAM_NUM];
-    void *(ref[MODIFIABLE_PARAM_NUM]);
-    float div[MODIFIABLE_PARAM_NUM];
+    struct _group *group;
 } param = {
     0,
-    { FLOAT, FLOAT, INT32,
-      INT32, INT16, INT16,
-      INT16, BOOL,
-      INT16, INT16, INT16,
-      INT16, BOOL,  ORDER,
-      BOOL,  BOOL,  BOOL,
-      INT16, INT16, INT16,
-      INT16, INT16 },
-    { "reduction",   "speeddiff",   "avgdistance",
-      "diffdistmax", "speed",       "presight",
-      "ringspeed",   "out",
-      "ringcnt",     "rampcnt",     "strlncnt",
-      "barrcnt",     "barrdouble",  "ringorder",
-      "transimg",    "transstat",   "dirlock",
-      "dshdstlead",  "dshdstfolw",  "finaldist",
-      "dshspdlead",  "dshspdfolw" },
-    { &reduction_ratio,         &differential_ratio,             &avg_distance_between_the_two_cars,
-      &diff_distance_max,       &speed_control_speed,            &pre_sight,
-      &speedInRing,             &out,
-      &ringOvertakingCntMax,    &rampOvertakingCntMax,           &straightLineOvertakingCntMax,
-      &barrierOvertakingCntMax, &barrierDoubleOvertakingEnabled, &ringOrder,
-      &trans_img,               &trans_stat,                     &dirlocked,
-      &finalDashDistanceLeader, &finalDashDistanceFollower,      &finalMinDistance,
-      &finalDashSpeedLeader,    &finalDashSpeedFollower },
-    { 0.02, 0.0002, 1,
-      1,    1,      1,
-      1,    1,
-      1,    1,      1,
-      1,    1,      1,
-      1,    1,      1,
-      100,  100,    1,
-      1,    1 }
+    group
 };
 
 static void JoystickConfirmingInt(void);
@@ -137,101 +133,101 @@ void JoystickConfirmingInt() {
 
 void ParamShow() {
     OLEDClrRow(3);
-    switch(param.type[temp.index]) {
+    switch(param.group[temp.index].type) {
         case INT16:
-            OLEDPrintf(5, 3, "%s: %d", param.name[temp.index], temp.u.i16);
+            OLEDPrintf(5, 3, "%s: %d", param.group[temp.index].name, temp.u.i16);
             break;
         case INT32:
-            OLEDPrintf(5, 3, "%s: %d", param.name[temp.index], temp.u.i32);
+            OLEDPrintf(5, 3, "%s: %d", param.group[temp.index].name, temp.u.i32);
             break;
         case FLOAT:
-            OLEDPrintf(5, 3, "%s: %.5f", param.name[temp.index], temp.u.f);
+            OLEDPrintf(5, 3, "%s: %.5f", param.group[temp.index].name, temp.u.f);
             break;
         case BOOL:
-            OLEDPrintf(5, 3, "%s: %s", param.name[temp.index], temp.u.b ? "true" : "false");
+            OLEDPrintf(5, 3, "%s: %s", param.group[temp.index].name, temp.u.b ? "true" : "false");
             break;
         case ORDER:
-            OLEDPrintf(5, 3, "%s: %x", param.name[temp.index], temp.u.i16);
+            OLEDPrintf(5, 3, "%s: %x", param.group[temp.index].name, temp.u.i16);
     }
 }
 
 void ParamFetch() {
     temp.index = param.index;
-    switch(param.type[param.index]) {
+    switch(param.group[temp.index].type) {
         case INT16:
-            temp.u.i16 = *(int16_t *)(param.ref[param.index]);
+            temp.u.i16 = *(int16_t *)(param.group[temp.index].ref);
             break;
         case INT32:
-            temp.u.i32 = *(int32_t *)(param.ref[param.index]);
+            temp.u.i32 = *(int32_t *)(param.group[temp.index].ref);
             break;
         case FLOAT:
-            temp.u.f = *(float *)(param.ref[param.index]);
+            temp.u.f = *(float *)(param.group[temp.index].ref);
             break;
         case BOOL:
-            temp.u.b = *(bool *)(param.ref[param.index]);
+            temp.u.b = *(bool *)(param.group[temp.index].ref);
             break;
         case ORDER:
-            temp.u.i16 = *(int16_t *)(param.ref[param.index]);
+            temp.u.i16 = *(int16_t *)(param.group[temp.index].ref);
             break;
     }
 }
 
 void ParamInc() {
-    switch(param.type[temp.index]) {
+    switch(param.group[temp.index].type) {
         case INT16:
-            temp.u.i16 += param.div[temp.index];
+            temp.u.i16 += param.group[temp.index].div;
             break;
         case INT32:
-            temp.u.i32 += param.div[temp.index];
+            temp.u.i32 += param.group[temp.index].div;
             break;
         case FLOAT:
-            temp.u.f += param.div[temp.index];
+            temp.u.f += param.group[temp.index].div;
             break;
         case BOOL:
             temp.u.b = !temp.u.b;
             break;
         case ORDER:
-            temp.u.i16 += param.div[temp.index];
+            temp.u.i16 += param.group[temp.index].div;
             break;
     }
 }
 
 void ParamDec() {
-    switch(param.type[temp.index]) {
+    switch(param.group[temp.index].type) {
         case INT16:
-            temp.u.i16 -= param.div[temp.index];
+            temp.u.i16 -= param.group[temp.index].div;
             break;
         case INT32:
-            temp.u.i32 -= param.div[temp.index];
+            temp.u.i32 -= param.group[temp.index].div;
             break;
         case FLOAT:
-            temp.u.f -= param.div[temp.index];
+            temp.u.f -= param.group[temp.index].div;
             break;
         case BOOL:
             temp.u.b = !temp.u.b;
             break;
         case ORDER:
-            temp.u.i16 -= param.div[temp.index];
+            temp.u.i16 -= param.group[temp.index].div;
             break;
     }
 }
 
 void ParamUpdate() {
-    switch(param.type[temp.index]) {
+    switch(param.group[temp.index].type) {
         case INT16:
-            *(int16_t *)(param.ref[temp.index]) = temp.u.i16;
+            *(int16_t *)(param.group[temp.index].ref) = temp.u.i16;
             break;
         case INT32:
-            *(int32_t *)(param.ref[temp.index]) = temp.u.i32;
+            *(int32_t *)(param.group[temp.index].ref) = temp.u.i32;
             break;
         case FLOAT:
-            *(float *)(param.ref[temp.index]) = temp.u.f;
+            *(float *)(param.group[temp.index].ref) = temp.u.f;
             break;
         case BOOL:
-            *(bool *)(param.ref[temp.index]) = temp.u.b;
+            *(bool *)(param.group[temp.index].ref) = temp.u.b;
             break;
         case ORDER:
-            *(int16_t *)(param.ref[temp.index]) = temp.u.i16;
+            *(int16_t *)(param.group[temp.index].ref) = temp.u.i16;
             break;
     }
 }
